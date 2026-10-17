@@ -2,6 +2,7 @@ import analyzing from '@/assets/owls/analyzing.svg'
 import analyzingStill from '@/assets/owls/analyzing-still.webp'
 import happy from '@/assets/owls/happy.svg'
 import happyStill from '@/assets/owls/happy-still.webp'
+import hello from '@/assets/owls/hello.webp'
 import idle from '@/assets/owls/idle-still.webp'
 import reading from '@/assets/owls/reading.webp'
 import warning from '@/assets/owls/warning.svg'
@@ -16,6 +17,7 @@ interface OwlImage {
 
 const OWLS = {
   idle: { src: idle, width: 192, height: 206 },
+  hello: { src: hello, still: idle, width: 192, height: 206 },
   reading: { src: reading, width: 480, height: 267 },
   happy: { src: happy, still: happyStill, width: 640, height: 640 },
   warning: { src: warning, still: warningStill, width: 640, height: 640 },

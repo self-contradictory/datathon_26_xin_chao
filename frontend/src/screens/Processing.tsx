@@ -40,18 +40,13 @@ export function ProcessingScreen({
 
   return (
     <main className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-4 pt-8 pb-12 sm:px-6 lg:pt-12 lg:pb-16">
-      <div className="flex max-w-[72ch] flex-col gap-1">
-        <h1
-          ref={titleRef}
-          tabIndex={-1}
-          className="text-title font-semibold focus:outline-none"
-        >
-          {t.title}
-        </h1>
-        <p className="text-text-muted">
-          {failed ? t.subtitleFailed : t.subtitle}
-        </p>
-      </div>
+      <h1
+        ref={titleRef}
+        tabIndex={-1}
+        className="text-title font-semibold focus:outline-none"
+      >
+        {t.title}
+      </h1>
       <LiveStatus message={announcement} />
 
       <div className="grid max-w-[560px] grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 gap-y-6 lg:max-w-none lg:grid-cols-[auto_minmax(0,560px)] lg:grid-rows-[auto_1fr] lg:justify-start lg:gap-x-12">

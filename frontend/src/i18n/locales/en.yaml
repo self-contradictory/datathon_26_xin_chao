@@ -15,8 +15,6 @@ titles:
   batch: Video check
 upload:
   title: Cash operations check by video
-  subtitle: 'Upload a recording from the camera above the cash desk. The service finds signs of possible violations and shows the timecode, frames and the regulation clause.'
-  privacy: The video is processed on the server and is not shared with third-party services
 dropZone:
   region: Video upload
   dropHere: Drag .mov files here
@@ -39,8 +37,6 @@ dropZone:
   noneValidEmptyText: 'All selected files ({count}) are empty. Choose other recordings from the camera above the cash desk.'
 processing:
   title: Video processing
-  subtitle: The video is processed on the server and is not shared with third-party services.
-  subtitleFailed: Processing stopped. The cause and what to do are below.
   nowUploading: Uploading the file to the server
   nowAnalyzing: File uploaded. Analysing the video
 videoPreview:
@@ -81,14 +77,7 @@ verdictSummary:
   violation: 'Signs of possible violations found: {n}'
   clean: No violations found
   checked: 'checked {date}'
-violationList:
-  hint: Click a timecode to jump to that moment in the video
-  whatWeLookFor: What signs the service looks for
-  rules: Rules
 violationCard:
-  position: 'Violation {i} of {n}'
-  prev: Previous violation
-  next: Next violation
   description: Description
   rule: Rule
   adilet: Open on adilet.zan.kz
@@ -127,7 +116,6 @@ player:
   cannotPlay: This browser cannot play the video
 rules:
   title: Detection rules
-  subtitle: 'Which signs of possible violations the service looks for in a video, and which regulations each one rests on.'
   colType: Violation type
   colLooks: How it looks on video
   colNorm: Document and clause
@@ -176,7 +164,6 @@ units:
   gb: GB
 batch:
   title: Video check
-  queueNote: Videos are checked one at a time. You can open a finished report while the others are still in progress.
   progress: '{done} of {total} done'
   counts: 'Signs of possible violations: {violations} · no violations: {clean} · errors: {failed}'
   announceDone: 'The check is finished. Signs of possible violations: {violations}, errors: {failed}'

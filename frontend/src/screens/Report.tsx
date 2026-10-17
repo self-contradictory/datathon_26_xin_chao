@@ -13,12 +13,9 @@ import { format, useStrings } from '@/i18n'
 import { formatTime } from '@/utils/time'
 import { JsonView } from '@/components/report/JsonView'
 import { ReportMeta } from '@/components/report/ReportMeta'
-import { TimeChip } from '@/components/report/TimeChip'
 import { VerdictSummary } from '@/components/report/VerdictSummary'
-import { ViolationCard } from '@/components/report/ViolationCard'
 import { ViolationList } from '@/components/report/ViolationList'
 import type { ReportScreenProps } from './contracts'
-import { wrapIndex } from '@/utils/wrap'
 
 type Tab = 'report' | 'json'
 const TABS = 'report'
@@ -135,18 +132,6 @@ export function ReportScreen({
             activeMarkerId={active ? String(activeIndex) : null}
             onMarkerSelect={(id) => select(Number(id))}
           />
-          {active && (
-            <p className="hidden flex-wrap items-center gap-2 lg:flex">
-              <span
-                aria-hidden="true"
-                className="h-3 w-1 rounded-[1px] bg-danger"
-              />
-              <TimeChip seconds={active.timecode_sec} />
-              <span lang="ru" className="font-semibold">
-                {active.type}
-              </span>
-            </p>
-          )}
           {exit.kind === 'newVideo' && (
             <Button
               icon={<PlusIcon size={20} />}
@@ -166,19 +151,11 @@ export function ReportScreen({
             hidden={tab !== 'report'}
           >
             {active && (
-              <div className="flex flex-col gap-6">
-                <ViolationList
-                  violations={violations}
-                  activeIndex={activeIndex}
-                  onSelect={select}
-                />
-                <ViolationCard
-                  violation={active}
-                  index={activeIndex}
-                  total={count}
-                  onStep={(by) => select(wrapIndex(activeIndex, by, count))}
-                />
-              </div>
+              <ViolationList
+                violations={violations}
+                activeIndex={activeIndex}
+                onSelect={select}
+              />
             )}
           </div>
 

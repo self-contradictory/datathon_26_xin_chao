@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { LockIcon } from '@/components/icons'
+import { Owl } from '@/components/Owl'
 import { useStrings } from '@/i18n'
 import { DropZone } from '@/components/upload/DropZone'
 import type { UploadScreenProps } from './contracts'
@@ -18,25 +18,21 @@ export function UploadScreen({
   }, [focusTitle])
   return (
     <main className="flex min-h-[calc(100svh-65px)] flex-col items-center justify-center gap-8 px-4 pt-12 pb-16 sm:pt-16 sm:pb-24">
-      <div className="flex max-w-[640px] flex-col gap-2 text-center">
+      <div className="flex w-full max-w-[760px] items-center justify-center gap-4 sm:gap-5">
+        <Owl mood="hello" className="w-20 shrink-0 sm:w-28" />
         <h1
           ref={titleRef}
           tabIndex={-1}
-          className="text-title font-semibold focus:outline-none"
+          className="max-w-[16ch] text-title font-semibold focus:outline-none sm:max-w-none sm:whitespace-nowrap"
         >
           {t.title}
         </h1>
-        <p className="text-text-muted">{t.subtitle}</p>
       </div>
       <DropZone
         onSubmit={onSubmit}
         onSubmitMany={onSubmitMany}
         preview={preview}
       />
-      <p className="max-w-[640px] text-center text-secondary text-text-muted">
-        <LockIcon size={20} className="mr-2 inline-block align-top" />
-        {t.privacy}
-      </p>
     </main>
   )
 }

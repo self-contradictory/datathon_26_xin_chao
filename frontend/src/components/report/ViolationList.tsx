@@ -1,8 +1,8 @@
+import { useId } from 'react'
 import type { Violation } from '@/api/types'
 import { ChevronRightIcon } from '@/components/icons'
-import { TextLink } from '@/components/TextLink'
-import { useStrings } from '@/i18n'
 import { TimeChip } from './TimeChip'
+import { ViolationDetails } from './ViolationDetails'
 
 export function ViolationList({
   violations,
@@ -13,48 +13,46 @@ export function ViolationList({
   activeIndex: number
   onSelect: (index: number) => void
 }) {
-  const t = useStrings('violationList')
+  const baseId = useId()
 
   return (
-    <div className="overflow-hidden rounded-md border border-border bg-bg shadow-card">
-      <p className="border-b border-border p-4 text-secondary text-text-muted">
-        {t.hint}
-      </p>
-      <ul>
-        {violations.map((violation, index) => {
-          const active = index === activeIndex
-          return (
-            <li key={index} className="border-b border-border">
-              <button
-                type="button"
-                aria-current={active ? 'true' : undefined}
-                onClick={() => onSelect(index)}
-                className={`flex min-h-14 w-full cursor-pointer items-center gap-3 border-l-[3px] py-3 pr-4 pl-[13px] text-left transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand ${
-                  active
-                    ? 'border-brand bg-brand-tint'
-                    : 'border-transparent bg-bg hover:bg-surface'
-                }`}
+    <ul className="overflow-hidden rounded-md border border-border bg-bg shadow-card">
+      {violations.map((violation, index) => {
+        const active = index === activeIndex
+        const detailsId = `${baseId}-${index}`
+        return (
+          <li key={index} className="border-b border-border last:border-b-0">
+            <button
+              type="button"
+              aria-expanded={active}
+              aria-controls={detailsId}
+              onClick={() => onSelect(index)}
+              className={`flex min-h-14 w-full cursor-pointer items-center gap-3 border-l-[3px] py-3 pr-4 pl-[13px] text-left transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand ${
+                active
+                  ? 'border-brand bg-brand-tint'
+                  : 'border-transparent bg-bg hover:bg-surface'
+              }`}
+            >
+              <TimeChip seconds={violation.timecode_sec} onTint={active} />
+              <span
+                lang="ru"
+                className={`min-w-0 flex-1 wrap-break-word ${active ? 'font-semibold' : ''}`}
               >
-                <TimeChip seconds={violation.timecode_sec} onTint={active} />
-                <span
-                  lang="ru"
-                  className={`min-w-0 flex-1 wrap-break-word ${active ? 'font-semibold' : ''}`}
-                >
-                  {violation.type}
-                </span>
-                <ChevronRightIcon
-                  size={20}
-                  className="shrink-0 text-text-muted"
-                />
-              </button>
-            </li>
-          )
-        })}
-      </ul>
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-secondary text-text-muted">
-        <span>{t.whatWeLookFor}</span>
-        <TextLink href="#/rules">{t.rules}</TextLink>
-      </div>
-    </div>
+                {violation.type}
+              </span>
+              <ChevronRightIcon
+                size={20}
+                className={`shrink-0 text-text-muted transition-transform duration-150 ${active ? 'rotate-90' : ''}`}
+              />
+            </button>
+            {active && (
+              <div id={detailsId} className="px-4 pt-4 pb-5 sm:px-6">
+                <ViolationDetails key={index} violation={violation} />
+              </div>
+            )}
+          </li>
+        )
+      })}
+    </ul>
   )
 }

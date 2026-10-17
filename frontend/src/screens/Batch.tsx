@@ -52,9 +52,9 @@ export function BatchScreen({
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-4 pt-8 pb-12 sm:px-6 lg:pt-12 lg:pb-16">
-      <div className="flex max-w-[800px] flex-col-reverse gap-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex max-w-[56ch] flex-col gap-1">
+    <main className="mx-auto flex w-full max-w-[848px] flex-col gap-6 px-4 pt-8 pb-12 sm:px-6 lg:pt-12 lg:pb-16">
+      <div className="flex flex-col-reverse gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-1">
           <h1
             ref={titleRef}
             tabIndex={-1}
@@ -62,15 +62,9 @@ export function BatchScreen({
           >
             {t.title}
           </h1>
-          <p className="text-text-muted">{t.queueNote}</p>
-        </div>
-        <Owl mood="reading" className="w-44 shrink-0 rounded-lg sm:w-52" />
-      </div>
-      <LiveStatus message={announcement} />
-
-      <div className="flex max-w-[800px] flex-col gap-6">
-        <div className="flex flex-col gap-1">
-          <p className="text-section font-semibold tabular-nums">{progress}</p>
+          <p className="mt-2 text-section font-semibold tabular-nums">
+            {progress}
+          </p>
           <p className="text-secondary text-text-muted">
             {format(t.counts, {
               violations: counts.violations,
@@ -79,7 +73,11 @@ export function BatchScreen({
             })}
           </p>
         </div>
+        <Owl mood="reading" className="w-44 shrink-0 rounded-lg sm:w-52" />
+      </div>
+      <LiveStatus message={announcement} />
 
+      <div className="flex flex-col gap-6">
         <div
           aria-live="assertive"
           className={pausedRow ? undefined : 'sr-only'}

@@ -21,8 +21,6 @@ export interface Messages {
   }
   upload: {
     title: string
-    subtitle: string
-    privacy: string
   }
   dropZone: {
     region: string
@@ -47,8 +45,6 @@ export interface Messages {
   }
   processing: {
     title: string
-    subtitle: string
-    subtitleFailed: string
     nowUploading: string
     nowAnalyzing: string
   }
@@ -98,15 +94,7 @@ export interface Messages {
     clean: string
     checked: string
   }
-  violationList: {
-    hint: string
-    whatWeLookFor: string
-    rules: string
-  }
   violationCard: {
-    position: string
-    prev: string
-    next: string
     description: string
     rule: string
     adilet: string
@@ -153,7 +141,6 @@ export interface Messages {
   }
   rules: {
     title: string
-    subtitle: string
     colType: string
     colLooks: string
     colNorm: string
@@ -214,7 +201,6 @@ export interface Messages {
   }
   batch: {
     title: string
-    queueNote: string
     progress: string
     counts: string
     announceDone: string

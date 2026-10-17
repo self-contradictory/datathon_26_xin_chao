@@ -10,6 +10,7 @@
   "scripts": {
     "start": "bun scripts/start.ts",
     "dev": "bun --hot dev.ts",
+    "demo": "BUN_PUBLIC_DATA_SOURCE=fixtures PORT=3001 bun --hot dev.ts",
     "dev:static": "bun index.html",
     "build": "bun run typecheck && bun run build.ts",
     "typecheck": "bun run --bun tsc --noEmit",
