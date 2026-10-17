@@ -53,9 +53,9 @@ export function buildReportModel(
     jobId: record.jobId,
     violation,
     review: reviewSummary(record.review, ordered.length),
-    violations: ordered.map(({ item, index }, order) => ({
+    violations: ordered.map(({ item, index }) => ({
       source: item,
-      position: order + 1,
+      position: index + 1,
       index,
       timecode: item.timecode_sec,
       type: item.type,

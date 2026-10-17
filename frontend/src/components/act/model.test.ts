@@ -59,14 +59,14 @@ describe('buildReportModel', () => {
     expect(model.review.total).toBe(0)
   })
 
-  test('violations are ordered by time and keep their original index', () => {
+  test('violations are ordered by time and keep their on-screen numbers', () => {
     const model = buildReportModel(record(three), null)
     expect(
       model.violations.map((v) => [v.position, v.index, v.timecode]),
     ).toEqual([
-      [1, 1, 5],
-      [2, 2, 12],
-      [3, 0, 40],
+      [2, 1, 5],
+      [3, 2, 12],
+      [1, 0, 40],
     ])
     expect(model.violations[0]!.rule).toBeNull()
     expect(model.violations[0]!.type).toBe('Тип, которого нет в словаре')

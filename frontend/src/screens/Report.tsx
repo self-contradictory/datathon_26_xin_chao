@@ -19,10 +19,7 @@ import { Tabs } from '@/components/Tabs'
 import { format, useStrings } from '@/i18n'
 import { formatTime } from '@/utils/time'
 import { JsonView } from '@/components/report/JsonView'
-import {
-  activeViolationIndex,
-  stepIndex,
-} from '@/components/report/activeViolation'
+import { playheadIndex, stepIndex } from '@/components/report/activeViolation'
 import { ReportMeta } from '@/components/report/ReportMeta'
 import { SavedChip } from '@/components/history/SavedChip'
 import { isTypingTarget } from '@/utils/keys'
@@ -163,8 +160,16 @@ export function ReportScreen({
       saveFile(`${base}.json`, fullJson(job, reviewed), 'application/json')
       return
     }
-    if (!record) return
-    const model = buildReportModel({ ...record, review: reviewed }, duration)
+    const saved = record ?? {
+      jobId: job.job_id,
+      fileName,
+      fileSize: fileSize ?? 0,
+      fileHash: null,
+      createdAt: checkedAt,
+      result: job,
+      review,
+    }
+    const model = buildReportModel({ ...saved, review: reviewed }, duration)
     const date = new Date(checkedAt).toISOString().slice(0, 10)
     printer.print(model, format(act.documentName, { file: base, date }))
   }
@@ -236,7 +241,7 @@ export function ReportScreen({
             activeMarkerId={playhead === null ? null : String(playhead)}
             onMarkerSelect={(id) => select(Number(id), true)}
             onTimeChange={(time) =>
-              setPlayhead(activeViolationIndex(violations, time))
+              setPlayhead(playheadIndex(violations, time, selected))
             }
           />
           {exit.kind === 'newVideo' && (

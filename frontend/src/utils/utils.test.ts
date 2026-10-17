@@ -8,6 +8,7 @@ import { clampTime } from './frames'
 import {
   formatFileSize,
   formatFrameTime,
+  formatFullDate,
   formatShortDate,
   formatTime,
 } from './time'
@@ -16,6 +17,9 @@ describe('time', () => {
   test('formatShortDate', () => {
     expect(formatShortDate(new Date(2026, 9, 17, 18, 5).getTime())).toBe(
       '17.10 · 18:05',
+    )
+    expect(formatFullDate(new Date(2026, 9, 17, 18, 5).getTime())).toBe(
+      '17.10.2026 · 18:05',
     )
   })
 

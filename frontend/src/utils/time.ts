@@ -19,6 +19,11 @@ export function formatShortDate(timestamp: number): string {
   return `${pad(date.getDate())}.${pad(date.getMonth() + 1)} · ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
+export function formatFullDate(timestamp: number): string {
+  const date = new Date(timestamp)
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} · ${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
 export function formatFrameTime(totalSeconds: number): string {
   const safe =
     Number.isFinite(totalSeconds) && totalSeconds > 0 ? totalSeconds : 0

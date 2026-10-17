@@ -7,7 +7,7 @@ import { jpegDataUrl } from '@/utils/frames'
 import {
   formatFileSize,
   formatFrameTime,
-  formatShortDate,
+  formatFullDate,
   formatTime,
 } from '@/utils/time'
 import type { ActModel, ActViolation } from './model'
@@ -103,7 +103,7 @@ export function ActDocument({ model }: { model: ActModel }) {
           <p className="font-semibold">
             {format(t.number, { n: model.number })}
           </p>
-          <p>{formatShortDate(model.checkedAt)}</p>
+          <p>{formatFullDate(model.checkedAt)}</p>
         </div>
       </header>
 

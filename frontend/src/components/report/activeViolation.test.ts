@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { activeViolationIndex, stepIndex } from './activeViolation'
+import {
+  activeViolationIndex,
+  playheadIndex,
+  stepIndex,
+} from './activeViolation'
 
 const at = (...times: number[]) =>
   times.map((timecode_sec) => ({ timecode_sec }))
@@ -27,5 +31,16 @@ describe('stepIndex', () => {
   test('wraps around both ways', () => {
     expect(stepIndex(2, 1, 3)).toBe(0)
     expect(stepIndex(0, -1, 3)).toBe(2)
+  })
+})
+
+describe('playheadIndex', () => {
+  test('keeps the chosen violation when a neighbour is closer', () => {
+    expect(playheadIndex(at(10, 11), 9, 1)).toBe(1)
+    expect(playheadIndex(at(10, 11), 9, null)).toBe(0)
+  })
+
+  test('lets go once the playhead leaves the chosen window', () => {
+    expect(playheadIndex(at(10, 30), 29, 0)).toBe(1)
   })
 })

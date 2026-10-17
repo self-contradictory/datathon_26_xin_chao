@@ -1,6 +1,7 @@
 import type { Violation } from '@/api/types'
 
 export const ACTIVE_WINDOW_SEC = 3
+export const SEEK_LEAD_SEC = 2
 
 export function activeViolationIndex(
   violations: readonly Pick<Violation, 'timecode_sec'>[],
@@ -17,6 +18,21 @@ export function activeViolationIndex(
     }
   })
   return best
+}
+
+export function playheadIndex(
+  violations: readonly Pick<Violation, 'timecode_sec'>[],
+  time: number,
+  pinned: number | null,
+): number | null {
+  const chosen = pinned === null ? undefined : violations[pinned]
+  if (
+    chosen &&
+    time >= chosen.timecode_sec - SEEK_LEAD_SEC - 0.5 &&
+    time <= chosen.timecode_sec + ACTIVE_WINDOW_SEC
+  )
+    return pinned
+  return activeViolationIndex(violations, time)
 }
 
 export function stepIndex(index: number, by: 1 | -1, count: number): number {

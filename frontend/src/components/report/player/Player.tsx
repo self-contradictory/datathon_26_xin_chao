@@ -1,3 +1,4 @@
+import { SEEK_LEAD_SEC } from '@/components/report/activeViolation'
 import {
   useCallback,
   useEffect,
@@ -23,7 +24,6 @@ export type {
 } from './types'
 
 const RATES: readonly number[] = [1, 1.5, 2, 0.5]
-const SEEK_LEAD_SEC = 2
 const PORTRAIT = 9 / 16
 const FILL_TOLERANCE = 0.02
 
