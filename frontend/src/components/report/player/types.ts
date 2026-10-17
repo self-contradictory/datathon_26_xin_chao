@@ -6,8 +6,13 @@ export interface PlayerMarker {
   label: string
 }
 
+export interface SeekOptions {
+  lead?: number
+  pause?: boolean
+}
+
 export interface PlayerHandle {
-  seek(time: number): void
+  seek(time: number, options?: SeekOptions): void
   pause(): void
 }
 
@@ -18,5 +23,6 @@ export interface PlayerProps {
   markers: readonly PlayerMarker[]
   activeMarkerId: string | null
   onMarkerSelect: (id: string) => void
+  onTimeChange?: (time: number) => void
   ref?: Ref<PlayerHandle>
 }

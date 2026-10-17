@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useEffectEvent,
   useImperativeHandle,
   useRef,
   useState,
@@ -14,9 +15,15 @@ import { clamp, fallbackSpan } from './markers'
 import { Scrubber } from './Scrubber'
 import type { PlayerProps } from './types'
 
-export type { PlayerHandle, PlayerMarker, PlayerProps } from './types'
+export type {
+  PlayerHandle,
+  PlayerMarker,
+  PlayerProps,
+  SeekOptions,
+} from './types'
 
 const RATES: readonly number[] = [1, 1.5, 2, 0.5]
+const SEEK_LEAD_SEC = 2
 const PORTRAIT = 9 / 16
 const FILL_TOLERANCE = 0.02
 
@@ -27,6 +34,7 @@ export function Player({
   markers,
   activeMarkerId,
   onMarkerSelect,
+  onTimeChange,
   ref,
 }: PlayerProps) {
   const t = useStrings('player')
@@ -77,6 +85,9 @@ export function Player({
     return () => cancelAnimationFrame(frame)
   }, [playing])
 
+  const reportTime = useEffectEvent((time: number) => onTimeChange?.(time))
+  useEffect(() => reportTime(current), [current])
+
   useEffect(() => {
     const sync = () =>
       setFullscreen(
@@ -103,7 +114,8 @@ export function Player({
   useImperativeHandle(
     ref,
     () => ({
-      seek: (time) => seekTo(time, true),
+      seek: (time, { lead = SEEK_LEAD_SEC, pause = true } = {}) =>
+        seekTo(time - lead, pause),
       pause: () => videoRef.current?.pause(),
     }),
     [seekTo],
@@ -256,10 +268,7 @@ export function Player({
           totalText={totalText}
           available={available}
           onSeek={(time) => seekTo(time, false)}
-          onMarkerSelect={(marker) => {
-            seekTo(marker.time, true)
-            onMarkerSelect(marker.id)
-          }}
+          onMarkerSelect={(marker) => onMarkerSelect(marker.id)}
         />
         {available ? (
           <ControlBar

@@ -1,0 +1,33 @@
+import type { JobResponse } from '@/api/types'
+
+export type ReviewDecision = 'confirmed' | 'rejected'
+
+export interface ReviewMark {
+  decision: ReviewDecision
+  at: number
+}
+
+export type Review = Record<number, ReviewMark>
+
+export interface CheckRecord {
+  jobId: string
+  fileName: string
+  fileSize: number
+  fileHash: string | null
+  createdAt: number
+  result: JobResponse
+  review: Review
+  video?: Blob
+}
+
+export interface CheckStore {
+  get(jobId: string): Promise<CheckRecord | undefined>
+  put(record: CheckRecord): Promise<void>
+  list(): Promise<CheckRecord[]>
+  remove(jobId: string): Promise<void>
+  clear(): Promise<void>
+}
+
+export function violationKey(jobId: string, index: number): string {
+  return `${jobId}:${index}`
+}
