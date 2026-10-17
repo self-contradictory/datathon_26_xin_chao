@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { showsViolations } from '@/api/types'
 import { Button } from '@/components/Button'
-import { PlusIcon } from '@/components/icons'
+import { ChevronLeftIcon, PlusIcon } from '@/components/icons'
 import {
   Player,
   type PlayerHandle,
@@ -30,7 +30,7 @@ export function ReportScreen({
   videoUrl,
   posterUrl,
   checkedAt,
-  onNewVideo,
+  exit,
 }: ReportScreenProps) {
   const t = useStrings('report')
   const [tab, setTab] = useState<Tab>('report')
@@ -87,6 +87,16 @@ export function ReportScreen({
     <main>
       <div className="border-b border-border">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-4 gap-y-2 px-4 pt-2 sm:px-6">
+          {exit.kind === 'backToList' && (
+            <Button
+              variant="secondary"
+              icon={<ChevronLeftIcon size={20} />}
+              onClick={exit.onClick}
+              className="my-0.5"
+            >
+              {t.backToList}
+            </Button>
+          )}
           <Tabs
             items={[
               { key: 'report', label: t.report },
@@ -97,14 +107,16 @@ export function ReportScreen({
             idPrefix={TABS}
             label={t.tabs}
           />
-          <Button
-            variant="secondary"
-            icon={<PlusIcon size={20} />}
-            onClick={onNewVideo}
-            className="my-0.5 ml-auto"
-          >
-            {t.newVideo}
-          </Button>
+          {exit.kind === 'newVideo' && (
+            <Button
+              variant="secondary"
+              icon={<PlusIcon size={20} />}
+              onClick={exit.onClick}
+              className="my-0.5 ml-auto"
+            >
+              {t.newVideo}
+            </Button>
+          )}
         </div>
       </div>
 

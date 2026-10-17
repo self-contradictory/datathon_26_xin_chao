@@ -45,8 +45,8 @@ export function isQueued(item: BatchItem): boolean {
   return item.stage.kind === 'queued'
 }
 
-export function isUnfinished(item: BatchItem): boolean {
-  const { kind } = item.stage
+export function isUnfinished({ stage }: Pick<BatchItem, 'stage'>): boolean {
+  const { kind } = stage
   return kind === 'queued' || kind === 'uploading' || kind === 'analyzing'
 }
 
@@ -54,7 +54,9 @@ export function nextQueued(items: readonly BatchItem[]): BatchItem | undefined {
   return items.find(isQueued)
 }
 
-export function batchCounts(items: readonly BatchItem[]): BatchCounts {
+export function batchCounts(
+  items: readonly Pick<BatchItem, 'stage'>[],
+): BatchCounts {
   let violations = 0
   let clean = 0
   let failed = 0

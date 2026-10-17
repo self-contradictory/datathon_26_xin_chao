@@ -1,5 +1,7 @@
 import type { JobErrorKind } from '@/api/source'
 import type { DoneJob } from '@/api/types'
+import type { BatchStage } from '@/batch/types'
+import type { RejectedFile } from '@/utils/file'
 
 export interface UploadScreenProps {
   onSubmit: (file: File) => void
@@ -35,5 +37,29 @@ export interface ReportScreenProps {
   videoUrl: string | null
   posterUrl: string | null
   checkedAt: number
-  onNewVideo: () => void
+  exit: ReportExit
+}
+
+export interface ReportExit {
+  kind: 'newVideo' | 'backToList'
+  onClick: () => void
+}
+
+export interface BatchRowView {
+  id: string
+  fileName: string
+  fileSize: number
+  duration: number | null
+  posterUrl: string | null
+  stage: BatchStage
+}
+
+export interface BatchScreenProps {
+  rows: BatchRowView[]
+  rejected: RejectedFile[]
+  paused: boolean
+  returnFocusId: string | null
+  onOpen: (id: string) => void
+  onRetry: (id: string) => void
+  onStartOver: () => void
 }

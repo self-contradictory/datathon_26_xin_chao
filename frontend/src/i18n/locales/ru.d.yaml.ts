@@ -17,6 +17,7 @@ export interface Messages {
     rules: string
     api: string
     suffix: string
+    batch: string
   }
   upload: {
     title: string
@@ -84,6 +85,7 @@ export interface Messages {
     json: string
     newVideo: string
     selected: string
+    backToList: string
   }
   verdictSummary: {
     label: string
@@ -206,6 +208,31 @@ export interface Messages {
     kb: string
     mb: string
     gb: string
+  }
+  batch: {
+    title: string
+    queueNote: string
+    progress: string
+    counts: string
+    announceDone: string
+    paused: string
+    list: string
+    rejectedTitle: string
+    notMov: string
+    empty: string
+    startOver: string
+    confirmStop: string
+    confirmYes: string
+    confirmNo: string
+  }
+  batchRow: {
+    queued: string
+    uploading: string
+    analyzing: string
+    open: string
+    openLabel: string
+    retryLabel: string
+    progress: string
   }
   demo: {
     title: string

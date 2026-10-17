@@ -51,7 +51,7 @@ function MainFlow({ flow }: { flow: ReturnType<typeof useJobFlow> }) {
       videoUrl={state.video.url}
       posterUrl={state.video.posterUrl}
       checkedAt={state.checkedAt}
-      onNewVideo={reset}
+      exit={{ kind: 'newVideo', onClick: reset }}
     />
   )
 }

@@ -1,12 +1,19 @@
 import type { DoneJob } from '@/api/types'
+import type { BatchStage } from '@/batch/types'
 import { useStrings } from '@/i18n'
 import { jpegDataUrl } from '@/utils/frames'
 import { RULES } from '@/rules'
+import { BatchScreen } from '@/screens/Batch'
 import { ProcessingScreen } from '@/screens/Processing'
 import { ReportScreen } from '@/screens/Report'
 import { UploadScreen } from '@/screens/Upload'
 import { X17, X3 } from './sampleFrames'
-import type { ProcessingPhase } from '@/screens/contracts'
+import type {
+  BatchRowView,
+  BatchScreenProps,
+  ProcessingPhase,
+  ReportExit,
+} from '@/screens/contracts'
 
 const noop = () => {}
 const datasetUrl = (name: string) => `/__dataset/${encodeURIComponent(name)}`
@@ -87,14 +94,17 @@ function processing(
   )
 }
 
+interface SampleVideo {
+  name: string
+  size: number
+  duration: number
+  poster: string
+}
+
 function report(
   job: DoneJob,
-  video: {
-    name: string
-    size: number
-    duration: number
-    poster: string
-  } | null,
+  video: SampleVideo | null,
+  exit: ReportExit['kind'] = 'newVideo',
 ) {
   return (
     <ReportScreen
@@ -105,7 +115,47 @@ function report(
       videoUrl={video ? datasetUrl(video.name) : null}
       posterUrl={video ? jpegDataUrl(video.poster) : null}
       checkedAt={CHECKED_AT}
-      onNewVideo={noop}
+      exit={{ kind: exit, onClick: noop }}
+    />
+  )
+}
+
+function row(
+  id: string,
+  video: SampleVideo,
+  stage: BatchStage,
+  fileName = video.name,
+): BatchRowView {
+  const sample = fileName === video.name
+  return {
+    id,
+    fileName,
+    fileSize: video.size,
+    duration: sample ? video.duration : null,
+    posterUrl: sample ? jpegDataUrl(video.poster) : null,
+    stage,
+  }
+}
+
+const done = (job: DoneJob): BatchStage => ({
+  kind: 'done',
+  job,
+  checkedAt: CHECKED_AT,
+})
+
+const queued: BatchStage = { kind: 'queued', jobId: null }
+
+function batch(rows: BatchRowView[], extra: Partial<BatchScreenProps> = {}) {
+  return (
+    <BatchScreen
+      rows={rows}
+      rejected={[]}
+      paused={false}
+      returnFocusId={null}
+      onOpen={noop}
+      onRetry={noop}
+      onStartOver={noop}
+      {...extra}
     />
   )
 }
@@ -132,6 +182,52 @@ const STATES: Record<string, () => React.ReactNode> = {
   'report-clean': () => report(CLEAN, X3),
   'report-unknown-type': () => report(UNKNOWN_TYPE, X17),
   'report-no-video': () => report(ONE, null),
+  'batch-running': () =>
+    batch([
+      row('a', X17, done(ONE)),
+      row('b', X3, done(CLEAN)),
+      row('c', X17, { kind: 'uploading', progress: 0.4 }, 'Х-21.mov'),
+      row('d', X17, queued, 'Х-22.mov'),
+      row('e', X3, queued, 'Х-23.mov'),
+    ]),
+  'batch-paused': () =>
+    batch(
+      [
+        row('a', X3, done(CLEAN)),
+        row('b', X17, {
+          kind: 'failed',
+          error: 'network',
+          step: 'upload',
+          jobId: null,
+        }),
+        row('c', X17, queued, 'Х-21.mov'),
+        row('d', X3, queued, 'Х-22.mov'),
+      ],
+      { paused: true },
+    ),
+  'batch-done': () =>
+    batch(
+      [
+        row('a', X17, done(TWO)),
+        row('b', X3, done(CLEAN)),
+        row(
+          'c',
+          X17,
+          { kind: 'failed', error: 'timeout', step: 'analysis', jobId: 'j' },
+          'Х-21.mov',
+        ),
+      ],
+      {
+        rejected: [
+          {
+            fileName: 'Х-5.mp4',
+            problem: { kind: 'not_mov', extension: 'mp4' },
+          },
+          { fileName: 'Х-6.mov', problem: { kind: 'empty' } },
+        ],
+      },
+    ),
+  'batch-report': () => report(ONE, X17, 'backToList'),
 }
 
 export default function DemoPage({ state }: { state: string }) {

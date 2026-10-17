@@ -12,6 +12,7 @@ titles:
   violation: Signs of violations found
   clean: No violation found
   rules: Detection rules
+  batch: Video check
 upload:
   title: Cash operations check by video
   subtitle: 'Upload a recording from the camera above the cash desk. The service finds signs of possible violations and shows the timecode, frames and the regulation clause.'
@@ -69,6 +70,7 @@ report:
   report: Report
   newVideo: New video
   selected: 'Violation {i} of {n}: {type}, {time}'
+  backToList: All videos
 verdictSummary:
   label: Verdict
   violation: 'Signs of possible violations found: {n}'
@@ -169,5 +171,28 @@ units:
   kb: KB
   mb: MB
   gb: GB
+batch:
+  title: Video check
+  queueNote: Videos are checked one at a time. You can open a finished report while the others are still in progress.
+  progress: '{done} of {total} done'
+  counts: 'Signs of possible violations: {violations} · no violations: {clean} · errors: {failed}'
+  announceDone: 'The check is finished. Signs of possible violations: {violations}, errors: {failed}'
+  paused: 'The queue is paused. Once the cause of the error is fixed, press “Try again” on the video with the error and the check will continue.'
+  list: Videos being checked
+  rejectedTitle: 'Not added: {n}'
+  notMov: '{name}: not a .mov file'
+  empty: '{name}: empty file'
+  startOver: New check
+  confirmStop: 'Stop the check? Videos not checked yet: {n}. The results in this list will be lost.'
+  confirmYes: Stop
+  confirmNo: Continue the check
+batchRow:
+  queued: Queued
+  uploading: 'Uploading {percent}%'
+  analyzing: Analyzing the video
+  open: Open report
+  openLabel: 'Open report: {name}'
+  retryLabel: 'Try again: {name}'
+  progress: 'Uploading {name}'
 demo:
   title: Demo states
