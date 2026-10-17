@@ -72,7 +72,7 @@ export function ProcessingScreen({
         <div className="col-span-2 flex min-w-0 flex-col gap-6 lg:col-span-1 lg:col-start-2">
           <Owl
             mood={failed ? 'warning' : 'analyzing'}
-            className="w-full max-w-[320px] rounded-lg"
+            className="w-40 sm:w-48"
           />
           <StepList
             states={stepStates(phase, failedStep)}

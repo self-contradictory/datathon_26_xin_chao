@@ -22,9 +22,9 @@ export function VerdictSummary({
       } ${className}`}
     >
       {violation ? (
-        <Owl mood="warning" className="w-28 shrink-0 rounded-md sm:w-44" />
+        <Owl mood="warning" className="-my-3 w-28 shrink-0 sm:w-36" />
       ) : (
-        <Owl mood="happy" className="w-20 shrink-0 sm:w-28" />
+        <Owl mood="happy" className="-my-3 w-28 shrink-0 sm:w-36" />
       )}
       <div className="flex min-w-0 flex-col gap-3">
         <p
