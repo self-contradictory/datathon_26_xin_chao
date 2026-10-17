@@ -254,12 +254,12 @@ ruleRequires:
   cashLeftOut: 'Only the cash of the client being served may lie on the desk. Cash accepted earlier is kept in a device that locks with a key.'
   countWithoutClient: 'Incoming cash is counted in the presence of the client. When paying out, the prepared amount is also counted in front of the client.'
   mixedCash: 'Only the cash of the client being served is at the workplace. Amounts under different receipt documents are accepted separately and checked against each document.'
-  noRecount: 'When accepting cash, the cashier counts and checks it and matches the amount against the receipt document. Cash accepted during the day is credited the same day.'
+  noRecount: 'When accepting cash, the cashier counts and checks it and matches the amount against the receipt document. When paying out, the prepared amount is counted in front of the client.'
   partialReturn: 'The cashier counts incoming cash in front of the client and matches the amount actually accepted against the receipt document.'
   rejectedNotes: 'The cashier makes sure incoming cash is checked for authenticity and validity. Suspicious banknotes are recorded and sent for examination under a special procedure.'
   noId: 'Before accepting or paying out cash, the cashier identifies the client by an ID document or by data from the digital documents service.'
   safeOpen: 'Cash accepted earlier is kept at the workplace in devices that lock with a key. The bank sets the procedure for handling keys.'
-  keyLeft: "Keys to the vault and safe room stay with the responsible staff. The bank's internal documents set how keys to a working safe are kept."
+  keyLeft: "The bank's internal documents set how keys to the working safe and drawers, seals and name stamps are kept."
   stampsLeft: 'The bank sets how seals, stamps, sealing tools, keys and codes are stored so that no one can use them without authorisation.'
   personalItems: 'Staff personal items, personal cash and valuables are kept outside the cash unit. Exceptions: medicines, medical devices and phones without photo or video capture.'
   sessionUnlocked: "After more than 30 minutes of inactivity, the system ends the session or locks the workstation. The bank's security policy sets when to lock it immediately."
@@ -278,7 +278,7 @@ ruleCheck:
   stampsLeft: "There is no general rule that seals must stay in the safe. Check the bank's rules and whether outsiders had access."
   personalItems: 'Whether the items were inside the cash unit and whether they fall under the allowed exceptions.'
   sessionUnlocked: 'A computer that is on is not yet a violation. Whether the session was unlocked and how long the employee was away.'
-  doorOpen: 'An open door on video is not yet a violation. Whether it is the service door and whether anyone entered without authorisation.'
+  doorOpen: 'An open door on video is not yet a violation. Whether it is the service door and whether anyone entered without authorisation. Para. 16 of Resolution No. 14 is suspended until 01.01.2027.'
   notReady: 'Letting a client in before the equipment is set up is not directly banned. Which devices were off and whether an operation took place.'
 acts:
   nbrk231: 'NBK Resolution No. 231'
@@ -297,3 +297,4 @@ applicability:
   conditional: 'Applies conditionally'
   verify: 'Depends on circumstances'
   internal: "Bank's internal rules"
+  indirect: Indirect basis

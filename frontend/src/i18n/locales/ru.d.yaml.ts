@@ -344,6 +344,7 @@ export interface Messages {
     conditional: string
     verify: string
     internal: string
+    indirect: string
   }
 }
 

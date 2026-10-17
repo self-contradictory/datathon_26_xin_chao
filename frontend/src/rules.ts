@@ -32,7 +32,7 @@ export const RULES: readonly Rule[] = [
   {
     id: 'cashLeftOut',
     type: 'Принятые деньги не убраны в запираемое место',
-    norms: [{ act: 'nbrk231', refs: [{ point: '20' }, { point: '74' }] }],
+    norms: [{ act: 'nbrk231', refs: [{ point: '20' }] }],
     applicability: 'direct',
   },
   {
@@ -41,7 +41,7 @@ export const RULES: readonly Rule[] = [
     norms: [
       {
         act: 'nbrk231',
-        refs: [{ point: '20' }, { point: '31', subs: ['4'] }, { point: '35' }],
+        refs: [{ point: '20' }, { point: '31', subs: ['4'] }],
       },
     ],
     applicability: 'direct',
@@ -70,7 +70,7 @@ export const RULES: readonly Rule[] = [
         refs: [
           { point: '19', subs: ['2', '4'] },
           { point: '20' },
-          { point: '26' },
+          { point: '31', subs: ['4'] },
         ],
       },
     ],
@@ -121,7 +121,7 @@ export const RULES: readonly Rule[] = [
     norms: [
       {
         act: 'nbrk231',
-        refs: [{ point: '20' }, { point: '80' }, { point: '75–78' }],
+        refs: [{ point: '20' }, { point: '80' }],
       },
     ],
     applicability: 'direct',
@@ -129,7 +129,7 @@ export const RULES: readonly Rule[] = [
   {
     id: 'keyLeft',
     type: 'Ключ оставлен в сейфе',
-    norms: [{ act: 'nbrk231', refs: [{ point: '76' }, { point: '80' }] }],
+    norms: [{ act: 'nbrk231', refs: [{ point: '80' }] }],
     applicability: 'internal',
   },
   {
@@ -150,15 +150,10 @@ export const RULES: readonly Rule[] = [
     norms: [
       {
         act: 'ardfm53',
-        refs: [
-          { point: '71', subs: ['9'] },
-          { point: '53' },
-          { point: '106' },
-          { point: '108' },
-        ],
+        refs: [{ point: '71', subs: ['9'] }],
       },
     ],
-    applicability: 'verify',
+    applicability: 'indirect',
   },
   {
     id: 'doorOpen',
@@ -166,14 +161,14 @@ export const RULES: readonly Rule[] = [
     norms: [
       { act: 'nbrk14', refs: [{ point: '16', subs: ['1'] }, { point: '8' }] },
     ],
-    applicability: 'verify',
+    applicability: 'indirect',
   },
   {
     id: 'notReady',
     type: 'Обслуживание до включения оборудования',
     norms: [
       { act: 'nbrk231', refs: [{ point: '9' }] },
-      { act: 'nbrk14', refs: [{ point: '16', subs: ['6'] }, { point: '3' }] },
+      { act: 'nbrk14', refs: [{ point: '16', subs: ['6'] }] },
     ],
     applicability: 'conditional',
   },
