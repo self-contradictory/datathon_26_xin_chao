@@ -88,7 +88,6 @@ violationCard:
   ruleUnknown: The regulation clause is being clarified
 evidenceFrames:
   frames: Frames
-  frame: 'frame {k}'
   enlarge: 'Enlarge frame {k}, {time}'
 frameLightbox:
   frameOf: 'frame {k} of {n}'

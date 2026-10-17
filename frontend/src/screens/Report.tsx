@@ -128,6 +128,7 @@ export function ReportScreen({
 
   const onStepKey = useEffectEvent((event: KeyboardEvent) => {
     if (!hasViolations || tab !== 'report') return
+    if (titleRef.current?.closest('[hidden]')) return
     if (event.altKey || event.ctrlKey || event.metaKey) return
     if (isTypingTarget(event.target)) return
     if (
@@ -135,6 +136,7 @@ export function ReportScreen({
       (event.code === 'KeyY' || event.code === 'KeyX')
     ) {
       event.preventDefault()
+      if (event.repeat) return
       void mark(activeIndex, event.code === 'KeyY' ? 'confirmed' : 'rejected')
       return
     }

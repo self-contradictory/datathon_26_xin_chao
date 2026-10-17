@@ -45,14 +45,8 @@ export function EvidenceFrames({
                     className="size-full object-cover"
                   />
                 </button>
-                <figcaption className="text-caption text-text-muted">
-                  <span className="font-medium text-text tabular-nums">
-                    {time}
-                  </span>
-                  {' · '}
-                  <span className="whitespace-nowrap">
-                    {format(t.frame, { k: index + 1 })}
-                  </span>
+                <figcaption className="text-caption font-medium text-text tabular-nums">
+                  {time}
                 </figcaption>
               </figure>
             </li>

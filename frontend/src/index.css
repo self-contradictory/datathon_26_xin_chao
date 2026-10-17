@@ -95,11 +95,15 @@ body {
     background: var(--color-bg);
   }
 
-  body > :not(#print-root) {
+  body.printing-act > :not(#print-root) {
     display: none !important;
   }
 
-  #print-root {
+  body:not(.printing-act) > #print-root {
+    display: none;
+  }
+
+  body.printing-act > #print-root {
     display: block;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;

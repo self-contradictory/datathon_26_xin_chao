@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import type { ActModel } from './model'
 
 const ROOT_ID = 'print-root'
@@ -23,19 +23,23 @@ export function usePrintAct() {
     null,
   )
   const [root, setRoot] = useState<HTMLElement | null>(null)
+  const cleanup = useRef<(() => void) | null>(null)
 
   const run = useEffectEvent(async (title: string, target: HTMLElement) => {
     await whenReady(target)
+    cleanup.current?.()
     const previous = document.title
+    const done = () => {
+      window.removeEventListener('afterprint', done)
+      document.title = previous
+      document.body.classList.remove('printing-act')
+      cleanup.current = null
+      setJob(null)
+    }
+    cleanup.current = done
     document.title = title
-    window.addEventListener(
-      'afterprint',
-      () => {
-        document.title = previous
-        setJob(null)
-      },
-      { once: true },
-    )
+    document.body.classList.add('printing-act')
+    window.addEventListener('afterprint', done)
     window.print()
   })
 

@@ -106,7 +106,6 @@ export interface Messages {
   }
   evidenceFrames: {
     frames: string
-    frame: string
     enlarge: string
   }
   frameLightbox: {

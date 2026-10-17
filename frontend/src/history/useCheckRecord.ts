@@ -61,7 +61,10 @@ export function useCheckRecord({
         return addHash(base)
       })
       .then((hashed) => {
-        if (live && hashed) setRecord(hashed)
+        if (live && hashed)
+          setRecord((prev) =>
+            prev ? { ...prev, fileHash: hashed.fileHash } : hashed,
+          )
       })
       .catch(() => {})
     return () => {
@@ -70,7 +73,7 @@ export function useCheckRecord({
   }, [jobId])
 
   async function decide(index: number, decision: ReviewDecision | null) {
-    const latest = (await checkStore.get(jobId)) ?? record
+    const latest = await checkStore.get(jobId)
     if (!latest) return
     const review: Review = { ...latest.review }
     if (decision) review[index] = { decision, at: Date.now() }

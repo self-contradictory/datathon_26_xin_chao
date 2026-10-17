@@ -92,7 +92,6 @@ violationCard:
   ruleUnknown: Пункт норматива уточняется
 evidenceFrames:
   frames: Кадры
-  frame: 'кадр {k}'
   enlarge: 'Увеличить кадр {k}, {time}'
 frameLightbox:
   frameOf: 'кадр {k} из {n}'

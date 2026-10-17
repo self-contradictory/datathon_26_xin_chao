@@ -102,5 +102,8 @@ describe('history storage', () => {
     expect(
       pickVideosToEvict([{ ...at('a', 1, 400), hasVideo: false }], 100),
     ).toEqual([])
+    expect(pickVideosToEvict([at('a', 1, 40), at('b', 2, 400)], 100)).toEqual([
+      'a',
+    ])
   })
 })

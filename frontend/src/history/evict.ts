@@ -15,7 +15,8 @@ export function pickVideosToEvict(
     .filter((record) => record.hasVideo)
     .sort((a, b) => b.createdAt - a.createdAt)
   for (const record of newestFirst) {
-    if (kept + record.fileSize <= limitBytes) kept += record.fileSize
+    if (kept === 0 || kept + record.fileSize <= limitBytes)
+      kept += record.fileSize
     else evict.push(record.jobId)
   }
   return evict

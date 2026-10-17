@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import type { Violation } from '@/api/types'
 import { DownloadIcon } from '@/components/icons'
 import { useViolationText } from '@/components/report/violationText'
@@ -23,16 +23,11 @@ export function ClipButton({
   const { typeName } = useViolationText()
   const [progress, setProgress] = useState<number | null>(null)
   const [failed, setFailed] = useState(false)
-  const abort = useRef<AbortController | null>(null)
   const [supported] = useState(() => clipFormat() !== null)
-
-  useEffect(() => () => abort.current?.abort(), [])
 
   if (!supported) return null
 
   async function record() {
-    const controller = new AbortController()
-    abort.current = controller
     setFailed(false)
     setProgress(0)
     const time = formatTime(violation.timecode_sec)
@@ -42,13 +37,13 @@ export function ClipButton({
         violation.timecode_sec,
         { type: typeName(violation.type), time },
         setProgress,
-        controller.signal,
+        new AbortController().signal,
       )
       saveBlob(clipFileName(fileName, time, ext), blob)
     } catch {
-      if (!controller.signal.aborted) setFailed(true)
+      setFailed(true)
     } finally {
-      if (!controller.signal.aborted) setProgress(null)
+      setProgress(null)
     }
   }
 

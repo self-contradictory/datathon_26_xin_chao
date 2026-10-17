@@ -73,7 +73,7 @@ export function BatchRow({
           variant="secondary"
           aria-label={format(t.openLabel, { name: fileName })}
           onClick={() => onOpen(id)}
-          className="max-sm:w-full"
+          className="max-sm:flex-1"
         >
           {t.open}
         </Button>
@@ -91,7 +91,7 @@ export function BatchRow({
           variant="secondary"
           aria-label={format(t.retryLabel, { name: fileName })}
           onClick={retry}
-          className="max-sm:w-full"
+          className="max-sm:flex-1"
         >
           {errors.retry}
         </Button>

@@ -1,7 +1,8 @@
+import { USE_FIXTURES } from '@/config'
 import { pickVideosToEvict, VIDEO_LIMIT_BYTES } from './evict'
 import type { CheckRecord, CheckStore } from './types'
 
-const DB_NAME = 'forte-checks'
+const DB_NAME = USE_FIXTURES ? 'forte-checks-demo' : 'forte-checks'
 const CHECKS = 'checks'
 const VIDEOS = 'videos'
 

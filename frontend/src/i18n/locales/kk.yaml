@@ -88,7 +88,6 @@ violationCard:
   ruleUnknown: Норматив тармағы нақтыланып жатыр
 evidenceFrames:
   frames: Кадрлар
-  frame: '{k}-кадр'
   enlarge: '{k}-кадрды үлкейту, {time}'
 frameLightbox:
   frameOf: '{n} кадрдың {k}-сі'

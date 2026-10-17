@@ -146,7 +146,9 @@ function useRuleFocus(ruleId: string | undefined) {
   useEffect(() => {
     if (!ruleId) return
     const target = [
-      ...document.querySelectorAll<HTMLElement>(`[data-rule="${ruleId}"]`),
+      ...document.querySelectorAll<HTMLElement>(
+        `[data-rule="${CSS.escape(ruleId)}"]`,
+      ),
     ].find((element) => element.offsetParent !== null)
     if (!target) return
     const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches

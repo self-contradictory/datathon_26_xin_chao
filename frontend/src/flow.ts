@@ -31,6 +31,7 @@ export function useJobFlow(
   const run = useRef(0)
   const controller = useRef<AbortController | null>(null)
   const videoRef = useRef<PickedVideo | null>(null)
+  const starts = useRef(0)
 
   const cancelRun = useCallback(() => {
     run.current += 1
@@ -109,8 +110,10 @@ export function useJobFlow(
 
   const start = useCallback(
     async (file: File, fresh = false) => {
+      const attempt = ++starts.current
       if (!fresh) {
         const saved = await findSaved(file).catch(() => undefined)
+        if (attempt !== starts.current) return
         if (saved && isDone(saved.result)) {
           window.location.hash = `#/check/${encodeURIComponent(saved.jobId)}`
           return

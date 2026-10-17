@@ -4,7 +4,7 @@ export function saveBlob(name: string, blob: Blob): void {
   link.href = url
   link.download = name
   link.click()
-  setTimeout(() => URL.revokeObjectURL(url), 0)
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }
 
 export function saveFile(name: string, content: string, type: string): void {
