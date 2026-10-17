@@ -165,7 +165,6 @@ units:
 batch:
   title: Video check
   progress: '{done} of {total} done'
-  counts: 'Signs of possible violations: {violations} · no violations: {clean} · errors: {failed}'
   announceDone: 'The check is finished. Signs of possible violations: {violations}, errors: {failed}'
   paused: 'The queue is paused because of an error with {name}. Once the cause is fixed, press “Try again” on that video and the check will continue.'
   list: Videos being checked

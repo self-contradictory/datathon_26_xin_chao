@@ -202,7 +202,6 @@ export interface Messages {
   batch: {
     title: string
     progress: string
-    counts: string
     announceDone: string
     paused: string
     list: string

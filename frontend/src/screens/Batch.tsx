@@ -65,13 +65,6 @@ export function BatchScreen({
           <p className="mt-2 text-section font-semibold tabular-nums">
             {progress}
           </p>
-          <p className="text-secondary text-text-muted">
-            {format(t.counts, {
-              violations: counts.violations,
-              clean: counts.clean,
-              failed: counts.failed,
-            })}
-          </p>
         </div>
         <Owl mood="reading" className="w-44 shrink-0 rounded-lg sm:w-52" />
       </div>
