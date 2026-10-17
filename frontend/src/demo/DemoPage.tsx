@@ -115,6 +115,7 @@ function report(
       videoUrl={video ? datasetUrl(video.name) : null}
       posterUrl={video ? jpegDataUrl(video.poster) : null}
       checkedAt={CHECKED_AT}
+      file={null}
       exit={{ kind: exit, onClick: noop }}
     />
   )

@@ -38,6 +38,7 @@ export function BatchFlow({
         videoUrl={item.video.url}
         posterUrl={item.video.posterUrl}
         checkedAt={result.checkedAt}
+        file={item.video.file}
         exit={{ kind: 'backToList', onClick: close }}
       />
     )

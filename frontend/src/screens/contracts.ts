@@ -40,6 +40,7 @@ export interface ReportScreenProps {
   videoUrl: string | null
   posterUrl: string | null
   checkedAt: number
+  file: File | null
   exit: ReportExit
 }
 

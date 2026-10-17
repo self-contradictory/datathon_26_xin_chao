@@ -81,6 +81,12 @@ export const CheckCircleIcon = (p: IconProps) => (
   </Stroke>
 )
 
+export const CheckIcon = (p: IconProps) => (
+  <Stroke {...p}>
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  </Stroke>
+)
+
 export const PendingIcon = (p: IconProps) => (
   <Stroke {...p}>
     <circle cx="12" cy="12" r="9" />

@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import type { Violation } from '@/api/types'
-import { ChevronRightIcon } from '@/components/icons'
+import { CheckIcon, ChevronRightIcon } from '@/components/icons'
+import type { Review, ReviewDecision } from '@/history/types'
 import { TimeChip } from './TimeChip'
 import { useViolationText } from './violationText'
 import { ViolationDetails } from './ViolationDetails'
@@ -9,13 +10,17 @@ export function ViolationList({
   violations,
   openIndex,
   playheadIndex,
+  review,
   onSelect,
+  onDecide,
   rowRef,
 }: {
   violations: readonly Violation[]
-  openIndex: number
+  openIndex: number | null
   playheadIndex: number | null
+  review: Review
   onSelect: (index: number) => void
+  onDecide: (index: number, decision: ReviewDecision | null) => void
   rowRef: (index: number, row: HTMLLIElement | null) => void
 }) {
   const baseId = useId()
@@ -26,6 +31,8 @@ export function ViolationList({
       {violations.map((violation, index) => {
         const active = index === openIndex
         const playing = index === playheadIndex
+        const decision = review[index]?.decision ?? null
+        const rejected = decision === 'rejected'
         const detailsId = `${baseId}-${index}`
         return (
           <li
@@ -45,10 +52,13 @@ export function ViolationList({
               <TimeChip seconds={violation.timecode_sec} onTint={active} />
               <span
                 lang={typeLang(violation.type)}
-                className={`min-w-0 flex-1 wrap-break-word ${active ? 'font-semibold' : ''}`}
+                className={`min-w-0 flex-1 wrap-break-word ${active ? 'font-semibold' : ''} ${rejected ? 'text-text-muted line-through' : ''}`}
               >
                 {typeName(violation.type)}
               </span>
+              {decision === 'confirmed' && (
+                <CheckIcon size={20} className="shrink-0 text-danger" />
+              )}
               <ChevronRightIcon
                 size={20}
                 className={`shrink-0 text-text-muted transition-transform duration-150 ${active ? 'rotate-90' : ''}`}
@@ -56,7 +66,12 @@ export function ViolationList({
             </button>
             {active && (
               <div id={detailsId} className="px-4 pt-4 pb-5 sm:px-6">
-                <ViolationDetails key={index} violation={violation} />
+                <ViolationDetails
+                  key={index}
+                  violation={violation}
+                  decision={decision}
+                  onDecide={(next) => onDecide(index, next)}
+                />
               </div>
             )}
           </li>

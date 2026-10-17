@@ -2,7 +2,10 @@ import type { ReactNode } from 'react'
 import type { Violation } from '@/api/types'
 import { RuleNorm } from '@/components/RuleNorm'
 import { TextLink } from '@/components/TextLink'
-import { useStrings } from '@/i18n'
+import { Button } from '@/components/Button'
+import { CheckIcon, CloseIcon } from '@/components/icons'
+import type { ReviewDecision } from '@/history/types'
+import { format, useStrings } from '@/i18n'
 import { findRule } from '@/rules'
 import { EvidenceFrames } from './EvidenceFrames'
 import { useViolationText } from './violationText'
@@ -39,7 +42,67 @@ function RuleCitation({ type }: { type: string }) {
   )
 }
 
-export function ViolationDetails({ violation }: { violation: Violation }) {
+function ReviewControls({
+  decision,
+  onDecide,
+}: {
+  decision: ReviewDecision | null
+  onDecide: (decision: ReviewDecision | null) => void
+}) {
+  const t = useStrings('review')
+
+  if (!decision) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="secondary"
+          icon={<CheckIcon size={20} />}
+          onClick={() => onDecide('confirmed')}
+          className="h-9 px-4"
+        >
+          {t.confirm}
+        </Button>
+        <Button
+          variant="secondary"
+          icon={<CloseIcon size={20} />}
+          onClick={() => onDecide('rejected')}
+          className="h-9 px-4"
+        >
+          {t.reject}
+        </Button>
+      </div>
+    )
+  }
+
+  const confirmed = decision === 'confirmed'
+  const label = confirmed ? t.confirmed : t.rejected
+  return (
+    <button
+      type="button"
+      aria-label={format(t.undo, { decision: label })}
+      title={format(t.undo, { decision: label })}
+      onClick={() => onDecide(null)}
+      className={`inline-flex h-9 w-fit cursor-pointer items-center gap-2 rounded-full px-4 text-secondary font-semibold transition-colors duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+        confirmed
+          ? 'bg-danger-tint text-danger-text hover:bg-danger-tint/70'
+          : 'bg-surface text-text-muted hover:bg-border'
+      }`}
+    >
+      {confirmed ? <CheckIcon size={20} /> : <CloseIcon size={20} />}
+      {label}
+    </button>
+  )
+}
+
+export function ViolationDetails({
+  violation,
+  decision,
+  onDecide,
+}: {
+  violation: Violation
+  decision: ReviewDecision | null
+  onDecide: (decision: ReviewDecision | null) => void
+}) {
   const t = useStrings('violationCard')
   const { typeName, description, descriptionLang } = useViolationText()
 
@@ -59,6 +122,7 @@ export function ViolationDetails({ violation }: { violation: Violation }) {
           <RuleCitation type={violation.type} />
         </Row>
       </dl>
+      <ReviewControls decision={decision} onDecide={onDecide} />
     </div>
   )
 }

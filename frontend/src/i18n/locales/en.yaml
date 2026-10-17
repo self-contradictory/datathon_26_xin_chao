@@ -195,5 +195,13 @@ violationTypes:
   fixture: Sign of a violation (test data)
   fixtureDescription: 'Test data: by the dataset labels the violation is around second {second}. A description of what is visible will appear once the analysis is connected.'
   document: NBRK Resolution No. 231
+review:
+  confirm: Confirm
+  reject: False alarm
+  confirmed: Confirmed
+  rejected: False alarm
+  undo: 'Undo mark: {decision}'
+  progress: 'Reviewed by a person: {done} of {total}'
+  complete: All violations reviewed by a person
 demo:
   title: Demo states

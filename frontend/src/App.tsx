@@ -78,6 +78,7 @@ function MainFlow({
       videoUrl={state.video.url}
       posterUrl={state.video.posterUrl}
       checkedAt={state.checkedAt}
+      file={state.video.file}
       exit={{ kind: 'newVideo', onClick: startOver(reset) }}
     />
   )

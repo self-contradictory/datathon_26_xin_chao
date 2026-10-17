@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import type { DoneJob } from '@/api/types'
+import type { Review } from '@/history/types'
 import { Button } from '@/components/Button'
 import { CopyIcon } from '@/components/icons'
 import { Toast } from '@/components/Toast'
@@ -8,7 +9,13 @@ import { format, localeOf, useLang, useStrings } from '@/i18n'
 import { copyText } from '@/utils/clipboard'
 import { fullJson, screenJson } from './json'
 
-export function JsonView({ job }: { job: DoneJob }) {
+export function JsonView({
+  job,
+  review = {},
+}: {
+  job: DoneJob
+  review?: Review
+}) {
   const t = useStrings('jsonView')
   const locale = localeOf(useLang().lang)
   const toast = useToast()
@@ -29,7 +36,7 @@ export function JsonView({ job }: { job: DoneJob }) {
   }
 
   async function copy() {
-    const ok = await copyText(fullJson(job))
+    const ok = await copyText(fullJson(job, review))
     toast.show(ok ? t.copied : t.copyFailed)
   }
 
@@ -60,7 +67,7 @@ export function JsonView({ job }: { job: DoneJob }) {
         className="overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
       >
         <pre className="w-fit p-4 font-mono text-secondary font-medium tabular-nums">
-          {screenJson(job, lengthLabel)}
+          {screenJson(job, lengthLabel, review)}
         </pre>
       </div>
       <Toast message={toast.message} />

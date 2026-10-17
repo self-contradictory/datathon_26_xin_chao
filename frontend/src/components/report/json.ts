@@ -1,4 +1,6 @@
 import type { DoneJob } from '@/api/types'
+import { withHumanReview } from '@/history/review'
+import type { Review } from '@/history/types'
 
 const SHORTEN_OVER = 60
 const KEEP_CHARS = 40
@@ -20,16 +22,17 @@ function juryJob(job: DoneJob): DoneJob {
   }
 }
 
-export function fullJson(job: DoneJob): string {
-  return JSON.stringify(juryJob(job), null, 2)
+export function fullJson(job: DoneJob, review: Review = {}): string {
+  return JSON.stringify(withHumanReview(juryJob(job), review), null, 2)
 }
 
 export function screenJson(
   job: DoneJob,
   lengthLabel: (length: number) => string,
+  review: Review = {},
 ): string {
   return JSON.stringify(
-    juryJob(job),
+    withHumanReview(juryJob(job), review),
     (key, value: unknown) =>
       key === 'image_base64' &&
       typeof value === 'string' &&

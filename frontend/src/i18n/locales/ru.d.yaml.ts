@@ -234,6 +234,15 @@ export interface Messages {
     fixtureDescription: string
     document: string
   }
+  review: {
+    confirm: string
+    reject: string
+    confirmed: string
+    rejected: string
+    undo: string
+    progress: string
+    complete: string
+  }
   demo: {
     title: string
   }

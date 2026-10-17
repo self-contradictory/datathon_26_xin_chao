@@ -1,13 +1,38 @@
+import { CheckIcon } from '@/components/icons'
 import { Owl } from '@/components/Owl'
+import type { ReviewSummary } from '@/history/review'
 import { format, useStrings } from '@/i18n'
+
+function ReviewChip({ summary }: { summary: ReviewSummary }) {
+  const t = useStrings('review')
+  const label = summary.complete
+    ? t.complete
+    : format(t.progress, { done: summary.reviewed, total: summary.total })
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      title={label}
+      className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center gap-1 rounded-full bg-bg px-2 text-secondary font-semibold text-text tabular-nums"
+    >
+      {summary.complete ? (
+        <CheckIcon size={20} className="text-danger" />
+      ) : (
+        `${summary.reviewed}/${summary.total}`
+      )}
+    </span>
+  )
+}
 
 export function VerdictSummary({
   violation,
   count,
+  review,
   className = '',
 }: {
   violation: boolean
   count: number
+  review?: ReviewSummary
   className?: string
 }) {
   const t = useStrings('verdictSummary')
@@ -26,7 +51,7 @@ export function VerdictSummary({
       ) : (
         <Owl mood="happy" className="-my-3 w-28 shrink-0 sm:w-36" />
       )}
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-wrap items-center gap-3">
         <p
           className={`text-verdict font-semibold ${
             violation ? 'text-danger-text' : 'text-success-text'
@@ -34,6 +59,9 @@ export function VerdictSummary({
         >
           {violation ? format(t.violation, { n: count }) : t.clean}
         </p>
+        {violation && review && review.total > 0 && (
+          <ReviewChip summary={review} />
+        )}
       </div>
     </section>
   )

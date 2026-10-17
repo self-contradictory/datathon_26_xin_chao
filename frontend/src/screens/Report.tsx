@@ -18,6 +18,9 @@ import {
 } from '@/components/report/activeViolation'
 import { ReportMeta } from '@/components/report/ReportMeta'
 import { isTypingTarget } from '@/utils/keys'
+import { nextUnreviewed, reviewSummary } from '@/history/review'
+import type { ReviewDecision } from '@/history/types'
+import { useCheckRecord } from '@/history/useCheckRecord'
 import { useViolationText } from '@/components/report/violationText'
 import { VerdictSummary } from '@/components/report/VerdictSummary'
 import { ViolationList } from '@/components/report/ViolationList'
@@ -34,11 +37,12 @@ export function ReportScreen({
   videoUrl,
   posterUrl,
   checkedAt,
+  file,
   exit,
 }: ReportScreenProps) {
   const t = useStrings('report')
   const [tab, setTab] = useState<Tab>('report')
-  const [selected, setSelected] = useState(0)
+  const [selected, setSelected] = useState<number | null>(0)
   const [picked, setPicked] = useState(false)
   const playerRef = useRef<PlayerHandle>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -54,8 +58,17 @@ export function ReportScreen({
   const { violations } = job
   const count = violations.length
   const hasViolations = showsViolations(job)
-  const activeIndex = selected < count ? selected : 0
-  const active = hasViolations ? violations[activeIndex] : undefined
+  const activeIndex = selected !== null && selected < count ? selected : null
+  const active =
+    hasViolations && activeIndex !== null ? violations[activeIndex] : undefined
+  const { review, decide } = useCheckRecord({
+    job,
+    fileName,
+    fileSize,
+    checkedAt,
+    file,
+  })
+  const summary = reviewSummary(review, hasViolations ? count : 0)
 
   const { typeName } = useViolationText()
   const markers: PlayerMarker[] = hasViolations
@@ -64,6 +77,7 @@ export function ReportScreen({
         position: index + 1,
         time: violation.timecode_sec,
         label: typeName(violation.type),
+        dimmed: review[index]?.decision === 'rejected',
       }))
     : []
   const [playhead, setPlayhead] = useState<number | null>(null)
@@ -83,6 +97,18 @@ export function ReportScreen({
     if (reveal) requestAnimationFrame(() => revealRow(index))
   }
 
+  async function mark(index: number, decision: ReviewDecision | null) {
+    await decide(index, decision)
+    if (!decision) return
+    const next = nextUnreviewed(
+      { ...review, [index]: { decision, at: 0 } },
+      count,
+      index,
+    )
+    if (next === null) setSelected(null)
+    else select(next, true)
+  }
+
   function revealRow(index: number) {
     const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     rows.current
@@ -94,10 +120,18 @@ export function ReportScreen({
     if (!hasViolations || tab !== 'report') return
     if (event.altKey || event.ctrlKey || event.metaKey) return
     if (isTypingTarget(event.target)) return
+    if (
+      activeIndex !== null &&
+      (event.code === 'KeyY' || event.code === 'KeyX')
+    ) {
+      event.preventDefault()
+      void mark(activeIndex, event.code === 'KeyY' ? 'confirmed' : 'rejected')
+      return
+    }
     const by = event.code === 'KeyN' ? 1 : event.code === 'KeyP' ? -1 : 0
     if (!by) return
     event.preventDefault()
-    select(stepIndex(activeIndex, by, count), true)
+    select(stepIndex(activeIndex ?? (by === 1 ? -1 : 0), by, count), true)
   })
 
   useEffect(() => {
@@ -139,6 +173,7 @@ export function ReportScreen({
         <VerdictSummary
           violation={hasViolations}
           count={count}
+          review={summary}
           className="lg:col-start-2 lg:row-start-2"
         />
 
@@ -183,12 +218,14 @@ export function ReportScreen({
             aria-labelledby={tabId(TABS, 'report')}
             hidden={tab !== 'report'}
           >
-            {active && (
+            {hasViolations && (
               <ViolationList
                 violations={violations}
                 openIndex={activeIndex}
                 playheadIndex={playhead}
+                review={review}
                 onSelect={select}
+                onDecide={(index, decision) => void mark(index, decision)}
                 rowRef={(index, row) => {
                   if (row) rows.current.set(index, row)
                   else rows.current.delete(index)
@@ -203,13 +240,13 @@ export function ReportScreen({
             aria-labelledby={tabId(TABS, 'json')}
             hidden={tab !== 'json'}
           >
-            <JsonView job={job} />
+            <JsonView job={job} review={hasViolations ? review : {}} />
           </div>
         </div>
       </div>
 
       <p aria-live="polite" className="sr-only">
-        {picked && active
+        {picked && active && activeIndex !== null
           ? format(t.selected, {
               i: activeIndex + 1,
               n: count,
