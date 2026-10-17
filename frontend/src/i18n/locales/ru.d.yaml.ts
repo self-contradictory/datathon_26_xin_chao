@@ -9,6 +9,7 @@ export interface Messages {
     openMenu: string
     closeMenu: string
     demo: string
+    history: string
   }
   titles: {
     upload: string
@@ -19,6 +20,7 @@ export interface Messages {
     api: string
     suffix: string
     batch: string
+    history: string
   }
   upload: {
     title: string
@@ -88,6 +90,7 @@ export interface Messages {
     newVideo: string
     selected: string
     backToList: string
+    backToHistory: string
   }
   verdictSummary: {
     label: string
@@ -268,6 +271,18 @@ export interface Messages {
     downloadJson: string
     documentName: string
     noHash: string
+  }
+  history: {
+    title: string
+    empty: string
+    remove: string
+    clear: string
+    confirmClear: string
+    confirmYes: string
+    confirmNo: string
+    fromHistory: string
+    recheck: string
+    missing: string
   }
   demo: {
     title: string

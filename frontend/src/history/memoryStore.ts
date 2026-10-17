@@ -7,11 +7,23 @@ export function createMemoryStore(): CheckStore {
     async get(jobId) {
       return records.get(jobId)
     },
+    async findByHash(hash) {
+      return [...records.values()]
+        .filter((record) => record.fileHash === hash)
+        .sort((a, b) => b.createdAt - a.createdAt)[0]
+    },
     async put(record) {
-      records.set(record.jobId, record)
+      const video = record.video ?? records.get(record.jobId)?.video
+      records.set(record.jobId, {
+        ...record,
+        video,
+        hasVideo: video !== undefined,
+      })
     },
     async list() {
-      return [...records.values()].sort((a, b) => b.createdAt - a.createdAt)
+      return [...records.values()]
+        .map(({ video: _video, ...rest }) => rest)
+        .sort((a, b) => b.createdAt - a.createdAt)
     },
     async remove(jobId) {
       records.delete(jobId)
@@ -21,5 +33,3 @@ export function createMemoryStore(): CheckStore {
     },
   }
 }
-
-export const checkStore: CheckStore = createMemoryStore()

@@ -86,7 +86,7 @@ export function createFixtureSource({
         onProgress(step / steps)
       }
       counter += 1
-      const jobId = `fx-${counter}`
+      const jobId = `fx-${now().toString(36)}-${counter}`
       jobs.set(jobId, { file, startedAt: now() })
       return { job_id: jobId }
     },

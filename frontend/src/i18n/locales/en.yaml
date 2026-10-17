@@ -7,6 +7,7 @@ header:
   openMenu: Open menu
   closeMenu: Close menu
   demo: Demo data
+  history: History
 titles:
   upload: Cash desk video check
   processing: Processing the video
@@ -14,6 +15,7 @@ titles:
   clean: No violations found
   rules: Detection rules
   batch: Video check
+  history: Check history
 upload:
   title: Cash operations check by video
 dropZone:
@@ -73,6 +75,7 @@ report:
   newVideo: New video
   selected: 'Violation {i} of {n}: {type}, {time}'
   backToList: All videos
+  backToHistory: History
 verdictSummary:
   label: Verdict
   violation: 'Signs of possible violations found: {n}'
@@ -228,5 +231,16 @@ act:
   downloadJson: Download JSON
   documentName: 'Report_{file}_{date}'
   noHash: not computed
+history:
+  title: Check history
+  empty: No checks yet
+  remove: 'Remove from history: {name}'
+  clear: Clear
+  confirmClear: Remove all checks from history?
+  confirmYes: Remove
+  confirmNo: Cancel
+  fromHistory: 'From history · {date}'
+  recheck: Check again
+  missing: Check not found
 demo:
   title: Demo states

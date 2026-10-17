@@ -4,6 +4,8 @@ export type HashRoute =
   | { page: 'main' }
   | { page: 'rules'; ruleId?: string }
   | { page: 'api' }
+  | { page: 'history' }
+  | { page: 'check'; jobId: string }
   | { page: 'demo'; state: string }
 
 export function parseHash(hash: string): HashRoute {
@@ -12,6 +14,9 @@ export function parseHash(hash: string): HashRoute {
   if (path.startsWith('rules/'))
     return { page: 'rules', ruleId: decodeURIComponent(path.slice(6)) }
   if (path === 'api') return { page: 'api' }
+  if (path === 'history') return { page: 'history' }
+  if (path.startsWith('check/'))
+    return { page: 'check', jobId: decodeURIComponent(path.slice(6)) }
   if (path === 'demo' || path.startsWith('demo/'))
     return { page: 'demo', state: path.slice(5) }
   return { page: 'main' }

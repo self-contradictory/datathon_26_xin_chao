@@ -8,6 +8,7 @@ header:
   openMenu: Открыть меню
   closeMenu: Закрыть меню
   demo: Демо-данные
+  history: История
 titles:
   upload: Проверка кассы по видео
   processing: Обработка видео
@@ -17,6 +18,7 @@ titles:
   api: API
   suffix: '{title} — Forte'
   batch: Проверка видео
+  history: История проверок
 upload:
   title: Проверка кассовых операций по видео
 dropZone:
@@ -77,6 +79,7 @@ report:
   newVideo: Новое видео
   selected: 'Нарушение {i} из {n}: {type}, {time}'
   backToList: Все видео
+  backToHistory: История
 verdictSummary:
   label: Вердикт
   violation: 'Обнаружены признаки возможных нарушений: {n}'
@@ -238,5 +241,16 @@ act:
   downloadJson: Скачать JSON
   documentName: 'Акт_{file}_{date}'
   noHash: не вычислен
+history:
+  title: История проверок
+  empty: Проверок пока нет
+  remove: 'Удалить из истории: {name}'
+  clear: Очистить
+  confirmClear: Удалить все проверки из истории?
+  confirmYes: Удалить
+  confirmNo: Отмена
+  fromHistory: 'Из истории · {date}'
+  recheck: Проверить заново
+  missing: Проверка не найдена
 demo:
   title: Демо-состояния

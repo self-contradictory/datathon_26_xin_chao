@@ -4,6 +4,8 @@ import type { JobErrorKind, JobSource } from '@/api/source'
 import type { DoneJob } from '@/api/types'
 import type { ProcessingPhase, ProcessingStep } from '@/screens/contracts'
 import { pickVideo, revokeVideo, withPoster, type PickedVideo } from '@/video'
+import { isDone } from '@/api/types'
+import { findSaved, saveCheck } from '@/history/save'
 
 interface ProcessingState {
   screen: 'processing'
@@ -83,12 +85,15 @@ export function useJobFlow(
           onUploaded: () => update({ phase: 'analyzing', uploadProgress: 1 }),
         })
         if (!live()) return
-        setState({
-          screen: 'report',
-          video: videoRef.current ?? video,
+        const finished = videoRef.current ?? video
+        const checkedAt = Date.now()
+        setState({ screen: 'report', video: finished, job, checkedAt })
+        void saveCheck({
           job,
-          checkedAt: Date.now(),
-        })
+          file: finished.file,
+          checkedAt,
+          poster: finished.posterUrl,
+        }).catch(() => {})
       } catch (error) {
         const failure = asCheckFailure(error)
         update({
@@ -103,7 +108,14 @@ export function useJobFlow(
   )
 
   const start = useCallback(
-    (file: File) => {
+    async (file: File, fresh = false) => {
+      if (!fresh) {
+        const saved = await findSaved(file).catch(() => undefined)
+        if (saved && isDone(saved.result)) {
+          window.location.hash = `#/check/${encodeURIComponent(saved.jobId)}`
+          return
+        }
+      }
       releaseVideo()
       const video = pickVideo(file)
       videoRef.current = video

@@ -5,9 +5,11 @@ import { MONO } from './styles'
 export function FileMeta({
   size,
   duration,
+  extra,
 }: {
   size: number
   duration: number | null
+  extra?: string
 }) {
   const units = useStrings('units')
   const { lang } = useLang()
@@ -21,6 +23,12 @@ export function FileMeta({
         <>
           {' · '}
           <span className={MONO}>{formatTime(duration)}</span>
+        </>
+      )}
+      {extra && (
+        <>
+          {' · '}
+          <span className="tabular-nums">{extra}</span>
         </>
       )}
     </p>

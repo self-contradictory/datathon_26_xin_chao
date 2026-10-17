@@ -19,7 +19,14 @@ export interface BatchRunnerOptions {
   pickVideo: (file: File) => PickedVideo
   withPoster: (video: PickedVideo) => Promise<PickedVideo>
   revokeVideo: (video: PickedVideo) => void
+  findSaved?: (file: File) => Promise<SavedCheck | null>
+  onDone?: (item: BatchItem, job: DoneJob, checkedAt: number) => void
   now?: () => number
+}
+
+export interface SavedCheck {
+  job: DoneJob
+  checkedAt: number
 }
 
 export interface BatchRunner {
@@ -48,6 +55,8 @@ export function createBatchRunner({
   pickVideo,
   withPoster,
   revokeVideo,
+  findSaved,
+  onDone,
   now = () => Date.now(),
 }: BatchRunnerOptions): BatchRunner {
   let state = EMPTY_BATCH
@@ -88,6 +97,18 @@ export function createBatchRunner({
           jobId = null
         }
       }
+      if (!job && !jobId && findSaved) {
+        const saved = await findSaved(item.video.file).catch(() => null)
+        if (saved) {
+          update({
+            type: 'done',
+            id,
+            job: saved.job,
+            checkedAt: saved.checkedAt,
+          })
+          return 'next'
+        }
+      }
       if (!job) {
         if (!live()) return 'next'
         let percent = 0
@@ -103,7 +124,12 @@ export function createBatchRunner({
         update({ type: 'analyzing', id, jobId })
         job = await waitForJob(source, jobId, wait)
       }
-      update({ type: 'done', id, job, checkedAt: now() })
+      const checkedAt = now()
+      update({ type: 'done', id, job, checkedAt })
+      if (live()) {
+        const latest = state.items.find((entry) => entry.id === id) ?? item
+        onDone?.(latest, job, checkedAt)
+      }
       return 'next'
     } catch (error) {
       const failure = asCheckFailure(error)

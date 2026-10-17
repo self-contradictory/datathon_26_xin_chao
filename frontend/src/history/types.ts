@@ -17,11 +17,14 @@ export interface CheckRecord {
   createdAt: number
   result: JobResponse
   review: Review
+  poster?: string | null
+  hasVideo?: boolean
   video?: Blob
 }
 
 export interface CheckStore {
   get(jobId: string): Promise<CheckRecord | undefined>
+  findByHash(hash: string): Promise<CheckRecord | undefined>
   put(record: CheckRecord): Promise<void>
   list(): Promise<CheckRecord[]>
   remove(jobId: string): Promise<void>

@@ -184,6 +184,8 @@ describe('route', () => {
       ruleId: 'phone',
     })
     expect(parseHash('#/api/')).toEqual({ page: 'api' })
+    expect(parseHash('#/history')).toEqual({ page: 'history' })
+    expect(parseHash('#/check/abc')).toEqual({ page: 'check', jobId: 'abc' })
     expect(parseHash('#/demo/report-one')).toEqual({
       page: 'demo',
       state: 'report-one',

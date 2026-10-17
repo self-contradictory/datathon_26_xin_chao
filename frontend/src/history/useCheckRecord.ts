@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useState } from 'react'
 import type { DoneJob } from '@/api/types'
 import { sha256Hex } from './hash'
-import { checkStore } from './memoryStore'
+import { checkStore } from './store'
 import type { CheckRecord, Review, ReviewDecision } from './types'
 
 export interface CheckSource {
@@ -75,7 +75,8 @@ export function useCheckRecord({
     const review: Review = { ...latest.review }
     if (decision) review[index] = { decision, at: Date.now() }
     else delete review[index]
-    const updated = { ...latest, review }
+    const { video: _video, ...rest } = latest
+    const updated = { ...rest, review }
     await checkStore.put(updated)
     setRecord(updated)
   }

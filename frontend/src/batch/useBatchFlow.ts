@@ -1,6 +1,8 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { PollingOptions } from '@/api/check'
 import type { JobSource } from '@/api/source'
+import { isDone } from '@/api/types'
+import { findSaved, saveCheck } from '@/history/save'
 import { pickVideo, revokeVideo, withPoster } from '@/video'
 import { createBatchRunner } from './runner'
 
@@ -16,6 +18,19 @@ export function useBatchFlow(
       pickVideo,
       withPoster,
       revokeVideo,
+      findSaved: async (file) => {
+        const saved = await findSaved(file)
+        return saved && isDone(saved.result)
+          ? { job: saved.result, checkedAt: saved.createdAt }
+          : null
+      },
+      onDone: (item, job, checkedAt) =>
+        void saveCheck({
+          job,
+          file: item.video.file,
+          checkedAt,
+          poster: item.video.posterUrl,
+        }).catch(() => {}),
     }),
   )
   const state = useSyncExternalStore(runner.subscribe, runner.getState)

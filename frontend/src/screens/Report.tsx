@@ -24,6 +24,7 @@ import {
   stepIndex,
 } from '@/components/report/activeViolation'
 import { ReportMeta } from '@/components/report/ReportMeta'
+import { SavedChip } from '@/components/history/SavedChip'
 import { isTypingTarget } from '@/utils/keys'
 import { nextUnreviewed, reviewSummary } from '@/history/review'
 import type { ReviewDecision } from '@/history/types'
@@ -46,6 +47,8 @@ export function ReportScreen({
   checkedAt,
   file,
   exit,
+  savedAt,
+  onRecheck,
 }: ReportScreenProps) {
   const t = useStrings('report')
   const [tab, setTab] = useState<Tab>('report')
@@ -200,22 +203,26 @@ export function ReportScreen({
           </div>
         </div>
 
-        <VerdictSummary
-          violation={hasViolations}
-          count={count}
-          review={summary}
-          className="lg:col-start-2 lg:row-start-2"
-        />
+        <div className="flex flex-col gap-3 lg:col-start-2 lg:row-start-2">
+          {savedAt !== undefined && (
+            <SavedChip savedAt={savedAt} onRecheck={onRecheck} />
+          )}
+          <VerdictSummary
+            violation={hasViolations}
+            count={count}
+            review={summary}
+          />
+        </div>
 
         <div className="mx-auto flex w-full max-w-[400px] flex-col gap-3 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:mx-0">
-          {exit.kind === 'backToList' && (
+          {exit.kind !== 'newVideo' && (
             <Button
               variant="secondary"
               icon={<ChevronLeftIcon size={20} />}
               onClick={exit.onClick}
               className="self-start"
             >
-              {t.backToList}
+              {exit.kind === 'history' ? t.backToHistory : t.backToList}
             </Button>
           )}
           <Player

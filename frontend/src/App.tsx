@@ -13,6 +13,8 @@ import { useHashRoute } from '@/route'
 import { ApiDocsPage } from '@/screens/ApiDocs'
 import { ProcessingScreen } from '@/screens/Processing'
 import { ReportScreen } from '@/screens/Report'
+import { HistoryPage } from '@/screens/History'
+import { HistoryReport } from '@/screens/HistoryReport'
 import { RulesPage } from '@/screens/Rules'
 import { UploadScreen } from '@/screens/Upload'
 import { useStrayDropGuard } from '@/useStrayDropGuard'
@@ -114,9 +116,22 @@ function Shell() {
   const page = route.page === 'demo' && !DemoPage ? 'main' : route.page
 
   const titleKey =
-    page === 'rules' || page === 'api'
+    page === 'rules' || page === 'api' || page === 'history'
       ? page
-      : mainTitleKey(flow.state, batch.state)
+      : page === 'check'
+        ? 'history'
+        : mainTitleKey(flow.state, batch.state)
+  const headerRoute =
+    page === 'rules' || page === 'api' || page === 'history'
+      ? page
+      : page === 'check'
+        ? 'history'
+        : 'main'
+  const recheck = (file: File) => {
+    batch.reset()
+    window.location.hash = '#/'
+    void flow.start(file, true)
+  }
   const documentTitle = format(t.suffix, { title: t[titleKey] })
   useEffect(() => {
     document.title = documentTitle
@@ -124,12 +139,13 @@ function Shell() {
 
   return (
     <div className="min-h-svh bg-canvas font-sans text-body text-text">
-      <Header
-        route={page === 'rules' || page === 'api' ? page : 'main'}
-        onHome={goHome}
-      />
+      <Header route={headerRoute} onHome={goHome} />
       {route.page === 'rules' && <RulesPage focusRuleId={route.ruleId} />}
       {page === 'api' && <ApiDocsPage />}
+      {page === 'history' && <HistoryPage />}
+      {route.page === 'check' && (
+        <HistoryReport jobId={route.jobId} onRecheck={recheck} />
+      )}
       {route.page === 'demo' && DemoPage && (
         <Suspense fallback={null}>
           <DemoPage state={route.state} />

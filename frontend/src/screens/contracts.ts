@@ -42,10 +42,12 @@ export interface ReportScreenProps {
   checkedAt: number
   file: File | null
   exit: ReportExit
+  savedAt?: number
+  onRecheck?: () => void
 }
 
 export interface ReportExit {
-  kind: 'newVideo' | 'backToList'
+  kind: 'newVideo' | 'backToList' | 'history'
   onClick: () => void
 }
 
@@ -56,6 +58,7 @@ export interface BatchRowView {
   duration: number | null
   posterUrl: string | null
   stage: BatchStage
+  date?: number
 }
 
 export interface BatchScreenProps {

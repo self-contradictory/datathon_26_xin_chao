@@ -4,7 +4,7 @@ import { LANGS, useLang, useStrings } from '@/i18n'
 import { CloseIcon, MenuIcon } from './icons'
 import { Owl } from './Owl'
 
-export type Route = 'main' | 'rules' | 'api'
+export type Route = 'main' | 'rules' | 'api' | 'history'
 
 const FOCUS = 'focus-visible:outline-2 focus-visible:outline-brand'
 
@@ -69,6 +69,7 @@ function NavLinks({
 }) {
   const t = useStrings('header')
   const links = [
+    { href: '#/history', label: t.history, current: route === 'history' },
     { href: '#/rules', label: t.rules, current: route === 'rules' },
     { href: '#/api', label: t.api, current: route === 'api' },
   ]

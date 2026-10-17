@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 import type { JobResponse } from '@/api/types'
 import { sha256Hex } from './hash'
+import { pickVideosToEvict } from './evict'
 import { createMemoryStore } from './memoryStore'
+import { openCheckStore } from './store'
 import { violationKey, type CheckRecord } from './types'
 
 const result: JobResponse = {
@@ -57,5 +59,48 @@ describe('history helpers', () => {
     expect(await sha256Hex(new Blob(['abc']))).toBe(
       'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
     )
+  })
+})
+
+describe('history storage', () => {
+  test('finds the newest record with the same file hash', async () => {
+    const store = createMemoryStore()
+    await store.put({ ...record('old', 1), fileHash: 'h' })
+    await store.put({ ...record('new', 2), fileHash: 'h' })
+    await store.put({ ...record('other', 3), fileHash: 'x' })
+    expect((await store.findByHash('h'))?.jobId).toBe('new')
+    expect(await store.findByHash('none')).toBeUndefined()
+  })
+
+  test('keeps the video when a later update has none', async () => {
+    const store = createMemoryStore()
+    await store.put({ ...record('j', 1), video: new Blob(['v']) })
+    await store.put({ ...record('j', 1), review: {} })
+    expect((await store.get('j'))?.hasVideo).toBe(true)
+    expect((await store.list())[0]).not.toHaveProperty('video')
+  })
+
+  test('falls back to memory when IndexedDB cannot open', async () => {
+    const store = await openCheckStore(async () => {
+      throw new Error('blocked')
+    })
+    await store.put(record('j', 1))
+    expect((await store.get('j'))?.jobId).toBe('j')
+  })
+
+  test('pickVideosToEvict drops the oldest videos over the limit', () => {
+    const at = (jobId: string, createdAt: number, fileSize: number) => ({
+      jobId,
+      createdAt,
+      fileSize,
+      hasVideo: true,
+    })
+    expect(
+      pickVideosToEvict([at('a', 1, 40), at('b', 2, 40), at('c', 3, 40)], 100),
+    ).toEqual(['a'])
+    expect(pickVideosToEvict([at('a', 1, 40)], 100)).toEqual([])
+    expect(
+      pickVideosToEvict([{ ...at('a', 1, 400), hasVideo: false }], 100),
+    ).toEqual([])
   })
 })

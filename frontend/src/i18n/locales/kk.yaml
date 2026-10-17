@@ -7,6 +7,7 @@ header:
   openMenu: Мәзірді ашу
   closeMenu: Мәзірді жабу
   demo: Демо деректер
+  history: Тарих
 titles:
   upload: Кассаны бейне арқылы тексеру
   processing: Бейнені өңдеу
@@ -14,6 +15,7 @@ titles:
   clean: Бұзушылықтар анықталған жоқ
   rules: Тексеру ережелері
   batch: Бейнелерді тексеру
+  history: Тексерулер тарихы
 upload:
   title: Кассалық операцияларды бейне арқылы тексеру
 dropZone:
@@ -73,6 +75,7 @@ report:
   newVideo: Жаңа бейне
   selected: 'Бұзушылық {i} / {n}: {type}, {time}'
   backToList: Барлық бейнелер
+  backToHistory: Тарих
 verdictSummary:
   label: Қорытынды
   violation: 'Ықтимал бұзушылық белгілері анықталды: {n}'
@@ -228,5 +231,16 @@ act:
   downloadJson: JSON жүктеу
   documentName: 'Акт_{file}_{date}'
   noHash: есептелмеген
+history:
+  title: Тексерулер тарихы
+  empty: Әзірге тексеру жоқ
+  remove: 'Тарихтан жою: {name}'
+  clear: Тазалау
+  confirmClear: Тарихтағы барлық тексеруді жою керек пе?
+  confirmYes: Жою
+  confirmNo: Болдырмау
+  fromHistory: 'Тарихтан · {date}'
+  recheck: Қайта тексеру
+  missing: Тексеру табылмады
 demo:
   title: Демо күйлер

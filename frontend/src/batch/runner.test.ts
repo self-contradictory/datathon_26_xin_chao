@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { JobError, type JobSource } from '@/api/source'
-import type { JobResponse } from '@/api/types'
+import type { DoneJob, JobResponse } from '@/api/types'
 import type { PickedVideo } from '@/video'
 import { createBatchRunner, type BatchRunner } from './runner'
 import type { BatchState } from './types'
@@ -101,7 +101,10 @@ class FakeServer implements JobSource {
   }
 }
 
-function setup(timeoutMs = 60_000) {
+function setup(
+  timeoutMs = 60_000,
+  extra: Partial<Parameters<typeof createBatchRunner>[0]> = {},
+) {
   const server = new FakeServer()
   const revoked: string[] = []
   let posterCalls = 0
@@ -112,6 +115,7 @@ function setup(timeoutMs = 60_000) {
     intervalMs: 0,
     timeoutMs,
     now: () => 1000,
+    ...extra,
     pickVideo: (file): PickedVideo => ({
       file,
       url: `blob:${file.name}`,
@@ -427,5 +431,20 @@ describe('batch runner', () => {
     expect(runner.getState().openId).toBe(id)
     runner.close()
     expect(runner.getState()).toMatchObject({ openId: null, lastOpenedId: id })
+  })
+
+  test('a file already in history is done at once and skips the server', async () => {
+    const saved: JobResponse = done('old-job')
+    const finished: string[] = []
+    const { server, runner } = setup(60_000, {
+      findSaved: async (file) =>
+        file.name === 'b.mov' ? { job: saved as DoneJob, checkedAt: 5 } : null,
+      onDone: (item) => finished.push(item.video.file.name),
+    })
+    runner.start(files('a.mov', 'b.mov'), [])
+    await until(runner, settled)
+    expect(stages(runner.getState())).toEqual(['a.mov: done', 'b.mov: done'])
+    expect(server.log).toEqual(['upload a.mov', 'poll job-1'])
+    expect(finished).toEqual(['a.mov'])
   })
 })
