@@ -3,14 +3,7 @@ import { CheckFailure, runCheck } from '@/api/check'
 import type { JobErrorKind, JobSource } from '@/api/source'
 import type { DoneJob } from '@/api/types'
 import type { ProcessingPhase, ProcessingStep } from '@/screens/contracts'
-import { captureFrames, jpegDataUrl } from '@/utils/frames'
-
-export interface PickedVideo {
-  file: File
-  url: string
-  posterUrl: string | null
-  duration: number | null
-}
+import { pickVideo, revokeVideo, withPoster, type PickedVideo } from '@/video'
 
 interface ProcessingState {
   screen: 'processing'
@@ -44,7 +37,7 @@ export function useJobFlow(
   }, [])
 
   const releaseVideo = useCallback(() => {
-    if (videoRef.current) URL.revokeObjectURL(videoRef.current.url)
+    if (videoRef.current) revokeVideo(videoRef.current)
     videoRef.current = null
   }, [])
 
@@ -115,21 +108,11 @@ export function useJobFlow(
   const start = useCallback(
     (file: File) => {
       releaseVideo()
-      const video: PickedVideo = {
-        file,
-        url: URL.createObjectURL(file),
-        posterUrl: null,
-        duration: null,
-      }
+      const video = pickVideo(file)
       videoRef.current = video
-      void captureFrames(video.url, [0])
-        .then(({ duration, frames }) => {
+      void withPoster(video)
+        .then((updated) => {
           if (videoRef.current !== video) return
-          const updated: PickedVideo = {
-            ...video,
-            duration: duration || null,
-            posterUrl: frames[0] ? jpegDataUrl(frames[0].base64) : null,
-          }
           videoRef.current = updated
           setState((prev) =>
             prev.screen === 'upload' ? prev : { ...prev, video: updated },

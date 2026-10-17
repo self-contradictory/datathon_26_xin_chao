@@ -38,3 +38,7 @@ export function isDone(job: JobResponse): job is DoneJob {
     Array.isArray(job.violations)
   )
 }
+
+export function showsViolations(job: DoneJob): boolean {
+  return job.verdict === 'violation' && job.violations.length > 0
+}

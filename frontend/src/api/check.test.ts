@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { CheckFailure, runCheck } from './check'
+import { CheckFailure, runCheck, uploadVideo, waitForJob } from './check'
 import { JobError, type JobSource } from './source'
 import type { JobResponse } from './types'
 
@@ -136,5 +136,43 @@ describe('runCheck', () => {
       onUploaded() {},
     })
     expect(seen).toEqual([controller.signal, controller.signal])
+  })
+})
+
+describe('uploadVideo and waitForJob', () => {
+  test('uploadVideo returns the job id', async () => {
+    const jobId = await uploadVideo(source(accept, [done]), file, {
+      onUploadProgress() {},
+    })
+    expect(jobId).toBe('j')
+  })
+
+  test('uploadVideo fails on the upload step', async () => {
+    const reject: JobSource['upload'] = async () => {
+      throw new JobError('unauthorized')
+    }
+    const failure = await failureOf(
+      uploadVideo(source(reject, [done]), file, { onUploadProgress() {} }),
+    )
+    expect([failure.step, failure.kind]).toEqual(['upload', 'unauthorized'])
+  })
+
+  test('waitForJob polls an existing job without uploading', async () => {
+    const upload: JobSource['upload'] = async () => {
+      throw new Error('must not upload')
+    }
+    const job = await waitForJob(
+      source(upload, [{ job_id: 'j', status: 'processing' }, done]),
+      'j',
+      fast,
+    )
+    expect(job).toEqual(done as typeof job)
+  })
+
+  test('waitForJob fails on the analysis step', async () => {
+    const failure = await failureOf(
+      waitForJob(source(accept, [new JobError('not_found')]), 'j', fast),
+    )
+    expect([failure.step, failure.kind]).toEqual(['analysis', 'not_found'])
   })
 })

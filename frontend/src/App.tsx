@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react'
+import { showsViolations } from '@/api/types'
 import { Header } from '@/components/Header'
 import { jobSource, POLL_INTERVAL_MS, POLL_TIMEOUT_MS } from '@/config'
 import { useJobFlow, type FlowState } from '@/flow'
@@ -57,9 +58,7 @@ function MainFlow({ flow }: { flow: ReturnType<typeof useJobFlow> }) {
 
 function mainTitleKey(state: FlowState): keyof Messages['titles'] {
   if (state.screen !== 'report') return state.screen
-  return state.job.verdict === 'violation' && state.job.violations.length > 0
-    ? 'violation'
-    : 'clean'
+  return showsViolations(state.job) ? 'violation' : 'clean'
 }
 
 function Shell() {

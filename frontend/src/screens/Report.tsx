@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { showsViolations } from '@/api/types'
 import { Button } from '@/components/Button'
 import { PlusIcon } from '@/components/icons'
 import {
@@ -53,7 +54,7 @@ export function ReportScreen({
 
   const { violations } = job
   const count = violations.length
-  const hasViolations = job.verdict === 'violation' && count > 0
+  const hasViolations = showsViolations(job)
   const activeIndex = selected < count ? selected : 0
   const active = hasViolations ? violations[activeIndex] : undefined
 

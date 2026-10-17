@@ -15,12 +15,52 @@ export class CheckFailure extends Error {
   }
 }
 
-export interface CheckOptions {
+export interface UploadOptions {
+  signal?: AbortSignal
+  onUploadProgress: (fraction: number) => void
+}
+
+export interface WaitOptions {
   intervalMs: number
   timeoutMs: number
   signal?: AbortSignal
-  onUploadProgress: (fraction: number) => void
+}
+
+export interface CheckOptions extends UploadOptions, WaitOptions {
   onUploaded: () => void
+}
+
+function failureAt(step: ProcessingStep, error: unknown): CheckFailure {
+  const kind = error instanceof JobError ? error.kind : 'failed'
+  return new CheckFailure(kind, step)
+}
+
+export async function uploadVideo(
+  source: JobSource,
+  file: File,
+  { signal, onUploadProgress }: UploadOptions,
+): Promise<string> {
+  try {
+    const { job_id } = await source.upload(file, onUploadProgress, signal)
+    return job_id
+  } catch (error) {
+    throw failureAt('upload', error)
+  }
+}
+
+export async function waitForJob(
+  source: JobSource,
+  jobId: string,
+  { intervalMs, timeoutMs, signal }: WaitOptions,
+): Promise<DoneJob> {
+  try {
+    const job = await pollJob(source, jobId, { intervalMs, timeoutMs, signal })
+    if (job.status === 'failed') throw new JobError('failed')
+    if (!isDone(job)) throw new JobError('bad_response')
+    return job
+  } catch (error) {
+    throw failureAt('analysis', error)
+  }
 }
 
 export async function runCheck(
@@ -28,21 +68,7 @@ export async function runCheck(
   file: File,
   { intervalMs, timeoutMs, signal, onUploadProgress, onUploaded }: CheckOptions,
 ): Promise<DoneJob> {
-  let step: ProcessingStep = 'upload'
-  try {
-    const { job_id } = await source.upload(file, onUploadProgress, signal)
-    step = 'analysis'
-    onUploaded()
-    const job = await pollJob(source, job_id, {
-      intervalMs,
-      timeoutMs,
-      signal,
-    })
-    if (job.status === 'failed') throw new JobError('failed')
-    if (!isDone(job)) throw new JobError('bad_response')
-    return job
-  } catch (error) {
-    const kind = error instanceof JobError ? error.kind : 'failed'
-    throw new CheckFailure(kind, step)
-  }
+  const jobId = await uploadVideo(source, file, { signal, onUploadProgress })
+  onUploaded()
+  return waitForJob(source, jobId, { intervalMs, timeoutMs, signal })
 }
