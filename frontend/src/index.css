@@ -2,6 +2,7 @@
 
 @theme {
   --font-sans: 'Open Sans', system-ui, sans-serif;
+  --font-display: 'Nunito', 'Open Sans', system-ui, sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, monospace;
 
   --color-brand: #a31551;

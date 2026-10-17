@@ -11,7 +11,6 @@ import { format, localeOf, useLang, useStrings, type Messages } from '@/i18n'
 import { checkVideoFile, pickVideos } from '@/utils/file'
 import { formatFileSize } from '@/utils/time'
 import type { UploadScreenProps } from '@/screens/contracts'
-import { Mascot } from './Mascot'
 import { describeRejection, type RejectionReason } from './rejection'
 import { useFileDrop } from './useFileDrop'
 
@@ -176,9 +175,8 @@ export function DropZone({
     <section
       aria-label={t.region}
       {...drop.handlers}
-      className={`relative mt-20 w-full max-w-[640px] rounded-lg border-2 px-4 text-center transition-colors duration-150 sm:mt-24 sm:px-6 ${rejection ? 'py-10' : 'py-12'} ${look}`}
+      className={`relative w-full max-w-[640px] rounded-lg border-2 px-4 text-center transition-colors duration-150 sm:px-6 ${rejection ? 'py-10' : 'py-12'} ${look}`}
     >
-      <Mascot excited={dragging} />
       <input
         ref={inputRef}
         type="file"

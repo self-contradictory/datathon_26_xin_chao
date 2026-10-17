@@ -85,8 +85,6 @@ violationList:
   hint: Click a timecode to jump to that moment in the video
   whatWeLookFor: What signs the service looks for
   rules: Rules
-  cleanText: The service found no signs of possible cash discipline violations in this recording.
-  cleanHint: 'If a moment in the video raises doubts, review it yourself.'
 violationCard:
   position: 'Violation {i} of {n}'
   prev: Previous violation

@@ -16,7 +16,7 @@ import { ReportMeta } from '@/components/report/ReportMeta'
 import { TimeChip } from '@/components/report/TimeChip'
 import { VerdictSummary } from '@/components/report/VerdictSummary'
 import { ViolationCard } from '@/components/report/ViolationCard'
-import { CleanSummary, ViolationList } from '@/components/report/ViolationList'
+import { ViolationList } from '@/components/report/ViolationList'
 import type { ReportScreenProps } from './contracts'
 import { wrapIndex } from '@/utils/wrap'
 
@@ -113,9 +113,7 @@ export function ReportScreen({
           violation={hasViolations}
           count={count}
           className="lg:col-start-2 lg:row-start-2"
-        >
-          {!active && <CleanSummary />}
-        </VerdictSummary>
+        />
 
         <div className="mx-auto flex w-full max-w-[400px] flex-col gap-3 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:mx-0">
           {exit.kind === 'backToList' && (

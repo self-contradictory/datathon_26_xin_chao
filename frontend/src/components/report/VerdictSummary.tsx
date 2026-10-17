@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { Owl } from '@/components/Owl'
 import { format, useStrings } from '@/i18n'
 
@@ -6,12 +5,10 @@ export function VerdictSummary({
   violation,
   count,
   className = '',
-  children,
 }: {
   violation: boolean
   count: number
   className?: string
-  children?: ReactNode
 }) {
   const t = useStrings('verdictSummary')
 
@@ -30,12 +27,13 @@ export function VerdictSummary({
         <Owl mood="happy" className="w-20 shrink-0 sm:w-28" />
       )}
       <div className="flex min-w-0 flex-col gap-3">
-        {violation && (
-          <p className="text-verdict font-bold text-danger-text">
-            {format(t.violation, { n: count })}
-          </p>
-        )}
-        {children}
+        <p
+          className={`font-display text-verdict font-extrabold ${
+            violation ? 'text-danger-text' : 'text-success-text'
+          }`}
+        >
+          {violation ? format(t.violation, { n: count }) : t.clean}
+        </p>
       </div>
     </section>
   )

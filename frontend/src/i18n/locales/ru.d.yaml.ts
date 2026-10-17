@@ -102,8 +102,6 @@ export interface Messages {
     hint: string
     whatWeLookFor: string
     rules: string
-    cleanText: string
-    cleanHint: string
   }
   violationCard: {
     position: string

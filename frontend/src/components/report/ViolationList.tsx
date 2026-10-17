@@ -58,15 +58,3 @@ export function ViolationList({
     </div>
   )
 }
-
-export function CleanSummary() {
-  const t = useStrings('violationList')
-
-  return (
-    <div className="flex max-w-[72ch] flex-col gap-3">
-      <p>{t.cleanText}</p>
-      <p className="text-text-muted">{t.cleanHint}</p>
-      <TextLink href="#/rules">{t.whatWeLookFor}</TextLink>
-    </div>
-  )
-}
