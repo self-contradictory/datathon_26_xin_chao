@@ -94,6 +94,7 @@ export function useJobFlow(
           file: finished.file,
           checkedAt,
           poster: finished.posterUrl,
+          duration: finished.duration,
         }).catch(() => {})
       } catch (error) {
         const failure = asCheckFailure(error)

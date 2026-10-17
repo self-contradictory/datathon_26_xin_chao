@@ -1,6 +1,5 @@
 export interface Messages {
   header: {
-    service: string
     home: string
     nav: string
     rules: string
@@ -52,7 +51,6 @@ export interface Messages {
     nowAnalyzing: string
   }
   videoPreview: {
-    caption: string
     alt: string
   }
   stepList: {
@@ -161,7 +159,6 @@ export interface Messages {
   }
   apiDocs: {
     title: string
-    subtitle: string
     authTitle: string
     authText: string
     key: string

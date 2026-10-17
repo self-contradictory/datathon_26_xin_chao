@@ -1,28 +1,18 @@
-import { format, useStrings } from '@/i18n'
-import { formatShortDate } from '@/utils/time'
+import { Button } from '@/components/Button'
+import { useStrings } from '@/i18n'
 
-export function SavedChip({
-  savedAt,
-  onRecheck,
-}: {
-  savedAt: number
-  onRecheck?: () => void
-}) {
+export function SavedChip({ onRecheck }: { onRecheck?: () => void }) {
   const t = useStrings('history')
   return (
-    <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-secondary">
-      <span className="rounded-full bg-surface px-3 py-1 font-semibold text-text tabular-nums">
-        {format(t.fromHistory, { date: formatShortDate(savedAt) })}
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="inline-flex h-8 items-center rounded-full bg-surface px-3 text-secondary font-semibold text-text">
+        {t.fromHistory}
       </span>
       {onRecheck && (
-        <button
-          type="button"
-          onClick={onRecheck}
-          className="cursor-pointer rounded-sm font-semibold text-brand underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-        >
+        <Button variant="secondary" onClick={onRecheck}>
           {t.recheck}
-        </button>
+        </Button>
       )}
-    </p>
+    </div>
   )
 }

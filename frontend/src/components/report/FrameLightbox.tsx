@@ -15,7 +15,7 @@ import {
 import { format, useStrings } from '@/i18n'
 import { jpegDataUrl } from '@/utils/frames'
 import { formatFrameTime } from '@/utils/time'
-import { IconButton } from './IconButton'
+import { IconButton } from '@/components/IconButton'
 import { MONO } from '@/components/styles'
 import { wrapIndex } from '@/utils/wrap'
 
@@ -87,24 +87,18 @@ export function FrameLightbox({
         if (event.target === event.currentTarget) onClose()
       }}
       onKeyDown={onKeyDown}
-      className="fixed inset-0 m-0 size-full max-h-none max-w-none items-center justify-center overflow-auto bg-black/60 p-4 text-text backdrop:bg-transparent open:flex sm:p-6"
+      className="fixed inset-0 m-0 size-full max-h-none max-w-none items-center justify-center overflow-auto bg-video/60 p-4 text-text backdrop:bg-transparent open:flex sm:p-6"
     >
-      <div className="flex max-w-full flex-col gap-4 rounded-md bg-bg p-4 shadow-lightbox">
+      <div className="flex max-w-full flex-col gap-4 rounded-lg bg-bg p-4 shadow-lightbox">
         <div className="flex items-center justify-between gap-3">
           <p id={titleId} className="font-semibold">
             <span className={MONO}>{time}</span>
             {' · '}
             {format(t.frameOf, { k: index + 1, n: count })}
           </p>
-          <button
-            ref={closeRef}
-            type="button"
-            aria-label={t.close}
-            onClick={onClose}
-            className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-md text-text transition-colors duration-150 hover:bg-surface focus-visible:outline-2 focus-visible:outline-brand"
-          >
+          <IconButton ref={closeRef} label={t.close} onClick={onClose}>
             <CloseIcon />
-          </button>
+          </IconButton>
         </div>
         <img
           src={jpegDataUrl(frame.image_base64)}

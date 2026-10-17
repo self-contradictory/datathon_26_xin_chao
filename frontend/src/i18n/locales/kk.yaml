@@ -1,5 +1,4 @@
 header:
-  service: Кассаны бейне арқылы тексеру
   home: 'Forte, кассаны бейне арқылы тексеру — басты бетке'
   nav: Негізгі мәзір
   rules: Ережелер
@@ -25,7 +24,7 @@ dropZone:
   choose: Файлдарды таңдау
   chooseAnother: Басқа файлдарды таңдау
   hint: 'Тек .mov, бір ретте {max} бейнеге дейін'
-  release: Тексеруді бастау үшін жіберіңіз
+  release: Жіберіңіз
   dropAgain: немесе .mov файлдарын осы аймаққа сүйреңіз
   formatTitle: 'Қате: формат қолдау көрсетілмейді'
   otherVideo: '{name} файлы — .{ext} бейнесі. Сервис касса үстіндегі камерадан тек .mov қабылдайды.'
@@ -43,7 +42,6 @@ processing:
   nowUploading: Файл серверге жүктелуде
   nowAnalyzing: Файл жүктелді. Бейне талдануда
 videoPreview:
-  caption: Бірінші кадрдың превьюі
   alt: '{name} бейнесінің бірінші кадры'
 stepList:
   list: Өңдеу кезеңдері
@@ -56,7 +54,7 @@ steps:
   upload: Файлды жүктеу
   analysis: Бейнені талдау
 elapsedTimer:
-  running: '{time} өтті · әдетте 3 минутқа дейін'
+  running: '{time} өтті'
   stopped: '{time} кейін тоқтатылды'
 errorPanel:
   title: '«{step}» кезеңінде қате'
@@ -116,7 +114,7 @@ player:
   marker: 'Бұзушылық {i}/{n}: {label}, {time}'
   markerGroup: 'Бұзушылық {i}/{n}: {label}, {time}, қасында тағы {more}'
   unavailable: Бейне қолжетімсіз
-  noSource: Жазбаны көру үшін файлды қайта жүктеңіз
+  noSource: Бейне қолжетімсіз
   cannotPlay: Браузер бұл бейнені ойната алмайды
 rules:
   title: Тексеру ережелері
@@ -134,7 +132,6 @@ textLink:
   newTab: (жаңа қойындыда ашылады)
 apiDocs:
   title: API
-  subtitle: 'Бейнені тексеруді өз жүйеңізден іске қосып, есепті қазылар схемасы бойынша JSON түрінде алыңыз.'
   authTitle: Авторизация
   authText: 'Әр сұрауда {header} тақырыбы болуы керек. Негізгі мекенжай: {base}'
   key: '<сіздің кілтіңіз>'
@@ -170,7 +167,7 @@ batch:
   title: Бейнелерді тексеру
   progress: 'Дайын: {done} / {total}'
   announceDone: 'Тексеру аяқталды. Ықтимал бұзушылық белгілері бар: {violations}, қателер: {failed}'
-  paused: '{name} бейнесіндегі қатеге байланысты кезек тоқтатылды. Себебі жойылғанда, сол бейненің «Қайталап көру» түймесін басыңыз, сонда тексеру жалғасады.'
+  paused: 'Кезек тоқтатылды: {name} бейнесінде қате'
   list: Тексерудегі бейнелер
   rejectedTitle: 'Қосылмады: {n}'
   notMov: '{name}: .mov емес'
@@ -238,7 +235,7 @@ history:
   confirmClear: Тарихтағы барлық тексеруді жою керек пе?
   confirmYes: Жою
   confirmNo: Болдырмау
-  fromHistory: 'Тарихтан · {date}'
+  fromHistory: Тарихтан
   recheck: Қайта тексеру
   missing: Тексеру табылмады
 clip:

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { ActDocument } from '@/components/act/ActDocument'
 import { buildReportModel } from '@/components/act/model'
 import { usePrintAct } from '@/components/act/usePrintAct'
-import { IconButton } from '@/components/report/IconButton'
+import { IconButton } from '@/components/IconButton'
 import { fullJson } from '@/components/report/json'
 import { saveFile } from '@/utils/download'
 import { showsViolations } from '@/api/types'
@@ -211,9 +211,7 @@ export function ReportScreen({
         </div>
 
         <div className="flex flex-col gap-3 lg:col-start-2 lg:row-start-2">
-          {savedAt !== undefined && (
-            <SavedChip savedAt={savedAt} onRecheck={onRecheck} />
-          )}
+          {savedAt !== undefined && <SavedChip onRecheck={onRecheck} />}
           <VerdictSummary
             violation={hasViolations}
             count={count}

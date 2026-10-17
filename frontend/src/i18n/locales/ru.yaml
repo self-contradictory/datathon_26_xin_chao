@@ -1,5 +1,4 @@
 header:
-  service: Проверка кассы по видео
   home: 'Forte, проверка кассы по видео — на главную'
   nav: Основное меню
   rules: Правила
@@ -28,7 +27,7 @@ dropZone:
   choose: Выбрать файлы
   chooseAnother: Выбрать другие файлы
   hint: 'Только .mov, до {max} видео за раз'
-  release: Отпустите, чтобы начать проверку
+  release: Отпустите
   dropAgain: или перетащите файлы .mov в эту зону
   formatTitle: 'Ошибка: формат не поддерживается'
   otherVideo: 'Файл {name} — это видео .{ext}. Сервис принимает только .mov с камеры над кассой.'
@@ -46,7 +45,6 @@ processing:
   nowUploading: Загружаем файл на сервер
   nowAnalyzing: Файл загружен. Идёт анализ видео
 videoPreview:
-  caption: Превью первого кадра
   alt: 'Первый кадр видео {name}'
 stepList:
   list: Этапы обработки
@@ -59,7 +57,7 @@ steps:
   upload: Загрузка файла
   analysis: Анализ видео
 elapsedTimer:
-  running: 'Прошло {time} · обычно до 3 минут'
+  running: 'Прошло {time}'
   stopped: 'Остановлено через {time}'
 errorPanel:
   title: 'Ошибка на этапе «{step}»'
@@ -122,7 +120,7 @@ player:
   marker: 'Нарушение {i} из {n}: {label}, {time}'
   markerGroup: 'Нарушение {i} из {n}: {label}, {time}, и ещё {more} рядом'
   unavailable: Видео недоступно
-  noSource: 'Загрузите файл снова, чтобы посмотреть запись'
+  noSource: Видео недоступно
   cannotPlay: Браузер не может воспроизвести это видео
 rules:
   title: Правила проверки
@@ -140,7 +138,6 @@ textLink:
   newTab: (откроется в новой вкладке)
 apiDocs:
   title: API
-  subtitle: Запускайте проверку видео из своей системы и получайте отчёт в JSON по схеме жюри.
   authTitle: Авторизация
   authText: 'Каждый запрос должен содержать заголовок {header}. Базовый адрес: {base}'
   key: '<ваш ключ>'
@@ -180,7 +177,7 @@ batch:
   title: Проверка видео
   progress: 'Готово {done} из {total}'
   announceDone: 'Проверка завершена. С признаками возможных нарушений: {violations}, ошибки: {failed}'
-  paused: 'Очередь приостановлена из-за ошибки у видео {name}. Когда причина устранена, нажмите у него «Попробовать снова», и проверка продолжится.'
+  paused: 'Очередь на паузе: ошибка у {name}'
   list: Видео в проверке
   rejectedTitle: 'Не добавлены: {n}'
   notMov: '{name}: не .mov'
@@ -248,7 +245,7 @@ history:
   confirmClear: Удалить все проверки из истории?
   confirmYes: Удалить
   confirmNo: Отмена
-  fromHistory: 'Из истории · {date}'
+  fromHistory: Из истории
   recheck: Проверить заново
   missing: Проверка не найдена
 clip:

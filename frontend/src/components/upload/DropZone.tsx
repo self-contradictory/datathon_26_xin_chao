@@ -101,7 +101,7 @@ function RejectionAlert({
         <ErrorIcon className="shrink-0" />
         {title}
       </p>
-      <p id={textId} className="max-w-[520px] wrap-anywhere text-text-muted">
+      <p id={textId} className="max-w-[520px] wrap-anywhere">
         {text}
       </p>
     </div>

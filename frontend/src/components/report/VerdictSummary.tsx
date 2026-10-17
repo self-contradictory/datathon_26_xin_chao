@@ -16,7 +16,7 @@ function ReviewChip({ summary }: { summary: ReviewSummary }) {
       className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center gap-1 rounded-full bg-bg px-2 text-secondary font-semibold text-text tabular-nums"
     >
       {summary.complete ? (
-        <CheckIcon size={20} className="text-danger" />
+        <CheckIcon size={20} className="text-text" />
       ) : (
         `${summary.reviewed}/${summary.total}`
       )}
@@ -47,9 +47,9 @@ export function VerdictSummary({
       } ${className}`}
     >
       {violation ? (
-        <Owl mood="warning" className="-my-3 w-28 shrink-0 sm:w-36" />
+        <Owl mood="warning" className="-my-3 w-24 shrink-0 sm:w-36" />
       ) : (
-        <Owl mood="happy" className="-my-3 w-28 shrink-0 sm:w-36" />
+        <Owl mood="happy" className="-my-3 w-24 shrink-0 sm:w-36" />
       )}
       <div className="flex min-w-0 flex-wrap items-center gap-3">
         <p

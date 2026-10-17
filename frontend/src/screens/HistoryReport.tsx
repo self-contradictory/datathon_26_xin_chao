@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { isDone, showsViolations, type DoneJob } from '@/api/types'
+import { Button } from '@/components/Button'
+import { ChevronLeftIcon } from '@/components/icons'
 import { Owl } from '@/components/Owl'
 import { checkStore } from '@/history/store'
 import type { CheckRecord } from '@/history/types'
@@ -27,6 +29,7 @@ export function HistoryReport({
   onRecheck: (file: File) => void
 }) {
   const t = useStrings('history')
+  const report = useStrings('report')
   const [loaded, setLoaded] = useState<Loaded | null | undefined>(undefined)
 
   useEffect(() => {
@@ -57,8 +60,17 @@ export function HistoryReport({
   if (loaded === null) {
     return (
       <main className="mx-auto flex max-w-[848px] flex-col items-center gap-4 px-4 py-16 text-center">
-        <Owl mood="warning" className="w-40" />
+        <Owl mood="reading" className="w-40 rounded-lg" />
         <p className="text-section font-semibold">{t.missing}</p>
+        <Button
+          variant="secondary"
+          icon={<ChevronLeftIcon size={20} />}
+          onClick={() => {
+            window.location.hash = '#/history'
+          }}
+        >
+          {report.backToHistory}
+        </Button>
       </main>
     )
   }
@@ -71,7 +83,7 @@ export function HistoryReport({
       job={job}
       fileName={record.fileName}
       fileSize={record.fileSize}
-      duration={null}
+      duration={record.duration ?? null}
       videoUrl={videoUrl}
       posterUrl={record.poster ?? firstFrame(job)}
       checkedAt={record.createdAt}

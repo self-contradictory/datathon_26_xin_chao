@@ -56,9 +56,9 @@ export function Tabs<K extends string>({
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(item.key)}
             onKeyDown={(event) => onKeyDown(event, index)}
-            className={`h-9 cursor-pointer rounded-full px-4 text-secondary transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+            className={`h-10 cursor-pointer rounded-full px-4 text-secondary transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
               selected
-                ? 'bg-bg font-semibold text-text shadow-[0_1px_3px_rgba(31,31,31,0.12)]'
+                ? 'bg-bg font-semibold text-text shadow-popover'
                 : 'text-text-muted hover:text-text'
             }`}
           >

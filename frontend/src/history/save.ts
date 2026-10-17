@@ -8,11 +8,13 @@ export async function saveCheck({
   file,
   checkedAt,
   poster,
+  duration,
 }: {
   job: DoneJob
   file: File
   checkedAt: number
   poster: string | null
+  duration: number | null
 }): Promise<void> {
   const fileHash = await sha256Hex(file)
   const saved = await checkStore.get(job.job_id)
@@ -25,6 +27,7 @@ export async function saveCheck({
     result: job,
     review: saved?.review ?? {},
     poster,
+    duration,
     video: file,
   })
   void keepStorage()

@@ -30,6 +30,7 @@ export function useBatchFlow(
           file: item.video.file,
           checkedAt,
           poster: item.video.posterUrl,
+          duration: item.video.duration,
         }).catch(() => {}),
     }),
   )

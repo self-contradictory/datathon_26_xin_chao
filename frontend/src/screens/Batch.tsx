@@ -89,7 +89,7 @@ export function BatchScreen({
 
         <ol
           aria-label={t.list}
-          className="rounded-md border border-border bg-bg shadow-card"
+          className="rounded-lg border border-border bg-bg shadow-card"
         >
           {rows.map((row) => (
             <BatchRow

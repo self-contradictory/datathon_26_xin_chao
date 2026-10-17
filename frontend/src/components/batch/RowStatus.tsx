@@ -38,7 +38,7 @@ function FailedStatus({
   return (
     <StatusLine icon={<ErrorIcon className="text-text" />}>
       <span className="font-semibold">{title}</span>
-      <span className="block text-text-muted">{text}</span>
+      <span className="block">{text}</span>
     </StatusLine>
   )
 }

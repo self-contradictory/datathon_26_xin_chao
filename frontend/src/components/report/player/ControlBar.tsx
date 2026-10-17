@@ -36,6 +36,7 @@ export function ControlBar({
         ref={playButtonRef}
         type="button"
         aria-label={playing ? t.pause : t.play}
+        title={playing ? t.pause : t.play}
         onClick={onTogglePlay}
         className={BAR_BUTTON}
       >
@@ -48,6 +49,7 @@ export function ControlBar({
       <button
         type="button"
         aria-label={format(t.speed, { rate: rateLabel })}
+        title={format(t.speed, { rate: rateLabel })}
         onClick={onCycleRate}
         className={`${BAR_BUTTON} px-2 text-secondary font-medium tabular-nums`}
       >
@@ -57,6 +59,7 @@ export function ControlBar({
         <button
           type="button"
           aria-label={fullscreen ? t.exitFullscreen : t.fullscreen}
+          title={fullscreen ? t.exitFullscreen : t.fullscreen}
           onClick={onToggleFullscreen}
           className={BAR_BUTTON}
         >

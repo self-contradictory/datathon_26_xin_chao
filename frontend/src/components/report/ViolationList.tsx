@@ -29,7 +29,7 @@ export function ViolationList({
   const { typeName, typeLang } = useViolationText()
 
   return (
-    <ul className="overflow-hidden rounded-md border border-border bg-bg shadow-card">
+    <ul className="overflow-hidden rounded-lg border border-border bg-bg shadow-card">
       {violations.map((violation, index) => {
         const active = index === openIndex
         const playing = index === playheadIndex

@@ -45,7 +45,7 @@ function RulesTable({ highlight }: { highlight: string | null }) {
   const names = useStrings('violationTypes')
   return (
     <div
-      className={`hidden overflow-x-auto rounded-md border border-border bg-bg shadow-card ${TABLE_SHOWN}`}
+      className={`hidden overflow-x-auto rounded-lg border border-border bg-bg shadow-card ${TABLE_SHOWN}`}
     >
       <table className="w-full border-collapse">
         <caption className="sr-only">{t.title}</caption>
@@ -76,7 +76,7 @@ function RulesTable({ highlight }: { highlight: string | null }) {
               key={rule.type}
               data-rule={rule.id}
               tabIndex={-1}
-              className={`scroll-mt-24 transition-colors duration-200 ease-out focus:outline-none ${highlight === rule.id ? 'bg-brand-tint' : ''}`}
+              className={`scroll-mt-24 transition-colors duration-200 focus:outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand ${highlight === rule.id ? 'bg-brand-tint' : ''}`}
             >
               <th scope="row" className={`${TD} text-left font-semibold`}>
                 {names[rule.id]}
@@ -109,7 +109,7 @@ function RulesCards({ highlight }: { highlight: string | null }) {
           key={rule.type}
           data-rule={rule.id}
           tabIndex={-1}
-          className={`scroll-mt-24 rounded-md border border-border p-4 shadow-card transition-colors duration-200 ease-out focus:outline-none ${highlight === rule.id ? 'bg-brand-tint' : 'bg-bg'}`}
+          className={`scroll-mt-24 rounded-lg border border-border p-4 shadow-card transition-colors duration-200 focus:outline-none focus-visible:outline-2 focus-visible:outline-brand ${highlight === rule.id ? 'bg-brand-tint' : 'bg-bg'}`}
         >
           <h2 className="text-body font-semibold">{names[rule.id]}</h2>
           <dl className="mt-3 flex flex-col gap-3">
@@ -172,7 +172,7 @@ export function RulesPage({ focusRuleId }: { focusRuleId?: string }) {
   const t = useStrings('rules')
   const highlight = useRuleFocus(focusRuleId)
   return (
-    <main className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-4 pt-8 pb-16 sm:px-6 sm:pt-12">
+    <main className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-4 pt-8 pb-12 sm:px-6 lg:pt-12 lg:pb-16">
       <div className="flex flex-col-reverse gap-6 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-title font-semibold">{t.title}</h1>
         <Owl mood="reading" className="w-48 shrink-0 rounded-lg sm:w-56" />

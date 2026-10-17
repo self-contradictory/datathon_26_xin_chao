@@ -1,3 +1,4 @@
+import { IconButton } from '@/components/IconButton'
 import { useState } from 'react'
 import type { Violation } from '@/api/types'
 import { DownloadIcon } from '@/components/icons'
@@ -55,14 +56,11 @@ export function ClipButton({
       : t.download
 
   return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
+    <IconButton
+      label={label}
       aria-busy={busy}
       disabled={busy}
       onClick={() => void record()}
-      className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-bg text-text transition-colors duration-150 ease-out hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-wait"
     >
       {busy ? (
         <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24">
@@ -90,6 +88,6 @@ export function ClipButton({
       ) : (
         <DownloadIcon size={20} />
       )}
-    </button>
+    </IconButton>
   )
 }

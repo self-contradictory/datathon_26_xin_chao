@@ -10,7 +10,7 @@ import { ProgressBar } from '@/components/ProgressBar'
 import { STEPS, uploadPercent, type StepKey, type StepState } from './steps'
 
 const ICONS: Record<StepState, ReactNode> = {
-  done: <CheckCircleIcon className="text-success" />,
+  done: <CheckCircleIcon className="text-brand" />,
   active: <SpinnerIcon />,
   error: <ErrorIcon className="text-text" />,
   pending: <PendingIcon className="text-text-muted" />,

@@ -29,11 +29,8 @@ export function ApiDocsPage() {
   ]
 
   return (
-    <main className="mx-auto flex w-full max-w-[960px] flex-col gap-12 px-4 pt-8 pb-16 sm:px-6 sm:pt-12">
-      <div className="flex max-w-[72ch] flex-col gap-2">
-        <h1 className="text-title font-semibold">{t.title}</h1>
-        <p className="text-text-muted">{t.subtitle}</p>
-      </div>
+    <main className="mx-auto flex w-full max-w-[960px] flex-col gap-12 px-4 pt-8 pb-12 sm:px-6 lg:pt-12 lg:pb-16">
+      <h1 className="text-title font-semibold">{t.title}</h1>
 
       <DocSection id="api-auth" heading={t.authTitle}>
         <p className="max-w-[72ch]">
@@ -154,7 +151,7 @@ export function ApiDocsPage() {
       </DocSection>
 
       <DocSection id="api-errors" divided heading={t.errorsTitle}>
-        <div className="overflow-hidden rounded-md border border-border bg-bg shadow-card">
+        <div className="overflow-hidden rounded-lg border border-border bg-bg shadow-card">
           <table
             aria-labelledby="api-errors"
             className="w-full border-collapse"

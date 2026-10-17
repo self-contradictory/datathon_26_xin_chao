@@ -42,9 +42,6 @@ export function VideoPreview({
           </span>
         )}
       </div>
-      <figcaption className="text-secondary text-text-muted max-lg:hidden">
-        {t.caption}
-      </figcaption>
     </figure>
   )
 }

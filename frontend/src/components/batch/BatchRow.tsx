@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { Button } from '@/components/Button'
 import { CloseIcon, VideoFileIcon } from '@/components/icons'
-import { IconButton } from '@/components/report/IconButton'
+import { IconButton } from '@/components/IconButton'
 import { formatShortDate } from '@/utils/time'
 import { FileMeta } from '@/components/FileMeta'
 import { format, useStrings } from '@/i18n'

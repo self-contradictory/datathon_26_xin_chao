@@ -12,7 +12,7 @@ export function RejectedNotice({ rejected }: { rejected: RejectedFile[] }) {
         <p className="font-semibold">
           {format(t.rejectedTitle, { n: rejected.length })}
         </p>
-        <ul className="text-text-muted">
+        <ul>
           {rejected.map(({ fileName, problem }, index) => (
             <li key={index} className="wrap-anywhere">
               {format(problem.kind === 'empty' ? t.empty : t.notMov, {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { isDone } from '@/api/types'
 import { BatchRow } from '@/components/batch/BatchRow'
 import { Button } from '@/components/Button'
+import { ConfirmBar } from '@/components/ConfirmBar'
 import { Owl } from '@/components/Owl'
 import { checkStore } from '@/history/store'
 import type { CheckRecord } from '@/history/types'
@@ -14,7 +15,7 @@ function toRow(record: CheckRecord): BatchRowView | null {
     id: record.jobId,
     fileName: record.fileName,
     fileSize: record.fileSize,
-    duration: null,
+    duration: record.duration ?? null,
     posterUrl: record.poster ?? null,
     stage: { kind: 'done', job: record.result, checkedAt: record.createdAt },
     date: record.createdAt,
@@ -24,49 +25,35 @@ function toRow(record: CheckRecord): BatchRowView | null {
 function ClearControl({ onConfirm }: { onConfirm: () => void }) {
   const t = useStrings('history')
   const [asking, setAsking] = useState(false)
-  const keepRef = useRef<HTMLButtonElement>(null)
+  const clearRef = useRef<HTMLButtonElement>(null)
+  const wasAsking = useRef(false)
 
   useEffect(() => {
-    if (asking) keepRef.current?.focus()
+    if (!asking && wasAsking.current) clearRef.current?.focus()
+    wasAsking.current = asking
   }, [asking])
 
   if (!asking) {
     return (
-      <button
-        type="button"
+      <Button
+        ref={clearRef}
+        variant="secondary"
         onClick={() => setAsking(true)}
-        className="h-11 cursor-pointer self-start rounded-sm px-1 font-semibold text-brand underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        className="self-start max-sm:w-full"
       >
         {t.clear}
-      </button>
+      </Button>
     )
   }
 
   return (
-    <div
-      role="group"
-      aria-label={t.confirmClear}
-      className="flex flex-col gap-3 rounded-md border border-border bg-bg p-4 shadow-card"
-    >
-      <p className="font-semibold">{t.confirmClear}</p>
-      <div className="flex flex-wrap gap-3">
-        <Button
-          ref={keepRef}
-          variant="secondary"
-          onClick={() => setAsking(false)}
-          className="max-sm:w-full"
-        >
-          {t.confirmNo}
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={onConfirm}
-          className="max-sm:w-full"
-        >
-          {t.confirmYes}
-        </Button>
-      </div>
-    </div>
+    <ConfirmBar
+      question={t.confirmClear}
+      keepLabel={t.confirmNo}
+      confirmLabel={t.confirmYes}
+      onKeep={() => setAsking(false)}
+      onConfirm={onConfirm}
+    />
   )
 }
 
@@ -117,7 +104,7 @@ export function HistoryPage() {
         <>
           <ol
             aria-label={t.title}
-            className="rounded-md border border-border bg-bg shadow-card"
+            className="rounded-lg border border-border bg-bg shadow-card"
           >
             {rows.map((row) => (
               <BatchRow

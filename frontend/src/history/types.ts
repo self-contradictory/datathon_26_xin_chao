@@ -18,6 +18,7 @@ export interface CheckRecord {
   result: JobResponse
   review: Review
   poster?: string | null
+  duration?: number | null
   hasVideo?: boolean
   video?: Blob
 }

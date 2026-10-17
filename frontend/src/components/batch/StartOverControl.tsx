@@ -1,5 +1,6 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/Button'
+import { ConfirmBar } from '@/components/ConfirmBar'
 import { PlusIcon } from '@/components/icons'
 import { format, useStrings } from '@/i18n'
 
@@ -11,17 +12,14 @@ export function StartOverControl({
   onConfirm: () => void
 }) {
   const t = useStrings('batch')
-  const questionId = useId()
   const [asking, setAsking] = useState(false)
   const startRef = useRef<HTMLButtonElement>(null)
-  const continueRef = useRef<HTMLButtonElement>(null)
   const wasAsking = useRef(false)
   if (asking && unfinished === 0) setAsking(false)
   const open = asking && unfinished > 0
 
   useEffect(() => {
-    if (open) continueRef.current?.focus()
-    else if (wasAsking.current) startRef.current?.focus()
+    if (!open && wasAsking.current) startRef.current?.focus()
     wasAsking.current = open
   }, [open])
 
@@ -45,30 +43,12 @@ export function StartOverControl({
   }
 
   return (
-    <div
-      role="group"
-      aria-labelledby={questionId}
-      className="flex flex-col gap-3 rounded-md border border-border bg-bg p-4 shadow-card"
-    >
-      <p id={questionId} className="font-semibold">
-        {format(t.confirmStop, { n: unfinished })}
-      </p>
-      <div className="flex flex-wrap gap-3">
-        <Button
-          ref={continueRef}
-          onClick={() => setAsking(false)}
-          className="max-sm:w-full"
-        >
-          {t.confirmNo}
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={onConfirm}
-          className="max-sm:w-full"
-        >
-          {t.confirmYes}
-        </Button>
-      </div>
-    </div>
+    <ConfirmBar
+      question={format(t.confirmStop, { n: unfinished })}
+      keepLabel={t.confirmNo}
+      confirmLabel={t.confirmYes}
+      onKeep={() => setAsking(false)}
+      onConfirm={onConfirm}
+    />
   )
 }

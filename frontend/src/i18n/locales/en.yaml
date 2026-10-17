@@ -1,5 +1,4 @@
 header:
-  service: Cash desk video check
   home: 'Forte, cash desk video check — home'
   nav: Main menu
   rules: Rules
@@ -25,7 +24,7 @@ dropZone:
   choose: Choose files
   chooseAnother: Choose other files
   hint: '.mov only, up to {max} videos at a time'
-  release: Release to start the check
+  release: Release
   dropAgain: or drag .mov files into this area
   formatTitle: 'Error: format not supported'
   otherVideo: 'The file {name} is a .{ext} video. The service accepts only .mov from the camera above the cash desk.'
@@ -43,7 +42,6 @@ processing:
   nowUploading: Uploading the file to the server
   nowAnalyzing: File uploaded. Analysing the video
 videoPreview:
-  caption: First frame preview
   alt: 'First frame of {name}'
 stepList:
   list: Processing steps
@@ -56,7 +54,7 @@ steps:
   upload: File upload
   analysis: Video analysis
 elapsedTimer:
-  running: 'Elapsed {time} · usually under 3 minutes'
+  running: 'Elapsed {time}'
   stopped: 'Stopped after {time}'
 errorPanel:
   title: 'Error at the “{step}” step'
@@ -116,7 +114,7 @@ player:
   marker: 'Violation {i} of {n}: {label}, {time}'
   markerGroup: 'Violation {i} of {n}: {label}, {time}, and {more} more nearby'
   unavailable: Video unavailable
-  noSource: Upload the file again to watch the recording
+  noSource: Video unavailable
   cannotPlay: This browser cannot play the video
 rules:
   title: Detection rules
@@ -134,7 +132,6 @@ textLink:
   newTab: (opens in a new tab)
 apiDocs:
   title: API
-  subtitle: Start video checks from your own system and get the report as JSON in the jury schema.
   authTitle: Authorization
   authText: 'Every request must include the {header} header. Base address: {base}'
   key: '<your key>'
@@ -170,7 +167,7 @@ batch:
   title: Video check
   progress: '{done} of {total} done'
   announceDone: 'The check is finished. Signs of possible violations: {violations}, errors: {failed}'
-  paused: 'The queue is paused because of an error with {name}. Once the cause is fixed, press “Try again” on that video and the check will continue.'
+  paused: 'Queue paused: error with {name}'
   list: Videos being checked
   rejectedTitle: 'Not added: {n}'
   notMov: '{name}: not a .mov file'
@@ -238,7 +235,7 @@ history:
   confirmClear: Remove all checks from history?
   confirmYes: Remove
   confirmNo: Cancel
-  fromHistory: 'From history · {date}'
+  fromHistory: From history
   recheck: Check again
   missing: Check not found
 clip:

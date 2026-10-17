@@ -38,7 +38,7 @@ function RuleCitation({ type }: { type: string }) {
     <div className="flex flex-col gap-1">
       <a
         href={ruleHref(type) ?? undefined}
-        className="w-fit rounded-sm text-text no-underline transition-colors duration-150 ease-out hover:text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        className="inline-flex min-h-11 w-fit items-center rounded-sm text-text no-underline transition-colors duration-150 ease-out hover:text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
       >
         <RuleNorm rule={rule} />
       </a>
@@ -67,7 +67,6 @@ function ReviewControls({
           variant="secondary"
           icon={<CheckIcon size={20} />}
           onClick={() => onDecide('confirmed')}
-          className="h-9 px-4"
         >
           {t.confirm}
         </Button>
@@ -75,7 +74,6 @@ function ReviewControls({
           variant="secondary"
           icon={<CloseIcon size={20} />}
           onClick={() => onDecide('rejected')}
-          className="h-9 px-4"
         >
           {t.reject}
         </Button>
@@ -91,7 +89,7 @@ function ReviewControls({
       aria-label={format(t.undo, { decision: label })}
       title={format(t.undo, { decision: label })}
       onClick={() => onDecide(null)}
-      className={`inline-flex h-9 w-fit cursor-pointer items-center gap-2 rounded-full px-4 text-secondary font-semibold transition-colors duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+      className={`inline-flex h-11 w-fit cursor-pointer items-center gap-2 rounded-full px-4 text-secondary font-semibold transition-colors duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
         confirmed
           ? 'bg-danger-tint text-danger-text hover:bg-danger-tint/70'
           : 'bg-surface text-text-muted hover:bg-border'

@@ -16,7 +16,7 @@ function LangSwitch({ compact }: { compact: boolean }) {
     <div
       role="group"
       aria-label={t.language}
-      className="flex overflow-hidden rounded-full border border-border"
+      className="inline-flex shrink-0 gap-1 rounded-full bg-surface p-1"
     >
       {LANGS.map((code) => {
         const active = code === lang
@@ -27,9 +27,9 @@ function LangSwitch({ compact }: { compact: boolean }) {
             lang={code}
             aria-pressed={active}
             onClick={() => setLang(code)}
-            className={`h-[42px] cursor-pointer text-secondary transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand ${
-              compact ? 'min-w-11 px-2' : 'min-w-[52px] px-3'
-            } ${active ? 'bg-brand-tint font-semibold text-brand' : 'bg-bg text-text hover:bg-surface'}`}
+            className={`h-10 cursor-pointer rounded-full text-secondary transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+              compact ? 'min-w-10 px-2' : 'min-w-12 px-3'
+            } ${active ? 'bg-bg font-semibold text-text shadow-popover' : 'text-text-muted hover:text-text'}`}
           >
             {languages[code]}
           </button>
@@ -124,10 +124,11 @@ function MobileMenu({ route }: { route: Route }) {
         ref={toggleRef}
         type="button"
         aria-label={open ? t.closeMenu : t.openMenu}
+        title={open ? t.closeMenu : t.openMenu}
         aria-expanded={open}
         aria-controls="mobile-menu"
         onClick={() => setOpenOn(open ? null : route)}
-        className={`flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-md bg-surface text-text ${FOCUS}`}
+        className={`flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface text-text ${FOCUS}`}
       >
         {open ? <CloseIcon /> : <MenuIcon />}
       </button>
