@@ -242,5 +242,9 @@ history:
   fromHistory: 'Тарихтан · {date}'
   recheck: Қайта тексеру
   missing: Тексеру табылмады
+clip:
+  download: Бұзушылық клипін жүктеу
+  recording: 'Клип жазылуда: {percent}%'
+  failed: Клипті жазу мүмкін болмады, қайталап көріңіз
 demo:
   title: Демо күйлер

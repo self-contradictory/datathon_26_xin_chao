@@ -242,5 +242,9 @@ history:
   fromHistory: 'From history · {date}'
   recheck: Check again
   missing: Check not found
+clip:
+  download: Download the violation clip
+  recording: 'Recording the clip: {percent}%'
+  failed: Could not record the clip, try again
 demo:
   title: Demo states

@@ -284,6 +284,11 @@ export interface Messages {
     recheck: string
     missing: string
   }
+  clip: {
+    download: string
+    recording: string
+    failed: string
+  }
   demo: {
     title: string
   }

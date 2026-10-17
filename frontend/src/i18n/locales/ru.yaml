@@ -252,5 +252,9 @@ history:
   fromHistory: 'Из истории · {date}'
   recheck: Проверить заново
   missing: Проверка не найдена
+clip:
+  download: Скачать клип нарушения
+  recording: 'Записываю клип: {percent}%'
+  failed: Не удалось записать клип, попробуйте ещё раз
 demo:
   title: Демо-состояния

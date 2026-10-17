@@ -4,7 +4,7 @@ import { CheckIcon, ChevronRightIcon } from '@/components/icons'
 import type { Review, ReviewDecision } from '@/history/types'
 import { TimeChip } from './TimeChip'
 import { useViolationText } from './violationText'
-import { ViolationDetails } from './ViolationDetails'
+import { ViolationDetails, type ClipSource } from './ViolationDetails'
 
 export function ViolationList({
   violations,
@@ -14,6 +14,7 @@ export function ViolationList({
   onSelect,
   onDecide,
   rowRef,
+  clip,
 }: {
   violations: readonly Violation[]
   openIndex: number | null
@@ -22,6 +23,7 @@ export function ViolationList({
   onSelect: (index: number) => void
   onDecide: (index: number, decision: ReviewDecision | null) => void
   rowRef: (index: number, row: HTMLLIElement | null) => void
+  clip: ClipSource | null
 }) {
   const baseId = useId()
   const { typeName, typeLang } = useViolationText()
@@ -71,6 +73,7 @@ export function ViolationList({
                   violation={violation}
                   decision={decision}
                   onDecide={(next) => onDecide(index, next)}
+                  clip={clip}
                 />
               </div>
             )}

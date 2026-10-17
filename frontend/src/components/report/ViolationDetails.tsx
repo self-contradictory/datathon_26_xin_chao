@@ -7,8 +7,14 @@ import { CheckIcon, CloseIcon } from '@/components/icons'
 import type { ReviewDecision } from '@/history/types'
 import { format, useStrings } from '@/i18n'
 import { findRule, ruleHref } from '@/rules'
+import { ClipButton } from '@/components/clip/ClipButton'
 import { EvidenceFrames } from './EvidenceFrames'
 import { useViolationText } from './violationText'
+
+export interface ClipSource {
+  videoUrl: string
+  fileName: string
+}
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -101,20 +107,33 @@ export function ViolationDetails({
   violation,
   decision,
   onDecide,
+  clip,
 }: {
   violation: Violation
   decision: ReviewDecision | null
   onDecide: (decision: ReviewDecision | null) => void
+  clip: ClipSource | null
 }) {
   const t = useStrings('violationCard')
   const { typeName, description, descriptionLang } = useViolationText()
 
   return (
     <div className="flex flex-col gap-4">
-      <EvidenceFrames
-        frames={violation.evidence_frames}
-        type={typeName(violation.type)}
-      />
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <EvidenceFrames
+            frames={violation.evidence_frames}
+            type={typeName(violation.type)}
+          />
+        </div>
+        {clip && (
+          <ClipButton
+            violation={violation}
+            videoUrl={clip.videoUrl}
+            fileName={clip.fileName}
+          />
+        )}
+      </div>
       <dl className="flex flex-col">
         <Row label={t.description}>
           <span lang={descriptionLang(violation)}>

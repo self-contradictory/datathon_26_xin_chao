@@ -263,6 +263,7 @@ export function ReportScreen({
                 review={review}
                 onSelect={select}
                 onDecide={(index, decision) => void mark(index, decision)}
+                clip={videoUrl ? { videoUrl, fileName } : null}
                 rowRef={(index, row) => {
                   if (row) rows.current.set(index, row)
                   else rows.current.delete(index)
