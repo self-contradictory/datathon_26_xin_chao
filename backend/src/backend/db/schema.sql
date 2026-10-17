@@ -8,3 +8,13 @@ CREATE TABLE IF NOT EXISTS api_keys (
     last_used_at TEXT,
     revoked_at   TEXT
 );
+
+CREATE TABLE IF NOT EXISTS jobs (
+    id          TEXT PRIMARY KEY,
+    status      TEXT NOT NULL,
+    video_path  TEXT NOT NULL,
+    violations  TEXT,
+    error       TEXT,
+    created_at  TEXT NOT NULL,
+    finished_at TEXT
+);
