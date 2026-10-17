@@ -70,15 +70,21 @@ export function ProcessingScreen({
         </div>
 
         <div className="col-span-2 flex min-w-0 flex-col gap-6 lg:col-span-1 lg:col-start-2">
-          <Owl
-            mood={failed ? 'warning' : 'analyzing'}
-            className="w-40 sm:w-48"
-          />
-          <StepList
-            states={stepStates(phase, failedStep)}
-            uploadProgress={uploadProgress}
-          />
-          <ElapsedTimer startedAt={startedAt} stoppedAt={stoppedAt} />
+          <div className="flex flex-col gap-5 rounded-lg border border-border bg-bg p-5 shadow-card sm:flex-row sm:items-center sm:gap-6 sm:p-6">
+            <div className="flex size-32 shrink-0 items-center justify-center self-center overflow-hidden rounded-full bg-brand-tint sm:size-36">
+              <Owl
+                mood={failed ? 'warning' : 'analyzing'}
+                className="mt-3 w-32 sm:w-36"
+              />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-4">
+              <StepList
+                states={stepStates(phase, failedStep)}
+                uploadProgress={uploadProgress}
+              />
+              <ElapsedTimer startedAt={startedAt} stoppedAt={stoppedAt} />
+            </div>
+          </div>
 
           {failed && (
             <ErrorPanel

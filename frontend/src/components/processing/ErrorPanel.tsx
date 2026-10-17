@@ -20,7 +20,7 @@ export function ErrorPanel({
   const { title, text } = useErrorText(step, error)
 
   return (
-    <div className="flex flex-col gap-4 rounded-md border border-text p-4">
+    <div className="flex flex-col gap-4 rounded-lg border border-danger/15 bg-danger-tint p-5 shadow-card">
       <div role="alert" className="flex gap-3">
         <ErrorIcon className="shrink-0 text-text" />
         <div className="flex min-w-0 flex-col gap-1">
