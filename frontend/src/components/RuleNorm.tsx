@@ -3,7 +3,7 @@ import type { Rule } from '@/rules'
 
 export function RuleNorm({ rule }: { rule: Rule }) {
   const t = useStrings('ruleNorm')
-  const document = rule.document.replace(/№ /g, '№ ')
+  const document = useStrings('violationTypes').document.replace(/№ /g, '№ ')
   return (
     <>
       {rule.clause

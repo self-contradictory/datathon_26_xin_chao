@@ -183,5 +183,15 @@ batchRow:
   openLabel: 'Open report: {name}'
   retryLabel: 'Try again: {name}'
   progress: 'Uploading {name}'
+violationTypes:
+  cashOutOfView: Cash out of the camera's view
+  outsider: Outsider in the cash desk area
+  unattended: Cash desk left unattended
+  countHidden: Counting out of the client's sight
+  personalItems: Cash in personal belongings
+  phone: Phone in hand while handling cash
+  fixture: Sign of a violation (test data)
+  fixtureDescription: 'Test data: by the dataset labels the violation is around second {second}. A description of what is visible will appear once the analysis is connected.'
+  document: NBRK Resolution No. 231
 demo:
   title: Demo states

@@ -105,6 +105,10 @@ function Shell() {
   const polling = { intervalMs: POLL_INTERVAL_MS, timeoutMs: POLL_TIMEOUT_MS }
   const flow = useJobFlow(jobSource, polling)
   const batch = useBatchFlow(jobSource, polling)
+  const goHome = () => {
+    flow.reset()
+    batch.reset()
+  }
   const t = useStrings('titles')
   const page = route.page === 'demo' && !DemoPage ? 'main' : route.page
 
@@ -119,7 +123,10 @@ function Shell() {
 
   return (
     <div className="min-h-svh bg-canvas font-sans text-body text-text">
-      <Header route={page === 'rules' || page === 'api' ? page : 'main'} />
+      <Header
+        route={page === 'rules' || page === 'api' ? page : 'main'}
+        onHome={goHome}
+      />
       {page === 'rules' && <RulesPage />}
       {page === 'api' && <ApiDocsPage />}
       {route.page === 'demo' && DemoPage && (

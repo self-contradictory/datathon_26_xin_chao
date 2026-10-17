@@ -5,6 +5,7 @@ import { TextLink } from '@/components/TextLink'
 import { useStrings } from '@/i18n'
 import { findRule } from '@/rules'
 import { EvidenceFrames } from './EvidenceFrames'
+import { useViolationText } from './violationText'
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -40,16 +41,19 @@ function RuleCitation({ type }: { type: string }) {
 
 export function ViolationDetails({ violation }: { violation: Violation }) {
   const t = useStrings('violationCard')
+  const { typeName, description, descriptionLang } = useViolationText()
 
   return (
     <div className="flex flex-col gap-4">
       <EvidenceFrames
         frames={violation.evidence_frames}
-        type={violation.type}
+        type={typeName(violation.type)}
       />
       <dl className="flex flex-col">
         <Row label={t.description}>
-          <span lang="ru">{violation.description}</span>
+          <span lang={descriptionLang(violation)}>
+            {description(violation)}
+          </span>
         </Row>
         <Row label={t.rule}>
           <RuleCitation type={violation.type} />

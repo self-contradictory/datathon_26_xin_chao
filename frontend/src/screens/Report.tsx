@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { showsViolations } from '@/api/types'
 import { Button } from '@/components/Button'
 import { ChevronLeftIcon, PlusIcon } from '@/components/icons'
@@ -13,6 +13,7 @@ import { format, useStrings } from '@/i18n'
 import { formatTime } from '@/utils/time'
 import { JsonView } from '@/components/report/JsonView'
 import { ReportMeta } from '@/components/report/ReportMeta'
+import { useViolationText } from '@/components/report/violationText'
 import { VerdictSummary } from '@/components/report/VerdictSummary'
 import { ViolationList } from '@/components/report/ViolationList'
 import type { ReportScreenProps } from './contracts'
@@ -51,17 +52,14 @@ export function ReportScreen({
   const activeIndex = selected < count ? selected : 0
   const active = hasViolations ? violations[activeIndex] : undefined
 
-  const markers = useMemo<PlayerMarker[]>(
-    () =>
-      hasViolations
-        ? violations.map((violation, index) => ({
-            id: String(index),
-            time: violation.timecode_sec,
-            label: violation.type,
-          }))
-        : [],
-    [hasViolations, violations],
-  )
+  const { typeName } = useViolationText()
+  const markers: PlayerMarker[] = hasViolations
+    ? violations.map((violation, index) => ({
+        id: String(index),
+        time: violation.timecode_sec,
+        label: typeName(violation.type),
+      }))
+    : []
 
   useEffect(() => {
     const first = violations[0]
@@ -175,7 +173,7 @@ export function ReportScreen({
           ? format(t.selected, {
               i: activeIndex + 1,
               n: count,
-              type: active.type,
+              type: typeName(active.type),
               time: formatTime(active.timecode_sec),
             })
           : ''}

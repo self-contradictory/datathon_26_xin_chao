@@ -38,15 +38,16 @@ function LangSwitch({ compact }: { compact: boolean }) {
   )
 }
 
-function HomeLink() {
+function HomeLink({ onHome }: { onHome: () => void }) {
   const t = useStrings('header')
   return (
     <a
       href="#/"
       aria-label={t.home}
+      onClick={onHome}
       className={`mr-auto flex min-h-11 items-center gap-3 rounded-md text-brand-deep no-underline ${FOCUS}`}
     >
-      <Owl mood="idle" className="w-10 shrink-0" />
+      <Owl mood="hello" className="w-11 shrink-0" />
     </a>
   )
 }
@@ -136,13 +137,19 @@ function MobileMenu({ route }: { route: Route }) {
   )
 }
 
-export function Header({ route }: { route: Route }) {
+export function Header({
+  route,
+  onHome,
+}: {
+  route: Route
+  onHome: () => void
+}) {
   const t = useStrings('header')
 
   return (
     <header className="relative border-b border-border bg-canvas">
       <div className="hidden min-h-16 flex-wrap items-center gap-x-6 gap-y-2 px-6 py-2 sm:flex">
-        <HomeLink />
+        <HomeLink onHome={onHome} />
         <nav aria-label={t.nav} className="flex flex-wrap items-center gap-2">
           <NavLinks route={route} inMenu={false} />
           <div className="ml-2">
@@ -152,7 +159,7 @@ export function Header({ route }: { route: Route }) {
       </div>
 
       <div className="flex h-16 items-center gap-2 px-4 sm:hidden">
-        <HomeLink />
+        <HomeLink onHome={onHome} />
         <LangSwitch compact />
         <MobileMenu route={route} />
       </div>

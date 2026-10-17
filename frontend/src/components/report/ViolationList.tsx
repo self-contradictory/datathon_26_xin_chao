@@ -2,6 +2,7 @@ import { useId } from 'react'
 import type { Violation } from '@/api/types'
 import { ChevronRightIcon } from '@/components/icons'
 import { TimeChip } from './TimeChip'
+import { useViolationText } from './violationText'
 import { ViolationDetails } from './ViolationDetails'
 
 export function ViolationList({
@@ -14,6 +15,7 @@ export function ViolationList({
   onSelect: (index: number) => void
 }) {
   const baseId = useId()
+  const { typeName, typeLang } = useViolationText()
 
   return (
     <ul className="overflow-hidden rounded-md border border-border bg-bg shadow-card">
@@ -35,10 +37,10 @@ export function ViolationList({
             >
               <TimeChip seconds={violation.timecode_sec} onTint={active} />
               <span
-                lang="ru"
+                lang={typeLang(violation.type)}
                 className={`min-w-0 flex-1 wrap-break-word ${active ? 'font-semibold' : ''}`}
               >
-                {violation.type}
+                {typeName(violation.type)}
               </span>
               <ChevronRightIcon
                 size={20}

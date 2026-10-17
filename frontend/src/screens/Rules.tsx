@@ -7,6 +7,7 @@ import { RULES, type Rule } from '@/rules'
 
 function RuleLink({ rule }: { rule: Rule }) {
   const t = useStrings('rules')
+  const names = useStrings('violationTypes')
   if (!rule.url) {
     return (
       <>
@@ -21,7 +22,7 @@ function RuleLink({ rule }: { rule: Rule }) {
     <TextLink
       href={rule.url}
       external
-      label={format(t.linkLabel, { type: rule.type })}
+      label={format(t.linkLabel, { type: names[rule.id] })}
     >
       adilet.zan.kz
     </TextLink>
@@ -40,6 +41,7 @@ const CARDS_SHOWN = HAS_LINKS ? 'md:hidden' : 'sm:hidden'
 function RulesTable() {
   const t = useStrings('rules')
   const looks = useStrings('ruleLooks')
+  const names = useStrings('violationTypes')
   return (
     <div
       className={`hidden overflow-x-auto rounded-md border border-border bg-bg shadow-card ${TABLE_SHOWN}`}
@@ -70,12 +72,8 @@ function RulesTable() {
         <tbody className="[&>tr:last-child>*]:border-b-0">
           {RULES.map((rule) => (
             <tr key={rule.type}>
-              <th
-                scope="row"
-                lang="ru"
-                className={`${TD} text-left font-semibold`}
-              >
-                {rule.type}
+              <th scope="row" className={`${TD} text-left font-semibold`}>
+                {names[rule.id]}
               </th>
               <td className={TD}>{looks[rule.id]}</td>
               <td className={TD}>
@@ -97,6 +95,7 @@ function RulesTable() {
 function RulesCards() {
   const t = useStrings('rules')
   const looks = useStrings('ruleLooks')
+  const names = useStrings('violationTypes')
   return (
     <ul className={`flex flex-col gap-3 ${CARDS_SHOWN}`}>
       {RULES.map((rule) => (
@@ -104,9 +103,7 @@ function RulesCards() {
           key={rule.type}
           className="rounded-md border border-border bg-bg p-4 shadow-card"
         >
-          <h2 lang="ru" className="text-body font-semibold">
-            {rule.type}
-          </h2>
+          <h2 className="text-body font-semibold">{names[rule.id]}</h2>
           <dl className="mt-3 flex flex-col gap-3">
             <div>
               <dt className="text-secondary text-text-muted">{t.colLooks}</dt>

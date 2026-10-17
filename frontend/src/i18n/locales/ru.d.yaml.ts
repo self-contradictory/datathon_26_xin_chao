@@ -222,6 +222,17 @@ export interface Messages {
     retryLabel: string
     progress: string
   }
+  violationTypes: {
+    cashOutOfView: string
+    outsider: string
+    unattended: string
+    countHidden: string
+    personalItems: string
+    phone: string
+    fixture: string
+    fixtureDescription: string
+    document: string
+  }
   demo: {
     title: string
   }

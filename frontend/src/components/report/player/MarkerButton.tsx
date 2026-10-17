@@ -53,7 +53,7 @@ export function MarkerButton({
         {group.items.map((item) => (
           <span key={item.id} className="block">
             <span className={MONO}>{formatTime(item.time)}</span> ·{' '}
-            <span lang="ru">{item.label}</span>
+            <span>{item.label}</span>
           </span>
         ))}
       </span>
