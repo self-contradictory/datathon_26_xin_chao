@@ -13,8 +13,15 @@ function publicEnv(read: () => string | undefined): string {
 
 export const API_BASE_URL = publicEnv(() => process.env.BUN_PUBLIC_API_URL)
 const API_KEY = publicEnv(() => process.env.BUN_PUBLIC_API_KEY)
-const USE_FIXTURES =
-  publicEnv(() => process.env.BUN_PUBLIC_DATA_SOURCE) === 'fixtures'
+function demoRequested(): boolean {
+  if (process.env.NODE_ENV === 'production') return false
+  if (typeof location === 'undefined') return false
+  return new URLSearchParams(location.search).has('demo')
+}
+
+export const USE_FIXTURES =
+  publicEnv(() => process.env.BUN_PUBLIC_DATA_SOURCE) === 'fixtures' ||
+  demoRequested()
 
 function fixtureSource(): JobSource {
   return createFixtureSource({

@@ -136,5 +136,6 @@ try {
 }
 
 console.log(`\nReady: ${FRONTEND_URL}  (Ctrl+C stops everything)`)
+console.log(`Demo with dataset violations: ${FRONTEND_URL}/?demo`)
 if (process.platform === 'darwin') Bun.spawn(['open', FRONTEND_URL])
 if (children.length === 0) process.exit(0)

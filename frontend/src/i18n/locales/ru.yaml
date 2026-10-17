@@ -7,6 +7,7 @@ header:
   language: Язык интерфейса
   openMenu: Открыть меню
   closeMenu: Закрыть меню
+  demo: Демо-данные
 titles:
   upload: Проверка кассы по видео
   processing: Обработка видео

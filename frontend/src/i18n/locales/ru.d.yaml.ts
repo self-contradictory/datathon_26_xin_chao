@@ -8,6 +8,7 @@ export interface Messages {
     language: string
     openMenu: string
     closeMenu: string
+    demo: string
   }
   titles: {
     upload: string

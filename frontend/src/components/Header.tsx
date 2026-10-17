@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { USE_FIXTURES } from '@/config'
 import { LANGS, useLang, useStrings } from '@/i18n'
 import { CloseIcon, MenuIcon } from './icons'
 import { Owl } from './Owl'
@@ -48,6 +49,11 @@ function HomeLink({ onHome }: { onHome: () => void }) {
       className={`mr-auto flex min-h-11 items-center gap-3 rounded-md text-brand-deep no-underline ${FOCUS}`}
     >
       <Owl mood="hello" className="w-11 shrink-0" />
+      {USE_FIXTURES && (
+        <span className="rounded-full bg-brand-tint px-3 py-1 text-caption font-semibold text-brand">
+          {t.demo}
+        </span>
+      )}
     </a>
   )
 }

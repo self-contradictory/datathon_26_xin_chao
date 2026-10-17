@@ -6,6 +6,7 @@ header:
   language: Интерфейс тілі
   openMenu: Мәзірді ашу
   closeMenu: Мәзірді жабу
+  demo: Демо деректер
 titles:
   upload: Кассаны бейне арқылы тексеру
   processing: Бейнені өңдеу
