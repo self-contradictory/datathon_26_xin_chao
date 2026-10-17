@@ -19,11 +19,11 @@ export function UploadScreen({
   return (
     <main className="flex min-h-[calc(100svh-65px)] flex-col items-center justify-center gap-8 px-4 pt-12 pb-16 sm:pt-16 sm:pb-24">
       <div className="flex flex-col items-center gap-4 text-center">
-        <Owl mood="welcome" className="w-56 sm:w-72" />
+        <Owl mood="welcome" className="w-56 animate-float sm:w-72" />
         <h1
           ref={titleRef}
           tabIndex={-1}
-          className="text-[28px] leading-9 font-bold focus:outline-none sm:text-[36px] sm:leading-11"
+          className="text-title font-bold focus:outline-none sm:text-[36px] sm:leading-11"
         >
           {t.title}
         </h1>

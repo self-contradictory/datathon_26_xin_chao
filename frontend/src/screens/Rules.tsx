@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { InfoIcon } from '@/components/icons'
 import { Owl } from '@/components/Owl'
 import { RuleNorm } from '@/components/RuleNorm'
 import { TextLink } from '@/components/TextLink'
@@ -12,7 +11,6 @@ function ActLink({ act }: { act: ActId }) {
   return (
     <TextLink
       href={ACT_URLS[act]}
-      external
       label={format(t.linkLabel, { act: acts[act] })}
     >
       {acts[act]}
@@ -204,14 +202,6 @@ export function RulesPage({ focusRuleId }: { focusRuleId?: string }) {
       <RulesTable highlight={highlight} />
       <RulesCards highlight={highlight} />
       <Documents />
-
-      <div
-        role="note"
-        className="flex items-start gap-3 rounded-md bg-surface p-4"
-      >
-        <InfoIcon size={20} className="mt-0.5 shrink-0 text-text-muted" />
-        <p className="max-w-[72ch]">{t.note}</p>
-      </div>
     </main>
   )
 }

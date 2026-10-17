@@ -20,7 +20,6 @@
   --color-success: #188038;
   --color-success-tint: #e6f4ea;
   --color-success-text: #137333;
-  --color-annotate: #61cfff;
   --color-video: #000000;
 
   --text-title: 28px;
@@ -44,6 +43,18 @@
     0 1px 2px rgba(74, 2, 33, 0.04), 0 8px 24px -12px rgba(74, 2, 33, 0.14);
   --shadow-popover: 0 2px 8px rgba(31, 31, 31, 0.12);
   --shadow-lightbox: 0 8px 24px rgba(31, 31, 31, 0.2);
+
+  --animate-float: float 5s ease-in-out infinite;
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-10px) rotate(-1.5deg);
+    }
+  }
 
   --default-transition-duration: 150ms;
   --default-transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
