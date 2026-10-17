@@ -1,14 +1,19 @@
+from concurrent.futures import Executor, ThreadPoolExecutor
 from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyHeader
 
+from backend.analyzers.base import VideoAnalyzer
+from backend.analyzers.stub import StubAnalyzer
 from backend.config import settings
 from backend.db.sqlite import SqliteDatabase
 from backend.models import ApiKey
 from backend.repositories.api_keys import ApiKeyRepository, SqliteApiKeyRepository
+from backend.repositories.jobs import JobRepository, SqliteJobRepository
 from backend.services.api_keys import ApiKeyService
+from backend.services.jobs import JobService
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
@@ -16,6 +21,16 @@ api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 @lru_cache
 def get_database() -> SqliteDatabase:
     return SqliteDatabase(settings.DATABASE_PATH)
+
+
+@lru_cache
+def get_analyzer() -> VideoAnalyzer:
+    return StubAnalyzer()
+
+
+@lru_cache
+def get_job_executor() -> Executor:
+    return ThreadPoolExecutor(max_workers=settings.JOB_WORKERS)
 
 
 def get_api_key_repository(
@@ -28,6 +43,20 @@ def get_api_key_service(
     repository: Annotated[ApiKeyRepository, Depends(get_api_key_repository)],
 ) -> ApiKeyService:
     return ApiKeyService(repository)
+
+
+def get_job_repository(
+    database: Annotated[SqliteDatabase, Depends(get_database)],
+) -> JobRepository:
+    return SqliteJobRepository(database)
+
+
+def get_job_service(
+    repository: Annotated[JobRepository, Depends(get_job_repository)],
+    analyzer: Annotated[VideoAnalyzer, Depends(get_analyzer)],
+    executor: Annotated[Executor, Depends(get_job_executor)],
+) -> JobService:
+    return JobService(repository, analyzer, executor, settings.UPLOAD_DIR)
 
 
 def require_api_key(

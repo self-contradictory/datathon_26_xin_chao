@@ -6,13 +6,25 @@ from fastapi import FastAPI
 
 from backend.api import router
 from backend.config import settings
-from backend.dependencies import get_database
+from backend.dependencies import (
+    get_analyzer,
+    get_database,
+    get_job_executor,
+    get_job_repository,
+    get_job_service,
+)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
-    get_database().initialize()
+    database = get_database()
+    database.initialize()
+    executor = get_job_executor()
+    get_job_service(
+        get_job_repository(database), get_analyzer(), executor
+    ).fail_unfinished()
     yield
+    executor.shutdown(wait=False, cancel_futures=True)
 
 
 app = FastAPI(title="Xin Chao", lifespan=lifespan)
