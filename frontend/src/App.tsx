@@ -128,7 +128,7 @@ function Shell() {
         route={page === 'rules' || page === 'api' ? page : 'main'}
         onHome={goHome}
       />
-      {page === 'rules' && <RulesPage />}
+      {route.page === 'rules' && <RulesPage focusRuleId={route.ruleId} />}
       {page === 'api' && <ApiDocsPage />}
       {route.page === 'demo' && DemoPage && (
         <Suspense fallback={null}>

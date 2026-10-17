@@ -6,7 +6,7 @@ import { Button } from '@/components/Button'
 import { CheckIcon, CloseIcon } from '@/components/icons'
 import type { ReviewDecision } from '@/history/types'
 import { format, useStrings } from '@/i18n'
-import { findRule } from '@/rules'
+import { findRule, ruleHref } from '@/rules'
 import { EvidenceFrames } from './EvidenceFrames'
 import { useViolationText } from './violationText'
 
@@ -30,9 +30,12 @@ function RuleCitation({ type }: { type: string }) {
 
   return (
     <div className="flex flex-col gap-1">
-      <span>
+      <a
+        href={ruleHref(type) ?? undefined}
+        className="w-fit rounded-sm text-text no-underline transition-colors duration-150 ease-out hover:text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+      >
         <RuleNorm rule={rule} />
-      </span>
+      </a>
       {rule.url && (
         <TextLink href={rule.url} external>
           {t.adilet}

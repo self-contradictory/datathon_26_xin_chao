@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { InfoIcon } from '@/components/icons'
 import { Owl } from '@/components/Owl'
 import { RuleNorm } from '@/components/RuleNorm'
@@ -38,7 +39,7 @@ const HAS_LINKS = RULES.some((rule) => rule.url)
 const TABLE_SHOWN = HAS_LINKS ? 'md:block' : 'sm:block'
 const CARDS_SHOWN = HAS_LINKS ? 'md:hidden' : 'sm:hidden'
 
-function RulesTable() {
+function RulesTable({ highlight }: { highlight: string | null }) {
   const t = useStrings('rules')
   const looks = useStrings('ruleLooks')
   const names = useStrings('violationTypes')
@@ -71,7 +72,12 @@ function RulesTable() {
         </thead>
         <tbody className="[&>tr:last-child>*]:border-b-0">
           {RULES.map((rule) => (
-            <tr key={rule.type}>
+            <tr
+              key={rule.type}
+              data-rule={rule.id}
+              tabIndex={-1}
+              className={`scroll-mt-24 transition-colors duration-200 ease-out focus:outline-none ${highlight === rule.id ? 'bg-brand-tint' : ''}`}
+            >
               <th scope="row" className={`${TD} text-left font-semibold`}>
                 {names[rule.id]}
               </th>
@@ -92,7 +98,7 @@ function RulesTable() {
   )
 }
 
-function RulesCards() {
+function RulesCards({ highlight }: { highlight: string | null }) {
   const t = useStrings('rules')
   const looks = useStrings('ruleLooks')
   const names = useStrings('violationTypes')
@@ -101,7 +107,9 @@ function RulesCards() {
       {RULES.map((rule) => (
         <li
           key={rule.type}
-          className="rounded-md border border-border bg-bg p-4 shadow-card"
+          data-rule={rule.id}
+          tabIndex={-1}
+          className={`scroll-mt-24 rounded-md border border-border p-4 shadow-card transition-colors duration-200 ease-out focus:outline-none ${highlight === rule.id ? 'bg-brand-tint' : 'bg-bg'}`}
         >
           <h2 className="text-body font-semibold">{names[rule.id]}</h2>
           <dl className="mt-3 flex flex-col gap-3">
@@ -130,8 +138,37 @@ function RulesCards() {
   )
 }
 
-export function RulesPage() {
+const HIGHLIGHT_MS = 1500
+
+function useRuleFocus(ruleId: string | undefined) {
+  const [highlight, setHighlight] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!ruleId) return
+    const target = [
+      ...document.querySelectorAll<HTMLElement>(`[data-rule="${ruleId}"]`),
+    ].find((element) => element.offsetParent !== null)
+    if (!target) return
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    target.scrollIntoView({
+      behavior: calm ? 'auto' : 'smooth',
+      block: 'center',
+    })
+    target.focus({ preventScroll: true })
+    const show = setTimeout(() => setHighlight(ruleId), 0)
+    const hide = setTimeout(() => setHighlight(null), HIGHLIGHT_MS)
+    return () => {
+      clearTimeout(show)
+      clearTimeout(hide)
+    }
+  }, [ruleId])
+
+  return highlight
+}
+
+export function RulesPage({ focusRuleId }: { focusRuleId?: string }) {
   const t = useStrings('rules')
+  const highlight = useRuleFocus(focusRuleId)
   return (
     <main className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-4 pt-8 pb-16 sm:px-6 sm:pt-12">
       <div className="flex flex-col-reverse gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -139,8 +176,8 @@ export function RulesPage() {
         <Owl mood="reading" className="w-48 shrink-0 rounded-lg sm:w-56" />
       </div>
 
-      <RulesTable />
-      <RulesCards />
+      <RulesTable highlight={highlight} />
+      <RulesCards highlight={highlight} />
 
       <div
         role="note"

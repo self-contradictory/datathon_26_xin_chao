@@ -63,3 +63,8 @@ export function findRule(type: string): Rule | null {
   const key = normalize(type)
   return RULES.find((rule) => normalize(rule.type) === key) ?? null
 }
+
+export function ruleHref(type: string): string | null {
+  const rule = findRule(type)
+  return rule ? `#/rules/${rule.id}` : null
+}

@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { messagesFor } from '@/i18n'
 import { LABEL_COUNT, labelKey, lookupLabel } from '@/api/labels'
 import { parseHash } from '@/route'
-import { findRule, RULES } from '@/rules'
+import { findRule, ruleHref, RULES } from '@/rules'
 import { checkVideoFile, fileExtension, pickVideos } from './file'
 import { clampTime } from './frames'
 import {
@@ -167,11 +167,22 @@ describe('rules', () => {
   })
 })
 
+describe('ruleHref', () => {
+  test('a known type links to its rule, an unknown type does not', () => {
+    expect(ruleHref(RULES[0]!.type)).toBe(`#/rules/${RULES[0]!.id}`)
+    expect(ruleHref('Тип, которого нет в словаре')).toBeNull()
+  })
+})
+
 describe('route', () => {
   test('parseHash', () => {
     expect(parseHash('')).toEqual({ page: 'main' })
     expect(parseHash('#/')).toEqual({ page: 'main' })
     expect(parseHash('#/rules')).toEqual({ page: 'rules' })
+    expect(parseHash('#/rules/phone')).toEqual({
+      page: 'rules',
+      ruleId: 'phone',
+    })
     expect(parseHash('#/api/')).toEqual({ page: 'api' })
     expect(parseHash('#/demo/report-one')).toEqual({
       page: 'demo',
