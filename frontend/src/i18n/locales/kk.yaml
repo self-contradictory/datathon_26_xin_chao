@@ -69,13 +69,12 @@ report:
   report: Есеп
   newVideo: Жаңа бейне
   selected: 'Бұзушылық {i} / {n}: {type}, {time}'
-verdictBanner:
+verdictSummary:
   label: Қорытынды
   violation: 'Ықтимал бұзушылық белгілері анықталды: {n}'
   clean: Бұзушылық анықталған жоқ
   checked: 'тексерілді {date}'
 violationList:
-  found: 'Табылды: {n}'
   hint: Бейнедегі сәтке өту үшін таймкодты басыңыз
   whatWeLookFor: Сервис қандай белгілерді іздейді
   rules: Ережелер

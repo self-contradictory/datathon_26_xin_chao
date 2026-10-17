@@ -73,13 +73,12 @@ report:
   json: JSON
   newVideo: Новое видео
   selected: 'Нарушение {i} из {n}: {type}, {time}'
-verdictBanner:
+verdictSummary:
   label: Вердикт
   violation: 'Обнаружены признаки возможных нарушений: {n}'
   clean: Нарушение не обнаружено
   checked: 'проверено {date}'
 violationList:
-  found: 'Найдено: {n}'
   hint: 'Нажмите на таймкод, чтобы перейти к моменту в видео'
   whatWeLookFor: Какие признаки ищет сервис
   rules: Правила

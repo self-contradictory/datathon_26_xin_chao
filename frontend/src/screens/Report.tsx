@@ -12,7 +12,7 @@ import { format, useStrings } from '@/i18n'
 import { formatTime } from '@/utils/time'
 import { JsonView } from '@/components/report/JsonView'
 import { TimeChip } from '@/components/report/TimeChip'
-import { VerdictBanner } from '@/components/report/VerdictBanner'
+import { VerdictSummary } from '@/components/report/VerdictSummary'
 import { ViolationCard } from '@/components/report/ViolationCard'
 import { CleanSummary, ViolationList } from '@/components/report/ViolationList'
 import type { ReportScreenProps } from './contracts'
@@ -84,16 +84,6 @@ export function ReportScreen({
 
   return (
     <main>
-      <VerdictBanner
-        titleRef={titleRef}
-        violation={hasViolations}
-        count={count}
-        fileName={fileName}
-        fileSize={fileSize}
-        duration={duration}
-        checkedAt={checkedAt}
-      />
-
       <div className="border-b border-border">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-4 gap-y-2 px-4 pt-2 sm:px-6">
           <Tabs
@@ -124,8 +114,21 @@ export function ReportScreen({
           aria-labelledby={tabId(TABS, 'report')}
           hidden={tab !== 'report'}
         >
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-            <div className="mx-auto flex w-full max-w-[400px] flex-col gap-3 lg:mx-0 lg:w-(--player-width) lg:shrink-0">
+          <div className="grid gap-6 lg:grid-cols-[var(--player-width)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:items-start">
+            <VerdictSummary
+              titleRef={titleRef}
+              violation={hasViolations}
+              count={count}
+              fileName={fileName}
+              fileSize={fileSize}
+              duration={duration}
+              checkedAt={checkedAt}
+              className="lg:col-start-2"
+            >
+              {!active && <CleanSummary />}
+            </VerdictSummary>
+
+            <div className="mx-auto flex w-full max-w-[400px] flex-col gap-3 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:mx-0">
               <Player
                 ref={playerRef}
                 src={videoUrl}
@@ -149,25 +152,21 @@ export function ReportScreen({
               )}
             </div>
 
-            <div className="flex min-w-0 flex-1 flex-col gap-6">
-              {active ? (
-                <>
-                  <ViolationList
-                    violations={violations}
-                    activeIndex={activeIndex}
-                    onSelect={select}
-                  />
-                  <ViolationCard
-                    violation={active}
-                    index={activeIndex}
-                    total={count}
-                    onStep={(by) => select(wrapIndex(activeIndex, by, count))}
-                  />
-                </>
-              ) : (
-                <CleanSummary />
-              )}
-            </div>
+            {active && (
+              <div className="flex min-w-0 flex-col gap-6 lg:col-start-2">
+                <ViolationList
+                  violations={violations}
+                  activeIndex={activeIndex}
+                  onSelect={select}
+                />
+                <ViolationCard
+                  violation={active}
+                  index={activeIndex}
+                  total={count}
+                  onStep={(by) => select(wrapIndex(activeIndex, by, count))}
+                />
+              </div>
+            )}
           </div>
         </div>
 

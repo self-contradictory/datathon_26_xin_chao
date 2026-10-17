@@ -85,14 +85,13 @@ export interface Messages {
     newVideo: string
     selected: string
   }
-  verdictBanner: {
+  verdictSummary: {
     label: string
     violation: string
     clean: string
     checked: string
   }
   violationList: {
-    found: string
     hint: string
     whatWeLookFor: string
     rules: string

@@ -69,13 +69,12 @@ report:
   report: Report
   newVideo: New video
   selected: 'Violation {i} of {n}: {type}, {time}'
-verdictBanner:
+verdictSummary:
   label: Verdict
   violation: 'Signs of possible violations found: {n}'
   clean: No violation found
   checked: 'checked {date}'
 violationList:
-  found: 'Found: {n}'
   hint: Click a timecode to jump to that moment in the video
   whatWeLookFor: What signs the service looks for
   rules: Rules

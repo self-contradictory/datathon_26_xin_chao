@@ -1,8 +1,7 @@
-import { useId } from 'react'
 import type { Violation } from '@/api/types'
-import { CheckCircleIcon, ChevronRightIcon } from '@/components/icons'
+import { ChevronRightIcon } from '@/components/icons'
 import { TextLink } from '@/components/TextLink'
-import { format, useStrings } from '@/i18n'
+import { useStrings } from '@/i18n'
 import { TimeChip } from './TimeChip'
 
 export function ViolationList({
@@ -15,19 +14,12 @@ export function ViolationList({
   onSelect: (index: number) => void
 }) {
   const t = useStrings('violationList')
-  const titleId = useId()
 
   return (
-    <section
-      aria-labelledby={titleId}
-      className="overflow-hidden rounded-md border border-border"
-    >
-      <div className="flex flex-col gap-1 border-b border-border p-4">
-        <h2 id={titleId} className="text-section font-semibold">
-          {format(t.found, { n: violations.length })}
-        </h2>
-        <p className="text-secondary text-text-muted">{t.hint}</p>
-      </div>
+    <div className="overflow-hidden rounded-md border border-border">
+      <p className="border-b border-border p-4 text-secondary text-text-muted">
+        {t.hint}
+      </p>
       <ul>
         {violations.map((violation, index) => {
           const active = index === activeIndex
@@ -63,28 +55,18 @@ export function ViolationList({
         <span>{t.whatWeLookFor}</span>
         <TextLink href="#/rules">{t.rules}</TextLink>
       </div>
-    </section>
+    </div>
   )
 }
 
 export function CleanSummary() {
   const t = useStrings('violationList')
-  const titleId = useId()
 
   return (
-    <section
-      aria-labelledby={titleId}
-      className="flex flex-col gap-4 rounded-md border border-border p-4 sm:p-6"
-    >
-      <div className="flex items-center gap-3">
-        <CheckCircleIcon className="shrink-0 text-success" />
-        <h2 id={titleId} className="text-section font-semibold">
-          {format(t.found, { n: 0 })}
-        </h2>
-      </div>
-      <p className="max-w-[72ch]">{t.cleanText}</p>
-      <p className="max-w-[72ch] text-text-muted">{t.cleanHint}</p>
+    <div className="flex max-w-[72ch] flex-col gap-3">
+      <p>{t.cleanText}</p>
+      <p className="text-text-muted">{t.cleanHint}</p>
       <TextLink href="#/rules">{t.whatWeLookFor}</TextLink>
-    </section>
+    </div>
   )
 }
