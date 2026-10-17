@@ -31,7 +31,7 @@ export function ElapsedTimer({
         text={template}
         values={{
           time: (
-            <span className="font-mono font-medium text-text tabular-nums">
+            <span className="font-medium text-text tabular-nums">
               {formatTime(elapsedSec)}
             </span>
           ),

@@ -1,1 +1,1 @@
-export const MONO = 'font-mono font-medium tabular-nums'
+export const MONO = 'font-medium tabular-nums'

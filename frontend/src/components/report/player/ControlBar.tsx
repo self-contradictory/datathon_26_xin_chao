@@ -41,7 +41,7 @@ export function ControlBar({
       >
         {playing ? <PauseIcon /> : <PlayIcon />}
       </button>
-      <span className="px-1 font-mono text-secondary font-medium whitespace-nowrap tabular-nums">
+      <span className="px-1 text-secondary font-medium whitespace-nowrap tabular-nums">
         {timeText}
       </span>
       <span className="flex-1" />
@@ -49,7 +49,7 @@ export function ControlBar({
         type="button"
         aria-label={format(t.speed, { rate: rateLabel })}
         onClick={onCycleRate}
-        className={`${BAR_BUTTON} px-2 font-mono text-secondary font-medium tabular-nums`}
+        className={`${BAR_BUTTON} px-2 text-secondary font-medium tabular-nums`}
       >
         {rateLabel}
       </button>

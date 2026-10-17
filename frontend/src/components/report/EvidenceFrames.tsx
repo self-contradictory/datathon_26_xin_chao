@@ -46,7 +46,7 @@ export function EvidenceFrames({
                   />
                 </button>
                 <figcaption className="text-caption text-text-muted">
-                  <span className="font-mono font-medium text-text tabular-nums">
+                  <span className="font-medium text-text tabular-nums">
                     {time}
                   </span>
                   {' · '}

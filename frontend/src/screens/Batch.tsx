@@ -76,9 +76,12 @@ export function BatchScreen({
           </p>
         </div>
 
-        <div aria-live="assertive">
+        <div
+          aria-live="assertive"
+          className={pausedRow ? undefined : 'sr-only'}
+        >
           {pausedRow && (
-            <div className="flex gap-3 rounded-md border border-text p-4">
+            <div className="flex gap-3 rounded-md bg-surface p-4">
               <InfoIcon className="shrink-0 text-text" />
               <p className="wrap-anywhere">
                 {format(t.paused, { name: pausedRow.fileName })}

@@ -73,7 +73,7 @@ function DragPrompt({ t, file }: { t: Strings; file: HeldFile | null }) {
         <p className="inline-flex min-h-11 max-w-full items-center gap-3 rounded-md border border-border bg-bg px-4 py-2">
           <VideoFileIcon size={20} className="shrink-0 text-text-muted" />
           <span className="min-w-0 wrap-anywhere">{file.fileName}</span>
-          <span className="shrink-0 font-mono text-secondary font-medium text-text-muted tabular-nums">
+          <span className="shrink-0 text-secondary font-medium text-text-muted tabular-nums">
             {formatFileSize(file.fileSize, localeOf(lang), units)}
           </span>
         </p>

@@ -36,7 +36,7 @@ export function VideoPreview({
         {duration !== null && (
           <span
             aria-hidden="true"
-            className="absolute right-3 bottom-3 rounded-sm bg-video/70 px-2 font-mono text-caption leading-6 font-medium text-white tabular-nums max-lg:hidden"
+            className="absolute right-3 bottom-3 rounded-sm bg-video/70 px-2 text-caption leading-6 font-medium text-white tabular-nums max-lg:hidden"
           >
             {formatTime(duration)}
           </span>

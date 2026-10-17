@@ -9,7 +9,7 @@ export function TimeChip({
 }) {
   return (
     <span
-      className={`shrink-0 rounded-sm px-2 font-mono text-secondary leading-6 font-medium tabular-nums ${
+      className={`shrink-0 rounded-sm px-2 text-secondary leading-6 font-medium tabular-nums ${
         onTint ? 'bg-bg' : 'bg-surface'
       }`}
     >

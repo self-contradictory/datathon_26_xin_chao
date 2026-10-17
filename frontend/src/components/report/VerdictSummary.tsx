@@ -28,7 +28,7 @@ export function VerdictSummary({
       )}
       <div className="flex min-w-0 flex-col gap-3">
         <p
-          className={`font-display text-verdict font-extrabold ${
+          className={`text-verdict font-semibold ${
             violation ? 'text-danger-text' : 'text-success-text'
           }`}
         >

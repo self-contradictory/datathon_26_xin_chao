@@ -6,7 +6,7 @@ export function RejectedNotice({ rejected }: { rejected: RejectedFile[] }) {
   const t = useStrings('batch')
 
   return (
-    <div className="flex gap-3 rounded-md border border-text p-4">
+    <div className="flex gap-3 rounded-md bg-surface p-4">
       <ErrorIcon className="shrink-0 text-text" />
       <div className="flex min-w-0 flex-col gap-1">
         <p className="font-semibold">

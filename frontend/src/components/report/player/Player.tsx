@@ -274,7 +274,7 @@ export function Player({
             onToggleFullscreen={toggleFullscreen}
           />
         ) : knownDuration !== null ? (
-          <p className="m-0 flex h-11 items-center px-1 font-mono text-secondary font-medium text-white tabular-nums">
+          <p className="m-0 flex h-11 items-center px-1 text-secondary font-medium text-white tabular-nums">
             {totalText}
           </p>
         ) : (
