@@ -2,8 +2,10 @@ import type { Ref } from 'react'
 
 export interface PlayerMarker {
   id: string
+  position: number
   time: number
   label: string
+  dimmed?: boolean
 }
 
 export interface SeekOptions {

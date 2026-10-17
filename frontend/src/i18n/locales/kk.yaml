@@ -111,7 +111,8 @@ player:
   speed: 'Ойнату жылдамдығы: {rate}'
   fullscreen: Толық экран
   exitFullscreen: Толық экраннан шығу
-  markerGroup: '{label}, {time}, қасында тағы {more}'
+  marker: 'Бұзушылық {i}/{n}: {label}, {time}'
+  markerGroup: 'Бұзушылық {i}/{n}: {label}, {time}, қасында тағы {more}'
   unavailable: Бейне қолжетімсіз
   noSource: Жазбаны көру үшін файлды қайта жүктеңіз
   cannotPlay: Браузер бұл бейнені ойната алмайды

@@ -117,8 +117,8 @@ player:
   speed: 'Скорость воспроизведения: {rate}'
   fullscreen: Во весь экран
   exitFullscreen: Выйти из полноэкранного режима
-  marker: '{label}, {time}'
-  markerGroup: '{label}, {time}, и ещё {more} рядом'
+  marker: 'Нарушение {i} из {n}: {label}, {time}'
+  markerGroup: 'Нарушение {i} из {n}: {label}, {time}, и ещё {more} рядом'
   unavailable: Видео недоступно
   noSource: 'Загрузите файл снова, чтобы посмотреть запись'
   cannotPlay: Браузер не может воспроизвести это видео

@@ -11,7 +11,12 @@ export function formatTime(totalSeconds: number): string {
   const seconds = whole % 60
   return hours > 0
     ? `${hours}:${pad(minutes)}:${pad(seconds)}`
-    : `${pad(minutes)}:${pad(seconds)}`
+    : `${minutes}:${pad(seconds)}`
+}
+
+export function formatShortDate(timestamp: number): string {
+  const date = new Date(timestamp)
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)} · ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 export function formatFrameTime(totalSeconds: number): string {

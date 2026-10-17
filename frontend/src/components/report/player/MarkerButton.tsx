@@ -34,9 +34,9 @@ export function MarkerButton({
     >
       <span
         aria-hidden="true"
-        className={`absolute bottom-3 left-1/2 -translate-x-1/2 translate-y-1/2 rounded-[1px] bg-danger ring-1 ring-video ${
-          active ? 'h-4 w-1.5' : 'h-3 w-1'
-        }`}
+        className={`absolute bottom-3 left-1/2 -translate-x-1/2 translate-y-1/2 rounded-[1px] ring-1 ring-video transition-[width,height] duration-150 ease-out ${
+          group.items.every((item) => item.dimmed) ? 'bg-white/60' : 'bg-danger'
+        } ${active ? 'h-4 w-1.5' : 'h-3 w-1'}`}
       />
       {count > 1 && (
         <span

@@ -7,12 +7,16 @@ import { ViolationDetails } from './ViolationDetails'
 
 export function ViolationList({
   violations,
-  activeIndex,
+  openIndex,
+  playheadIndex,
   onSelect,
+  rowRef,
 }: {
   violations: readonly Violation[]
-  activeIndex: number
+  openIndex: number
+  playheadIndex: number | null
   onSelect: (index: number) => void
+  rowRef: (index: number, row: HTMLLIElement | null) => void
 }) {
   const baseId = useId()
   const { typeName, typeLang } = useViolationText()
@@ -20,20 +24,23 @@ export function ViolationList({
   return (
     <ul className="overflow-hidden rounded-md border border-border bg-bg shadow-card">
       {violations.map((violation, index) => {
-        const active = index === activeIndex
+        const active = index === openIndex
+        const playing = index === playheadIndex
         const detailsId = `${baseId}-${index}`
         return (
-          <li key={index} className="border-b border-border last:border-b-0">
+          <li
+            key={index}
+            ref={(row) => rowRef(index, row)}
+            className="scroll-mt-4 border-b border-border last:border-b-0"
+          >
             <button
               type="button"
               aria-expanded={active}
               aria-controls={detailsId}
               onClick={() => onSelect(index)}
-              className={`flex min-h-14 w-full cursor-pointer items-center gap-3 border-l-[3px] py-3 pr-4 pl-[13px] text-left transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand ${
-                active
-                  ? 'border-brand bg-brand-tint'
-                  : 'border-transparent bg-bg hover:bg-surface'
-              }`}
+              className={`flex min-h-14 w-full cursor-pointer items-center gap-3 border-l-[3px] py-3 pr-4 pl-[13px] text-left transition-colors duration-150 ease-out focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand ${
+                playing ? 'border-brand' : 'border-transparent'
+              } ${active ? 'bg-brand-tint' : 'bg-bg hover:bg-surface'}`}
             >
               <TimeChip seconds={violation.timecode_sec} onTint={active} />
               <span

@@ -137,6 +137,8 @@ export function Scrubber({
           active={group === activeGroup}
           align={tooltipAlign(group.ratio, trackWidth)}
           label={format(group.items.length > 1 ? t.markerGroup : t.marker, {
+            i: group.first.position,
+            n: markers.length,
             label: group.first.label,
             time: formatTime(group.first.time),
             more: group.items.length - 1,

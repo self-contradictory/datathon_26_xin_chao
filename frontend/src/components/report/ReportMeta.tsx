@@ -1,6 +1,6 @@
 import { MONO } from '@/components/styles'
 import { format, localeOf, useLang, useStrings } from '@/i18n'
-import { formatFileSize, formatTime } from '@/utils/time'
+import { formatFileSize, formatShortDate, formatTime } from '@/utils/time'
 
 export function ReportMeta({
   fileName,
@@ -16,13 +16,7 @@ export function ReportMeta({
   const t = useStrings('verdictSummary')
   const units = useStrings('units')
   const locale = localeOf(useLang().lang)
-  const checked = new Date(checkedAt).toLocaleString(locale, {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const checked = formatShortDate(checkedAt)
 
   return (
     <p className="min-w-0 text-secondary wrap-anywhere text-text-muted">

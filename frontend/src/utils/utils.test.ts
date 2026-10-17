@@ -5,25 +5,36 @@ import { parseHash } from '@/route'
 import { findRule, RULES } from '@/rules'
 import { checkVideoFile, fileExtension, pickVideos } from './file'
 import { clampTime } from './frames'
-import { formatFileSize, formatFrameTime, formatTime } from './time'
+import {
+  formatFileSize,
+  formatFrameTime,
+  formatShortDate,
+  formatTime,
+} from './time'
 
 describe('time', () => {
+  test('formatShortDate', () => {
+    expect(formatShortDate(new Date(2026, 9, 17, 18, 5).getTime())).toBe(
+      '17.10 · 18:05',
+    )
+  })
+
   test('formatTime', () => {
-    expect(formatTime(0)).toBe('00:00')
-    expect(formatTime(7)).toBe('00:07')
-    expect(formatTime(7.9)).toBe('00:07')
-    expect(formatTime(68)).toBe('01:08')
-    expect(formatTime(142.5)).toBe('02:22')
+    expect(formatTime(0)).toBe('0:00')
+    expect(formatTime(7)).toBe('0:07')
+    expect(formatTime(7.9)).toBe('0:07')
+    expect(formatTime(68)).toBe('1:08')
+    expect(formatTime(142.5)).toBe('2:22')
     expect(formatTime(3725)).toBe('1:02:05')
-    expect(formatTime(-3)).toBe('00:00')
-    expect(formatTime(Number.NaN)).toBe('00:00')
+    expect(formatTime(-3)).toBe('0:00')
+    expect(formatTime(Number.NaN)).toBe('0:00')
   })
 
   test('formatFrameTime keeps tenths', () => {
-    expect(formatFrameTime(6.8)).toBe('00:06.8')
-    expect(formatFrameTime(7)).toBe('00:07.0')
-    expect(formatFrameTime(44.25)).toBe('00:44.3')
-    expect(formatFrameTime(59.96)).toBe('01:00.0')
+    expect(formatFrameTime(6.8)).toBe('0:06.8')
+    expect(formatFrameTime(7)).toBe('0:07.0')
+    expect(formatFrameTime(44.25)).toBe('0:44.3')
+    expect(formatFrameTime(59.96)).toBe('1:00.0')
   })
 
   test('formatFileSize uses a decimal comma', () => {

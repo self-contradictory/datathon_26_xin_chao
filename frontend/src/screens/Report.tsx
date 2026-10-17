@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { showsViolations } from '@/api/types'
 import { Button } from '@/components/Button'
 import { ChevronLeftIcon, PlusIcon } from '@/components/icons'
@@ -12,7 +12,12 @@ import { Tabs } from '@/components/Tabs'
 import { format, useStrings } from '@/i18n'
 import { formatTime } from '@/utils/time'
 import { JsonView } from '@/components/report/JsonView'
+import {
+  activeViolationIndex,
+  stepIndex,
+} from '@/components/report/activeViolation'
 import { ReportMeta } from '@/components/report/ReportMeta'
+import { isTypingTarget } from '@/utils/keys'
 import { useViolationText } from '@/components/report/violationText'
 import { VerdictSummary } from '@/components/report/VerdictSummary'
 import { ViolationList } from '@/components/report/ViolationList'
@@ -56,23 +61,50 @@ export function ReportScreen({
   const markers: PlayerMarker[] = hasViolations
     ? violations.map((violation, index) => ({
         id: String(index),
+        position: index + 1,
         time: violation.timecode_sec,
         label: typeName(violation.type),
       }))
     : []
+  const [playhead, setPlayhead] = useState<number | null>(null)
+  const rows = useRef(new Map<number, HTMLLIElement>())
 
   useEffect(() => {
     const first = violations[0]
     if (hasViolations && first) playerRef.current?.seek(first.timecode_sec)
   }, [hasViolations, violations])
 
-  function select(index: number) {
+  function select(index: number, reveal = false) {
     const violation = violations[index]
     if (!violation) return
     setSelected(index)
     setPicked(true)
     playerRef.current?.seek(violation.timecode_sec)
+    if (reveal) requestAnimationFrame(() => revealRow(index))
   }
+
+  function revealRow(index: number) {
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    rows.current
+      .get(index)
+      ?.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'nearest' })
+  }
+
+  const onStepKey = useEffectEvent((event: KeyboardEvent) => {
+    if (!hasViolations || tab !== 'report') return
+    if (event.altKey || event.ctrlKey || event.metaKey) return
+    if (isTypingTarget(event.target)) return
+    const by = event.code === 'KeyN' ? 1 : event.code === 'KeyP' ? -1 : 0
+    if (!by) return
+    event.preventDefault()
+    select(stepIndex(activeIndex, by, count), true)
+  })
+
+  useEffect(() => {
+    const listener = (event: KeyboardEvent) => onStepKey(event)
+    document.addEventListener('keydown', listener)
+    return () => document.removeEventListener('keydown', listener)
+  }, [])
 
   const verdictTitle = useStrings('verdictSummary')
 
@@ -127,8 +159,11 @@ export function ReportScreen({
             posterUrl={posterUrl}
             duration={duration}
             markers={markers}
-            activeMarkerId={active ? String(activeIndex) : null}
-            onMarkerSelect={(id) => select(Number(id))}
+            activeMarkerId={playhead === null ? null : String(playhead)}
+            onMarkerSelect={(id) => select(Number(id), true)}
+            onTimeChange={(time) =>
+              setPlayhead(activeViolationIndex(violations, time))
+            }
           />
           {exit.kind === 'newVideo' && (
             <Button
@@ -151,8 +186,13 @@ export function ReportScreen({
             {active && (
               <ViolationList
                 violations={violations}
-                activeIndex={activeIndex}
+                openIndex={activeIndex}
+                playheadIndex={playhead}
                 onSelect={select}
+                rowRef={(index, row) => {
+                  if (row) rows.current.set(index, row)
+                  else rows.current.delete(index)
+                }}
               />
             )}
           </div>

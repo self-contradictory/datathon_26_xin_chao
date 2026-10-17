@@ -111,7 +111,8 @@ player:
   speed: 'Playback speed: {rate}'
   fullscreen: Full screen
   exitFullscreen: Exit full screen
-  markerGroup: '{label}, {time}, and {more} more nearby'
+  marker: 'Violation {i} of {n}: {label}, {time}'
+  markerGroup: 'Violation {i} of {n}: {label}, {time}, and {more} more nearby'
   unavailable: Video unavailable
   noSource: Upload the file again to watch the recording
   cannotPlay: This browser cannot play the video

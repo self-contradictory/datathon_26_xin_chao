@@ -17,7 +17,6 @@ const SAME_IN_EVERY_LANGUAGE = new Set([
   'titles.api',
   'titles.suffix',
   'report.json',
-  'player.marker',
   'languages.kk',
   'languages.ru',
   'languages.en',

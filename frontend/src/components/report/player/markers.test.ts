@@ -1,7 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { fallbackSpan, groupMarkers, tooltipAlign } from './markers'
 
-const marker = (id: string, time: number) => ({ id, time, label: id })
+const marker = (id: string, time: number) => ({
+  id,
+  position: 1,
+  time,
+  label: id,
+})
 
 describe('groupMarkers', () => {
   test('sorts by time and keeps distant markers apart', () => {
