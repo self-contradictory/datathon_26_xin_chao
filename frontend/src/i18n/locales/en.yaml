@@ -10,7 +10,7 @@ titles:
   upload: Cash desk video check
   processing: Processing the video
   violation: Signs of violations found
-  clean: No violation found
+  clean: No violations found
   rules: Detection rules
   batch: Video check
 upload:
@@ -79,7 +79,7 @@ report:
 verdictSummary:
   label: Verdict
   violation: 'Signs of possible violations found: {n}'
-  clean: No violation found
+  clean: No violations found
   checked: 'checked {date}'
 violationList:
   hint: Click a timecode to jump to that moment in the video

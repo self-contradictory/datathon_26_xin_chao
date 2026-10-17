@@ -11,7 +11,7 @@ titles:
   upload: Проверка кассы по видео
   processing: Обработка видео
   violation: Найдены признаки нарушений
-  clean: Нарушение не обнаружено
+  clean: Нарушений не обнаружено
   rules: Правила проверки
   api: API
   suffix: '{title} — Forte'
@@ -83,7 +83,7 @@ report:
 verdictSummary:
   label: Вердикт
   violation: 'Обнаружены признаки возможных нарушений: {n}'
-  clean: Нарушение не обнаружено
+  clean: Нарушений не обнаружено
   checked: 'проверено {date}'
 violationList:
   hint: 'Нажмите на таймкод, чтобы перейти к моменту в видео'
