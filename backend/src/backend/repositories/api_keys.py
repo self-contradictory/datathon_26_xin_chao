@@ -30,6 +30,9 @@ class ApiKeyRepository(ABC):
     @abstractmethod
     def revoke(self, key_id: int, revoked_at: datetime) -> ApiKey | None: ...
 
+    @abstractmethod
+    def restore(self, key_id: int) -> None: ...
+
 
 class SqliteApiKeyRepository(ApiKeyRepository):
     def __init__(self, database: Database[sqlite3.Connection]) -> None:
@@ -85,6 +88,12 @@ class SqliteApiKeyRepository(ApiKeyRepository):
                 (_to_text(revoked_at), key_id),
             ).fetchone()
         return _to_model(row) if row else None
+
+    def restore(self, key_id: int) -> None:
+        with self._database.connect() as connection:
+            connection.execute(
+                "UPDATE api_keys SET revoked_at = NULL WHERE id = ?", (key_id,)
+            )
 
 
 def _to_text(value: datetime | None) -> str | None:

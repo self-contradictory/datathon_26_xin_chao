@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import secrets
 import string
 from dataclasses import replace
@@ -6,6 +7,8 @@ from datetime import UTC, datetime
 
 from backend.models import ApiKey
 from backend.repositories.api_keys import ApiKeyRepository
+
+logger = logging.getLogger(__name__)
 
 
 class ApiKeyNotFoundError(LookupError):
@@ -52,6 +55,29 @@ class ApiKeyService:
         if api_key is None:
             raise ApiKeyNotFoundError(key_id)
         return api_key
+
+    def sync(self, keys: dict[str, str]) -> None:
+        for name, key in keys.items():
+            if not key.startswith(self.PREFIX):
+                raise ValueError(f"API key {name!r} must start with {self.PREFIX!r}")
+        if not keys:
+            logger.warning("API_KEYS is empty, every API request will get 401")
+
+        now = datetime.now(UTC)
+        wanted = {self._hash(key): (name, key) for name, key in keys.items()}
+        for api_key in self._repository.list_all():
+            if wanted.pop(api_key.key_hash, None) is None:
+                self._repository.revoke(api_key.id, now)
+            elif api_key.revoked_at is not None:
+                self._repository.restore(api_key.id)
+        for key_hash, (name, key) in wanted.items():
+            self._repository.add(
+                name=name,
+                key_hash=key_hash,
+                last4=key[-4:],
+                created_at=now,
+                expires_at=None,
+            )
 
     @staticmethod
     def _hash(key: str) -> str:

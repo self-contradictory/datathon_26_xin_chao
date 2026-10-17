@@ -9,6 +9,8 @@ from backend.api import router
 from backend.config import settings
 from backend.dependencies import (
     get_analyzer,
+    get_api_key_repository,
+    get_api_key_service,
     get_database,
     get_job_executor,
     get_job_repository,
@@ -20,6 +22,7 @@ from backend.dependencies import (
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     database = get_database()
     database.initialize()
+    get_api_key_service(get_api_key_repository(database)).sync(settings.API_KEYS)
     executor = get_job_executor()
     get_job_service(
         get_job_repository(database), get_analyzer(), executor
