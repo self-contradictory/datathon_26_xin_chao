@@ -1,6 +1,8 @@
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, Depends, UploadFile
 
-router = APIRouter(prefix="/api/v1")
+from backend.dependencies import require_api_key
+
+router = APIRouter(prefix="/api/v1", dependencies=[Depends(require_api_key)])
 
 
 @router.post("/analyze")
