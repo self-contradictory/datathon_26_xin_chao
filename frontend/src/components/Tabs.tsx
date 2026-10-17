@@ -35,7 +35,11 @@ export function Tabs<K extends string>({
   }
 
   return (
-    <div role="tablist" aria-label={label} className="flex gap-2">
+    <div
+      role="tablist"
+      aria-label={label}
+      className="inline-flex shrink-0 gap-1 rounded-full bg-surface p-1"
+    >
       {items.map((item, index) => {
         const selected = item.key === value
         return (
@@ -52,19 +56,13 @@ export function Tabs<K extends string>({
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(item.key)}
             onKeyDown={(event) => onKeyDown(event, index)}
-            className={`relative h-12 cursor-pointer px-4 text-body transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand ${
+            className={`h-9 cursor-pointer rounded-full px-4 text-secondary transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
               selected
-                ? 'font-semibold text-text'
+                ? 'bg-bg font-semibold text-text shadow-[0_1px_3px_rgba(31,31,31,0.12)]'
                 : 'text-text-muted hover:text-text'
             }`}
           >
             {item.label}
-            {selected && (
-              <span
-                aria-hidden="true"
-                className="absolute inset-x-0 -bottom-px h-[3px] rounded-t-sm bg-brand"
-              />
-            )}
           </button>
         )
       })}

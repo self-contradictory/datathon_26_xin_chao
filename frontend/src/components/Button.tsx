@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react'
 type ButtonVariant = 'primary' | 'secondary'
 
 const BASE =
-  'inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md px-5 text-body font-semibold whitespace-nowrap no-underline transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-60'
+  'inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 text-body font-semibold whitespace-nowrap no-underline transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-60'
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: 'bg-brand text-white hover:bg-brand-hover active:bg-brand-hover',

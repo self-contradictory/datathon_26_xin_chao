@@ -1,5 +1,5 @@
-import owl from '@/assets/owl.webp'
-import owlStill from '@/assets/owl-still.webp'
+import owl from '@/assets/owls/idle.webp'
+import owlStill from '@/assets/owls/idle-still.webp'
 
 export function Mascot({ excited }: { excited: boolean }) {
   return (

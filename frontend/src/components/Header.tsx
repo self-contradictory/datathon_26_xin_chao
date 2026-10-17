@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { LANGS, useLang, useStrings } from '@/i18n'
 import { CloseIcon, MenuIcon } from './icons'
+import { Owl } from './Owl'
 
 export type Route = 'main' | 'rules' | 'api'
 
@@ -14,7 +15,7 @@ function LangSwitch({ compact }: { compact: boolean }) {
     <div
       role="group"
       aria-label={t.language}
-      className="flex overflow-hidden rounded-md border border-border"
+      className="flex overflow-hidden rounded-full border border-border"
     >
       {LANGS.map((code) => {
         const active = code === lang
@@ -45,18 +46,11 @@ function HomeLink({ withService }: { withService: boolean }) {
       aria-label={t.home}
       className={`mr-auto flex min-h-11 items-center gap-3 rounded-md text-brand-deep no-underline ${FOCUS}`}
     >
-      <span
-        aria-hidden="true"
-        className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-brand-deep text-section font-bold text-white"
-      >
-        F
-      </span>
-      <span className="text-[20px] leading-6 font-bold">Forte</span>
+      <Owl mood="idle" className="w-10 shrink-0" />
       {withService && (
-        <>
-          <span aria-hidden="true" className="h-6 w-px bg-border" />
-          <span className="text-body text-text-muted">{t.service}</span>
-        </>
+        <span className="text-section font-semibold text-brand-deep">
+          {t.service}
+        </span>
       )}
     </a>
   )

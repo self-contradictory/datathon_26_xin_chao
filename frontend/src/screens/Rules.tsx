@@ -1,4 +1,5 @@
 import { InfoIcon } from '@/components/icons'
+import { Owl } from '@/components/Owl'
 import { RuleNorm } from '@/components/RuleNorm'
 import { TextLink } from '@/components/TextLink'
 import { format, useStrings } from '@/i18n'
@@ -133,9 +134,12 @@ export function RulesPage() {
   const t = useStrings('rules')
   return (
     <main className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-4 pt-8 pb-16 sm:px-6 sm:pt-12">
-      <div className="flex max-w-[72ch] flex-col gap-2">
-        <h1 className="text-title font-semibold">{t.title}</h1>
-        <p className="text-text-muted">{t.subtitle}</p>
+      <div className="flex flex-col-reverse gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex max-w-[72ch] flex-col gap-2">
+          <h1 className="text-title font-semibold">{t.title}</h1>
+          <p className="text-text-muted">{t.subtitle}</p>
+        </div>
+        <Owl mood="reading" className="w-48 shrink-0 rounded-lg sm:w-56" />
       </div>
 
       <RulesTable />

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { FileMeta } from '@/components/FileMeta'
+import { Owl } from '@/components/Owl'
 import { useStrings } from '@/i18n'
 import { ElapsedTimer } from '@/components/processing/ElapsedTimer'
 import { ErrorPanel } from '@/components/processing/ErrorPanel'
@@ -69,6 +70,10 @@ export function ProcessingScreen({
         </div>
 
         <div className="col-span-2 flex min-w-0 flex-col gap-6 lg:col-span-1 lg:col-start-2">
+          <Owl
+            mood={failed ? 'warning' : 'analyzing'}
+            className="w-full max-w-[320px] rounded-lg"
+          />
           <StepList
             states={stepStates(phase, failedStep)}
             uploadProgress={uploadProgress}

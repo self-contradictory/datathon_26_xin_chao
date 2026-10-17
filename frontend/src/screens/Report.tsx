@@ -12,6 +12,7 @@ import { Tabs } from '@/components/Tabs'
 import { format, useStrings } from '@/i18n'
 import { formatTime } from '@/utils/time'
 import { JsonView } from '@/components/report/JsonView'
+import { ReportMeta } from '@/components/report/ReportMeta'
 import { TimeChip } from '@/components/report/TimeChip'
 import { VerdictSummary } from '@/components/report/VerdictSummary'
 import { ViolationCard } from '@/components/report/ViolationCard'
@@ -47,11 +48,6 @@ export function ReportScreen({
     return () => window.removeEventListener('hashchange', pause)
   }, [])
 
-  function changeTab(next: Tab) {
-    if (next !== 'report') playerRef.current?.pause()
-    setTab(next)
-  }
-
   const { violations } = job
   const count = violations.length
   const hasViolations = showsViolations(job)
@@ -83,90 +79,97 @@ export function ReportScreen({
     playerRef.current?.seek(violation.timecode_sec)
   }
 
+  const verdictTitle = useStrings('verdictSummary')
+
   return (
-    <main>
-      <div className="border-b border-border">
-        <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-4 gap-y-2 px-4 pt-2 sm:px-6">
-          {exit.kind === 'backToList' && (
-            <Button
-              variant="secondary"
-              icon={<ChevronLeftIcon size={20} />}
-              onClick={exit.onClick}
-              className="my-0.5"
-            >
-              {t.backToList}
-            </Button>
-          )}
+    <main className="mx-auto w-full max-w-[1200px] px-4 pt-6 pb-16 sm:px-6 lg:pt-8">
+      <h1 ref={titleRef} tabIndex={-1} className="sr-only">
+        {hasViolations
+          ? format(verdictTitle.violation, { n: count })
+          : verdictTitle.clean}
+      </h1>
+
+      <div className="grid gap-6 lg:grid-cols-[var(--player-width)_minmax(0,1fr)] lg:grid-rows-[auto_auto_1fr] lg:items-start lg:gap-x-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 lg:col-start-2 lg:row-start-1">
+          <ReportMeta
+            fileName={fileName}
+            fileSize={fileSize}
+            duration={duration}
+            checkedAt={checkedAt}
+          />
           <Tabs
             items={[
               { key: 'report', label: t.report },
               { key: 'json', label: t.json },
             ]}
             value={tab}
-            onChange={changeTab}
+            onChange={setTab}
             idPrefix={TABS}
             label={t.tabs}
           />
+        </div>
+
+        <VerdictSummary
+          violation={hasViolations}
+          count={count}
+          className="lg:col-start-2 lg:row-start-2"
+        >
+          {!active && <CleanSummary />}
+        </VerdictSummary>
+
+        <div className="mx-auto flex w-full max-w-[400px] flex-col gap-3 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:mx-0">
+          {exit.kind === 'backToList' && (
+            <Button
+              variant="secondary"
+              icon={<ChevronLeftIcon size={20} />}
+              onClick={exit.onClick}
+              className="self-start"
+            >
+              {t.backToList}
+            </Button>
+          )}
+          <Player
+            ref={playerRef}
+            src={videoUrl}
+            posterUrl={posterUrl}
+            duration={duration}
+            markers={markers}
+            activeMarkerId={active ? String(activeIndex) : null}
+            onMarkerSelect={(id) => select(Number(id))}
+          />
+          {active && (
+            <p className="hidden flex-wrap items-center gap-2 lg:flex">
+              <span
+                aria-hidden="true"
+                className="h-3 w-1 rounded-[1px] bg-danger"
+              />
+              <TimeChip seconds={active.timecode_sec} />
+              <span lang="ru" className="font-semibold">
+                {active.type}
+              </span>
+            </p>
+          )}
           {exit.kind === 'newVideo' && (
             <Button
               variant="secondary"
               icon={<PlusIcon size={20} />}
               onClick={exit.onClick}
-              className="my-0.5 ml-auto"
+              className="mt-1 w-full"
             >
               {t.newVideo}
             </Button>
           )}
         </div>
-      </div>
 
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 pt-6 pb-16 sm:px-6">
-        <div
-          role="tabpanel"
-          id={panelId(TABS, 'report')}
-          aria-labelledby={tabId(TABS, 'report')}
-          hidden={tab !== 'report'}
-        >
-          <div className="grid gap-6 lg:grid-cols-[var(--player-width)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:items-start">
-            <VerdictSummary
-              titleRef={titleRef}
-              violation={hasViolations}
-              count={count}
-              fileName={fileName}
-              fileSize={fileSize}
-              duration={duration}
-              checkedAt={checkedAt}
-              className="lg:col-start-2"
-            >
-              {!active && <CleanSummary />}
-            </VerdictSummary>
-
-            <div className="mx-auto flex w-full max-w-[400px] flex-col gap-3 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:mx-0">
-              <Player
-                ref={playerRef}
-                src={videoUrl}
-                posterUrl={posterUrl}
-                duration={duration}
-                markers={markers}
-                activeMarkerId={active ? String(activeIndex) : null}
-                onMarkerSelect={(id) => select(Number(id))}
-              />
-              {active && (
-                <p className="hidden flex-wrap items-center gap-2 lg:flex">
-                  <span
-                    aria-hidden="true"
-                    className="h-3 w-1 rounded-[1px] bg-danger"
-                  />
-                  <TimeChip seconds={active.timecode_sec} />
-                  <span lang="ru" className="font-semibold">
-                    {active.type}
-                  </span>
-                </p>
-              )}
-            </div>
-
+        <div className="min-w-0 lg:col-start-2 lg:row-start-3">
+          <div
+            role="tabpanel"
+            id={panelId(TABS, 'report')}
+            aria-labelledby={tabId(TABS, 'report')}
+            hidden={tab !== 'report'}
+          >
             {active && (
-              <div className="flex min-w-0 flex-col gap-6 lg:col-start-2">
+              <div className="flex flex-col gap-6">
                 <ViolationList
                   violations={violations}
                   activeIndex={activeIndex}
@@ -181,28 +184,28 @@ export function ReportScreen({
               </div>
             )}
           </div>
-        </div>
 
-        <div
-          role="tabpanel"
-          id={panelId(TABS, 'json')}
-          aria-labelledby={tabId(TABS, 'json')}
-          hidden={tab !== 'json'}
-        >
-          <JsonView job={job} />
+          <div
+            role="tabpanel"
+            id={panelId(TABS, 'json')}
+            aria-labelledby={tabId(TABS, 'json')}
+            hidden={tab !== 'json'}
+          >
+            <JsonView job={job} />
+          </div>
         </div>
-
-        <p aria-live="polite" className="sr-only">
-          {picked && active
-            ? format(t.selected, {
-                i: activeIndex + 1,
-                n: count,
-                type: active.type,
-                time: formatTime(active.timecode_sec),
-              })
-            : ''}
-        </p>
       </div>
+
+      <p aria-live="polite" className="sr-only">
+        {picked && active
+          ? format(t.selected, {
+              i: activeIndex + 1,
+              n: count,
+              type: active.type,
+              time: formatTime(active.timecode_sec),
+            })
+          : ''}
+      </p>
     </main>
   )
 }

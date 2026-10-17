@@ -35,9 +35,9 @@
   --text-caption: 12px;
   --text-caption--line-height: 16px;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
 
   --shadow-popover: 0 2px 8px rgba(31, 31, 31, 0.12);
   --shadow-lightbox: 0 8px 24px rgba(31, 31, 31, 0.2);
