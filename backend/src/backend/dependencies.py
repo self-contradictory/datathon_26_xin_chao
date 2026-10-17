@@ -6,12 +6,14 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyHeader
 
 from backend.analyzers.base import VideoAnalyzer
-from backend.analyzers.stub import StubAnalyzer
+from backend.analyzers.questions import QuestionAnalyzer
 from backend.config import settings
 from backend.db.sqlite import SqliteDatabase
 from backend.models import ApiKey
 from backend.repositories.api_keys import ApiKeyRepository, SqliteApiKeyRepository
 from backend.repositories.jobs import JobRepository, SqliteJobRepository
+from backend.reconstruction.pipeline import Reconstructor
+from backend.reconstruction.vlm import QuestionVLM
 from backend.services.api_keys import ApiKeyService
 from backend.services.jobs import JobService
 
@@ -25,7 +27,8 @@ def get_database() -> SqliteDatabase:
 
 @lru_cache
 def get_analyzer() -> VideoAnalyzer:
-    return StubAnalyzer()
+    model = QuestionVLM(settings.MODEL, settings.MODEL_PATH, settings.MODEL_DEVICE)
+    return QuestionAnalyzer(Reconstructor(model, settings.SAMPLE_FPS, settings.IMAGE_TOKENS), settings.RULE_MODE)
 
 
 @lru_cache
