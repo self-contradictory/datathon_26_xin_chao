@@ -19,19 +19,23 @@ upload:
   privacy: The video is processed on the server and is not shared with third-party services
 dropZone:
   region: Video upload
-  dropHere: Drag a .mov file here
+  dropHere: Drag .mov files here
   or: or
-  choose: Choose file
-  chooseAnother: Choose another file
-  onlyMov: .mov only
-  release: Release the file to start the check
-  dropAgain: or drag a .mov file into this area
+  choose: Choose files
+  chooseAnother: Choose other files
+  hint: '.mov only, up to {max} videos at a time'
+  release: Release to start the check
+  dropAgain: or drag .mov files into this area
   formatTitle: 'Error: format not supported'
   otherVideo: 'The file {name} is a .{ext} video. The service accepts only .mov from the camera above the cash desk.'
   otherFile: 'The file {name} is a .{ext} file. The service accepts only .mov from the camera above the cash desk.'
   noExtension: 'The file {name} has no extension. The service accepts only .mov from the camera above the cash desk.'
   emptyTitle: 'Error: the file is empty'
   emptyText: 'The file {name} is empty. Choose another recording from the camera above the cash desk.'
+  tooManyTitle: 'Error: too many videos'
+  tooManyText: 'Videos selected: {count}. You can check up to {max} at a time.'
+  noneValidTitle: 'Error: the files are not supported'
+  noneValidText: 'None of the selected files ({count}) can be checked. The service accepts only .mov from the camera above the cash desk.'
 processing:
   title: Video processing
   subtitle: The video is processed on the server and is not shared with third-party services.

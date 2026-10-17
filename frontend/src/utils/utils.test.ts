@@ -3,7 +3,7 @@ import { messagesFor } from '@/i18n'
 import { LABEL_COUNT, labelKey, lookupLabel } from '@/api/labels'
 import { parseHash } from '@/route'
 import { findRule, RULES } from '@/rules'
-import { checkVideoFile, fileExtension } from './file'
+import { checkVideoFile, fileExtension, pickVideos } from './file'
 import { clampTime } from './frames'
 import { formatFileSize, formatFrameTime, formatTime } from './time'
 
@@ -59,6 +59,57 @@ describe('file check', () => {
     expect(fileExtension('a.b.MOV')).toBe('mov')
     expect(fileExtension('.mov')).toBe('mov')
     expect(fileExtension('dir.mov/file')).toBe('')
+  })
+})
+
+describe('pickVideos', () => {
+  const video = (name: string, size = 1) =>
+    new File([new Uint8Array(size)], name)
+
+  test('one file keeps the single-video path, even a wrong one', () => {
+    const one = video('Х-3.mov')
+    expect(pickVideos([one], 10)).toEqual({ kind: 'single', file: one })
+    const wrong = video('Х-3.mp4')
+    expect(pickVideos([wrong], 10)).toEqual({ kind: 'single', file: wrong })
+  })
+
+  test('several files become a batch in the chosen order', () => {
+    const files = [video('b.mov'), video('a.mov')]
+    expect(pickVideos(files, 10)).toEqual({
+      kind: 'batch',
+      files,
+      rejected: [],
+    })
+  })
+
+  test('wrong files are listed and the rest are still checked', () => {
+    const good = video('a.mov')
+    expect(pickVideos([video('b.mp4'), good, video('c.mov', 0)], 10)).toEqual({
+      kind: 'batch',
+      files: [good],
+      rejected: [
+        { fileName: 'b.mp4', problem: { kind: 'not_mov', extension: 'mp4' } },
+        { fileName: 'c.mov', problem: { kind: 'empty' } },
+      ],
+    })
+  })
+
+  test('no usable file at all is an error', () => {
+    expect(pickVideos([video('a.mp4'), video('b.txt')], 10)).toEqual({
+      kind: 'none_valid',
+      count: 2,
+    })
+  })
+
+  test('the limit counts only usable files', () => {
+    const ten = Array.from({ length: 10 }, (_, i) => video(`${i}.mov`))
+    expect(pickVideos(ten, 10).kind).toBe('batch')
+    expect(pickVideos([...ten, video('x.mp4')], 10).kind).toBe('batch')
+    expect(pickVideos([...ten, video('10.mov')], 10)).toEqual({
+      kind: 'too_many',
+      count: 11,
+      max: 10,
+    })
   })
 })
 

@@ -161,17 +161,26 @@ function batch(rows: BatchRowView[], extra: Partial<BatchScreenProps> = {}) {
 }
 
 const STATES: Record<string, () => React.ReactNode> = {
-  'upload-empty': () => <UploadScreen onSubmit={noop} />,
+  'upload-empty': () => <UploadScreen onSubmit={noop} onSubmitMany={noop} />,
   'upload-dragover': () => (
     <UploadScreen
       onSubmit={noop}
+      onSubmitMany={noop}
       preview={{ state: 'dragover', fileName: X17.name, fileSize: X17.size }}
     />
   ),
   'upload-error': () => (
     <UploadScreen
       onSubmit={noop}
+      onSubmitMany={noop}
       preview={{ state: 'error', fileName: 'Х-17.mp4' }}
+    />
+  ),
+  'upload-too-many': () => (
+    <UploadScreen
+      onSubmit={noop}
+      onSubmitMany={noop}
+      preview={{ state: 'too_many', count: 14 }}
     />
   ),
   'processing-uploading': () => processing('uploading', 2, 0.4),

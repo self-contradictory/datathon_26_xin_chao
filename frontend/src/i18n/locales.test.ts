@@ -12,6 +12,19 @@ import { messagesFor } from './index'
 const ru = readLocale('ru')
 const translations = { kk: readLocale('kk'), en: readLocale('en') }
 
+const SAME_IN_EVERY_LANGUAGE = new Set([
+  'header.api',
+  'titles.api',
+  'titles.suffix',
+  'report.json',
+  'jsonView.charsFew',
+  'jsonView.charsMany',
+  'player.marker',
+  'languages.kk',
+  'languages.ru',
+  'languages.en',
+])
+
 const placeholders = (text: string) =>
   [...text.matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort()
 
@@ -36,6 +49,18 @@ describe('locales', () => {
           ).toBeDefined()
         }
       }
+    })
+
+    test(`${lang}.yaml translates every key of ru.yaml`, () => {
+      const missing: string[] = []
+      for (const [namespace, strings] of Object.entries(ru)) {
+        for (const key of Object.keys(strings)) {
+          const path = `${namespace}.${key}`
+          if (SAME_IN_EVERY_LANGUAGE.has(path)) continue
+          if (messages[namespace]?.[key] === undefined) missing.push(path)
+        }
+      }
+      expect(missing).toEqual([])
     })
 
     test(`${lang}.yaml keeps the same {placeholders} as ru.yaml`, () => {

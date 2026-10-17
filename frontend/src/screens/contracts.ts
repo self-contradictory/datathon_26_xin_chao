@@ -5,9 +5,11 @@ import type { RejectedFile } from '@/utils/file'
 
 export interface UploadScreenProps {
   onSubmit: (file: File) => void
+  onSubmitMany: (files: File[], rejected: RejectedFile[]) => void
   preview?:
     | { state: 'dragover'; fileName: string; fileSize: number }
     | { state: 'error'; fileName: string }
+    | { state: 'too_many'; count: number }
 }
 
 export type ProcessingStep = 'upload' | 'analysis'

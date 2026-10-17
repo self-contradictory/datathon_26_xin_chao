@@ -1,5 +1,9 @@
 import { lazy, Suspense, useEffect } from 'react'
-import { showsViolations } from '@/api/types'
+import { showsViolations, type DoneJob } from '@/api/types'
+import { openedReport } from '@/batch/batch'
+import { BatchFlow } from '@/batch/BatchFlow'
+import type { BatchState } from '@/batch/types'
+import { useBatchFlow } from '@/batch/useBatchFlow'
 import { Header } from '@/components/Header'
 import { jobSource, POLL_INTERVAL_MS, POLL_TIMEOUT_MS } from '@/config'
 import { useJobFlow, type FlowState } from '@/flow'
@@ -18,10 +22,20 @@ const DemoPage =
     ? null
     : lazy(() => import('@/demo/DemoPage'))
 
-function MainFlow({ flow }: { flow: ReturnType<typeof useJobFlow> }) {
+function MainFlow({
+  flow,
+  batch,
+}: {
+  flow: ReturnType<typeof useJobFlow>
+  batch: ReturnType<typeof useBatchFlow>
+}) {
   const { state, start, retry, reset } = flow
 
-  if (state.screen === 'upload') return <UploadScreen onSubmit={start} />
+  if (batch.state.items.length > 0) return <BatchFlow batch={batch} />
+
+  if (state.screen === 'upload') {
+    return <UploadScreen onSubmit={start} onSubmitMany={batch.start} />
+  }
 
   if (state.screen === 'processing') {
     return (
@@ -56,23 +70,35 @@ function MainFlow({ flow }: { flow: ReturnType<typeof useJobFlow> }) {
   )
 }
 
-function mainTitleKey(state: FlowState): keyof Messages['titles'] {
-  if (state.screen !== 'report') return state.screen
-  return showsViolations(state.job) ? 'violation' : 'clean'
+function verdictTitle(job: DoneJob): keyof Messages['titles'] {
+  return showsViolations(job) ? 'violation' : 'clean'
+}
+
+function mainTitleKey(
+  flow: FlowState,
+  batch: BatchState,
+): keyof Messages['titles'] {
+  if (batch.items.length > 0) {
+    const opened = openedReport(batch)
+    return opened ? verdictTitle(opened.result.job) : 'batch'
+  }
+  if (flow.screen !== 'report') return flow.screen
+  return verdictTitle(flow.job)
 }
 
 function Shell() {
   useStrayDropGuard()
   const route = useHashRoute()
-  const flow = useJobFlow(jobSource, {
-    intervalMs: POLL_INTERVAL_MS,
-    timeoutMs: POLL_TIMEOUT_MS,
-  })
+  const polling = { intervalMs: POLL_INTERVAL_MS, timeoutMs: POLL_TIMEOUT_MS }
+  const flow = useJobFlow(jobSource, polling)
+  const batch = useBatchFlow(jobSource, polling)
   const t = useStrings('titles')
   const page = route.page === 'demo' && !DemoPage ? 'main' : route.page
 
   const titleKey =
-    page === 'rules' || page === 'api' ? page : mainTitleKey(flow.state)
+    page === 'rules' || page === 'api'
+      ? page
+      : mainTitleKey(flow.state, batch.state)
   const documentTitle = format(t.suffix, { title: t[titleKey] })
   useEffect(() => {
     document.title = documentTitle
@@ -89,7 +115,7 @@ function Shell() {
         </Suspense>
       )}
       <div hidden={page !== 'main'}>
-        <MainFlow flow={flow} />
+        <MainFlow flow={flow} batch={batch} />
       </div>
     </div>
   )

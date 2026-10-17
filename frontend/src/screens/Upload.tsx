@@ -3,7 +3,11 @@ import { useStrings } from '@/i18n'
 import { DropZone } from '@/components/upload/DropZone'
 import type { UploadScreenProps } from './contracts'
 
-export function UploadScreen({ onSubmit, preview }: UploadScreenProps) {
+export function UploadScreen({
+  onSubmit,
+  onSubmitMany,
+  preview,
+}: UploadScreenProps) {
   const t = useStrings('upload')
   return (
     <main className="flex min-h-[calc(100svh-65px)] flex-col items-center justify-center gap-8 px-4 pt-12 pb-16 sm:pt-16 sm:pb-24">
@@ -11,7 +15,11 @@ export function UploadScreen({ onSubmit, preview }: UploadScreenProps) {
         <h1 className="text-title font-semibold">{t.title}</h1>
         <p className="text-text-muted">{t.subtitle}</p>
       </div>
-      <DropZone onSubmit={onSubmit} preview={preview} />
+      <DropZone
+        onSubmit={onSubmit}
+        onSubmitMany={onSubmitMany}
+        preview={preview}
+      />
       <p className="max-w-[640px] text-center text-secondary text-text-muted">
         <LockIcon size={20} className="mr-2 inline-block align-top" />
         {t.privacy}

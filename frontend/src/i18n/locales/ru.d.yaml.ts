@@ -30,7 +30,7 @@ export interface Messages {
     or: string
     choose: string
     chooseAnother: string
-    onlyMov: string
+    hint: string
     release: string
     dropAgain: string
     formatTitle: string
@@ -39,6 +39,10 @@ export interface Messages {
     noExtension: string
     emptyTitle: string
     emptyText: string
+    tooManyTitle: string
+    tooManyText: string
+    noneValidTitle: string
+    noneValidText: string
   }
   processing: {
     title: string

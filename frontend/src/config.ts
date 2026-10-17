@@ -35,3 +35,4 @@ export const jobSource: JobSource = USE_FIXTURES
 
 export const POLL_INTERVAL_MS = USE_FIXTURES ? 1000 : 2000
 export const POLL_TIMEOUT_MS = 5 * 60 * 1000
+export const MAX_BATCH_FILES = 10

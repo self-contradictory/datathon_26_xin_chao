@@ -6,65 +6,38 @@ import {
   UploadIcon,
   VideoFileIcon,
 } from '@/components/icons'
+import { MAX_BATCH_FILES } from '@/config'
 import { format, localeOf, useLang, useStrings, type Messages } from '@/i18n'
-import { checkVideoFile, type FileProblem } from '@/utils/file'
+import { checkVideoFile, pickVideos } from '@/utils/file'
 import { formatFileSize } from '@/utils/time'
 import type { UploadScreenProps } from '@/screens/contracts'
+import { describeRejection, type RejectionReason } from './rejection'
 import { useFileDrop } from './useFileDrop'
 
 type Strings = Messages['dropZone']
 
-const VIDEO_EXTENSIONS = new Set([
-  '3gp',
-  'avi',
-  'flv',
-  'm2ts',
-  'm4v',
-  'mkv',
-  'mp4',
-  'mpeg',
-  'mpg',
-  'mts',
-  'ogv',
-  'webm',
-  'wmv',
-])
-
-interface Rejection {
-  id: number
-  fileName: string
-  problem: FileProblem
-}
+type Rejection = RejectionReason & { id: number }
 
 type HeldFile = { fileName: string; fileSize: number }
 
-function rejectionFromPreview(
+function reasonFromPreview(
   preview: UploadScreenProps['preview'],
-): Rejection | null {
+): RejectionReason | null {
+  if (preview?.state === 'too_many') {
+    return { kind: 'too_many', count: preview.count, max: MAX_BATCH_FILES }
+  }
   if (preview?.state !== 'error') return null
   const problem = checkVideoFile({ name: preview.fileName, size: 0 }) ?? {
     kind: 'empty',
   }
-  return { id: 0, fileName: preview.fileName, problem }
+  return { kind: 'file', fileName: preview.fileName, problem }
 }
 
-function describe(t: Strings, { fileName, problem }: Rejection) {
-  if (problem.kind === 'empty') {
-    return {
-      title: t.emptyTitle,
-      text: format(t.emptyText, { name: fileName }),
-    }
-  }
-  const ext = problem.extension
-  const template = !ext
-    ? t.noExtension
-    : VIDEO_EXTENSIONS.has(ext)
-      ? t.otherVideo
-      : t.otherFile
-  return {
-    title: t.formatTitle,
-    text: format(template, { name: fileName, ext }),
-  }
+function rejectionFromPreview(
+  preview: UploadScreenProps['preview'],
+): Rejection | null {
+  const reason = reasonFromPreview(preview)
+  return reason && { ...reason, id: 0 }
 }
 
 function IdlePrompt({ t }: { t: Strings }) {
@@ -105,7 +78,9 @@ function DragPrompt({ t, file }: { t: Strings; file: HeldFile | null }) {
           </span>
         </p>
       )}
-      <p className="text-secondary text-text-muted">{t.onlyMov}</p>
+      <p className="text-secondary text-text-muted">
+        {format(t.hint, { max: MAX_BATCH_FILES })}
+      </p>
     </>
   )
 }
@@ -119,7 +94,7 @@ function RejectionAlert({
   rejection: Rejection
   textId: string
 }) {
-  const { title, text } = describe(t, rejection)
+  const { title, text } = describeRejection(t, rejection)
   return (
     <div role="alert" className="flex flex-col items-center gap-2">
       <p className="flex flex-col items-center gap-2 text-section font-semibold sm:flex-row">
@@ -133,7 +108,11 @@ function RejectionAlert({
   )
 }
 
-export function DropZone({ onSubmit, preview }: UploadScreenProps) {
+export function DropZone({
+  onSubmit,
+  onSubmitMany,
+  preview,
+}: UploadScreenProps) {
   const t = useStrings('dropZone')
   const inputRef = useRef<HTMLInputElement>(null)
   const hintId = useId()
@@ -142,25 +121,38 @@ export function DropZone({ onSubmit, preview }: UploadScreenProps) {
     rejectionFromPreview(preview),
   )
 
-  const previewKey = preview ? `${preview.state}:${preview.fileName}` : ''
+  const previewKey = preview ? JSON.stringify(preview) : ''
   const [shownPreview, setShownPreview] = useState(previewKey)
   if (previewKey !== shownPreview) {
     setShownPreview(previewKey)
     setRejection(rejectionFromPreview(preview))
   }
 
-  function take(file: File) {
+  function reject(reason: RejectionReason) {
+    setRejection((prev) => ({ ...reason, id: (prev?.id ?? 0) + 1 }))
+  }
+
+  function takeOne(file: File) {
     const problem = checkVideoFile(file)
-    if (!problem) {
-      setRejection(null)
-      onSubmit(file)
+    if (problem) {
+      reject({ kind: 'file', fileName: file.name, problem })
       return
     }
-    setRejection((prev) => ({
-      id: (prev?.id ?? 0) + 1,
-      fileName: file.name,
-      problem,
-    }))
+    setRejection(null)
+    onSubmit(file)
+  }
+
+  function take(files: File[]) {
+    if (files.length === 0) return
+    const pick = pickVideos(files, MAX_BATCH_FILES)
+    if (pick.kind === 'single') {
+      takeOne(pick.file)
+    } else if (pick.kind === 'batch') {
+      setRejection(null)
+      onSubmitMany(pick.files, pick.rejected)
+    } else {
+      reject(pick)
+    }
   }
 
   const drop = useFileDrop(take)
@@ -168,9 +160,9 @@ export function DropZone({ onSubmit, preview }: UploadScreenProps) {
   const dragging = drop.dragging || held !== null
 
   function onPick(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
+    const files = Array.from(event.target.files ?? [])
     event.target.value = ''
-    if (file) take(file)
+    take(files)
   }
 
   const look = dragging
@@ -189,6 +181,7 @@ export function DropZone({ onSubmit, preview }: UploadScreenProps) {
         ref={inputRef}
         type="file"
         accept=".mov,video/quicktime"
+        multiple
         hidden
         onChange={onPick}
       />
@@ -216,7 +209,7 @@ export function DropZone({ onSubmit, preview }: UploadScreenProps) {
           id={hintId}
           className={`text-secondary text-text-muted ${rejection ? 'hidden sm:block' : ''}`}
         >
-          {rejection ? t.dropAgain : t.onlyMov}
+          {rejection ? t.dropAgain : format(t.hint, { max: MAX_BATCH_FILES })}
         </p>
       </div>
       {dragging && (

@@ -153,3 +153,13 @@ export function batchReducer(
       return { ...state, openId: null }
   }
 }
+
+export type DoneStage = Extract<BatchStage, { kind: 'done' }>
+
+export function openedReport(
+  state: BatchState,
+): { item: BatchItem; result: DoneStage } | null {
+  const item = state.items.find((entry) => entry.id === state.openId)
+  if (item?.stage.kind !== 'done') return null
+  return { item, result: item.stage }
+}
