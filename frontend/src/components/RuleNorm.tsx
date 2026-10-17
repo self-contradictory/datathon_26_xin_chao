@@ -1,14 +1,7 @@
-import { format, useStrings } from '@/i18n'
 import type { Rule } from '@/rules'
+import { useNormText } from './normText'
 
 export function RuleNorm({ rule }: { rule: Rule }) {
-  const t = useStrings('ruleNorm')
-  const document = useStrings('violationTypes').document.replace(/№ /g, '№ ')
-  return (
-    <>
-      {rule.clause
-        ? format(t.clause, { document, clause: rule.clause })
-        : format(t.clausePending, { document })}
-    </>
-  )
+  const normText = useNormText()
+  return <>{normText(rule)}</>
 }

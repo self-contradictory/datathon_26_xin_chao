@@ -4,29 +4,55 @@ import { Owl } from '@/components/Owl'
 import { RuleNorm } from '@/components/RuleNorm'
 import { TextLink } from '@/components/TextLink'
 import { format, useStrings } from '@/i18n'
-import { RULES, type Rule } from '@/rules'
+import { ACT_URLS, RULES, ruleActs, type ActId, type Rule } from '@/rules'
 
-function RuleLink({ rule }: { rule: Rule }) {
+function ActLink({ act }: { act: ActId }) {
   const t = useStrings('rules')
-  const names = useStrings('violationTypes')
-  if (!rule.url) {
-    return (
-      <>
-        <span aria-hidden="true" className="text-text-muted">
-          —
-        </span>
-        <span className="sr-only">{t.noLink}</span>
-      </>
-    )
-  }
+  const acts = useStrings('acts')
   return (
     <TextLink
-      href={rule.url}
+      href={ACT_URLS[act]}
       external
-      label={format(t.linkLabel, { type: names[rule.id] })}
+      label={format(t.linkLabel, { act: acts[act] })}
     >
-      adilet.zan.kz
+      {acts[act]}
     </TextLink>
+  )
+}
+
+function Requirement({ rule }: { rule: Rule }) {
+  const t = useStrings('rules')
+  const requires = useStrings('ruleRequires')
+  const check = useStrings('ruleCheck')
+  return (
+    <div className="flex flex-col gap-2">
+      <p>{requires[rule.id]}</p>
+      <p>
+        <span className="font-semibold">{t.check}: </span>
+        {check[rule.id]}
+      </p>
+    </div>
+  )
+}
+
+function Norm({ rule }: { rule: Rule }) {
+  const applicability = useStrings('applicability')
+  return (
+    <div className="flex flex-col items-start gap-2">
+      <p>
+        <RuleNorm rule={rule} />
+      </p>
+      <span className="rounded-full bg-surface px-3 py-1 text-secondary font-semibold">
+        {applicability[rule.applicability]}
+      </span>
+      <ul className="flex flex-col">
+        {ruleActs(rule).map((act) => (
+          <li key={act}>
+            <ActLink act={act} />
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 
@@ -34,46 +60,30 @@ const TH =
   'border-b border-border px-4 py-3 text-left text-secondary font-semibold text-text-muted'
 const TD = 'border-b border-border p-4 align-top'
 
-const HAS_LINKS = RULES.some((rule) => rule.url)
-
-const TABLE_SHOWN = HAS_LINKS ? 'md:block' : 'sm:block'
-const CARDS_SHOWN = HAS_LINKS ? 'md:hidden' : 'sm:hidden'
-
 function RulesTable({ highlight }: { highlight: string | null }) {
   const t = useStrings('rules')
-  const looks = useStrings('ruleLooks')
   const names = useStrings('violationTypes')
   return (
-    <div
-      className={`hidden overflow-x-auto rounded-lg border border-border bg-bg shadow-card ${TABLE_SHOWN}`}
-    >
+    <div className="hidden overflow-x-auto rounded-lg border border-border bg-bg shadow-card md:block">
       <table className="w-full border-collapse">
         <caption className="sr-only">{t.title}</caption>
         <thead>
           <tr className="bg-surface">
-            <th scope="col" className={`${TH} w-[26%]`}>
+            <th scope="col" className={`${TH} w-[24%]`}>
               {t.colType}
             </th>
             <th scope="col" className={TH}>
-              {t.colLooks}
+              {t.colRequires}
             </th>
-            <th
-              scope="col"
-              className={`${TH} ${HAS_LINKS ? 'w-[22%]' : 'w-[28%]'}`}
-            >
+            <th scope="col" className={`${TH} w-[28%]`}>
               {t.colNorm}
             </th>
-            {HAS_LINKS && (
-              <th scope="col" className={`${TH} w-[14%]`}>
-                {t.colLink}
-              </th>
-            )}
           </tr>
         </thead>
         <tbody className="[&>tr:last-child>*]:border-b-0">
           {RULES.map((rule) => (
             <tr
-              key={rule.type}
+              key={rule.id}
               data-rule={rule.id}
               tabIndex={-1}
               className={`scroll-mt-24 transition-colors duration-200 focus:outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand ${highlight === rule.id ? 'bg-brand-tint' : ''}`}
@@ -81,15 +91,12 @@ function RulesTable({ highlight }: { highlight: string | null }) {
               <th scope="row" className={`${TD} text-left font-semibold`}>
                 {names[rule.id]}
               </th>
-              <td className={TD}>{looks[rule.id]}</td>
               <td className={TD}>
-                <RuleNorm rule={rule} />
+                <Requirement rule={rule} />
               </td>
-              {HAS_LINKS && (
-                <td className={`${TD} whitespace-nowrap`}>
-                  <RuleLink rule={rule} />
-                </td>
-              )}
+              <td className={TD}>
+                <Norm rule={rule} />
+              </td>
             </tr>
           ))}
         </tbody>
@@ -100,13 +107,12 @@ function RulesTable({ highlight }: { highlight: string | null }) {
 
 function RulesCards({ highlight }: { highlight: string | null }) {
   const t = useStrings('rules')
-  const looks = useStrings('ruleLooks')
   const names = useStrings('violationTypes')
   return (
-    <ul className={`flex flex-col gap-3 ${CARDS_SHOWN}`}>
+    <ul className="flex flex-col gap-3 md:hidden">
       {RULES.map((rule) => (
         <li
-          key={rule.type}
+          key={rule.id}
           data-rule={rule.id}
           tabIndex={-1}
           className={`scroll-mt-24 rounded-lg border border-border p-4 shadow-card transition-colors duration-200 focus:outline-none focus-visible:outline-2 focus-visible:outline-brand ${highlight === rule.id ? 'bg-brand-tint' : 'bg-bg'}`}
@@ -114,23 +120,19 @@ function RulesCards({ highlight }: { highlight: string | null }) {
           <h2 className="text-body font-semibold">{names[rule.id]}</h2>
           <dl className="mt-3 flex flex-col gap-3">
             <div>
-              <dt className="text-secondary text-text-muted">{t.colLooks}</dt>
-              <dd>{looks[rule.id]}</dd>
+              <dt className="text-secondary text-text-muted">
+                {t.colRequires}
+              </dt>
+              <dd>
+                <Requirement rule={rule} />
+              </dd>
             </div>
             <div>
               <dt className="text-secondary text-text-muted">{t.colNorm}</dt>
               <dd>
-                <RuleNorm rule={rule} />
+                <Norm rule={rule} />
               </dd>
             </div>
-            {rule.url && (
-              <div>
-                <dt className="text-secondary text-text-muted">{t.colLink}</dt>
-                <dd className="mt-2.5">
-                  <RuleLink rule={rule} />
-                </dd>
-              </div>
-            )}
           </dl>
         </li>
       ))}
@@ -138,7 +140,28 @@ function RulesCards({ highlight }: { highlight: string | null }) {
   )
 }
 
-const HIGHLIGHT_MS = 1500
+function Documents() {
+  const t = useStrings('rules')
+  const titles = useStrings('actTitles')
+  const acts = Object.keys(ACT_URLS) as ActId[]
+  return (
+    <section aria-labelledby="rules-documents" className="flex flex-col gap-3">
+      <h2 id="rules-documents" className="text-section font-semibold">
+        {t.documents}
+      </h2>
+      <ul className="flex flex-col gap-3 rounded-lg border border-border bg-bg p-4 shadow-card sm:p-6">
+        {acts.map((act) => (
+          <li key={act} className="flex flex-col gap-1">
+            <p>{titles[act]}</p>
+            <ActLink act={act} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+const HIGHLIGHT_MS = 2500
 
 function useRuleFocus(ruleId: string | undefined) {
   const [highlight, setHighlight] = useState<string | null>(null)
@@ -180,6 +203,7 @@ export function RulesPage({ focusRuleId }: { focusRuleId?: string }) {
 
       <RulesTable highlight={highlight} />
       <RulesCards highlight={highlight} />
+      <Documents />
 
       <div
         role="note"

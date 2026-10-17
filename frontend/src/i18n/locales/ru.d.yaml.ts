@@ -99,6 +99,8 @@ export interface Messages {
   violationCard: {
     description: string
     rule: string
+    requires: string
+    check: string
     adilet: string
     ruleUnknown: string
   }
@@ -143,16 +145,20 @@ export interface Messages {
   rules: {
     title: string
     colType: string
-    colLooks: string
+    colRequires: string
     colNorm: string
-    colLink: string
+    check: string
     linkLabel: string
-    noLink: string
+    documents: string
     note: string
   }
   ruleNorm: {
-    clause: string
-    clausePending: string
+    point: string
+    sub: string
+    article: string
+    norm: string
+    subItem: string
+    subJoin: string
   }
   textLink: {
     newTab: string
@@ -170,6 +176,8 @@ export interface Messages {
     jobPolling: string
     rulesLink: string
     jobResponse: string
+    typesTitle: string
+    typesText: string
     errorsTitle: string
     e401: string
     e404: string
@@ -184,14 +192,6 @@ export interface Messages {
     kk: string
     ru: string
     en: string
-  }
-  ruleLooks: {
-    cashOutOfView: string
-    outsider: string
-    unattended: string
-    countHidden: string
-    personalItems: string
-    phone: string
   }
   units: {
     b: string
@@ -223,15 +223,20 @@ export interface Messages {
     progress: string
   }
   violationTypes: {
-    cashOutOfView: string
-    outsider: string
-    unattended: string
-    countHidden: string
+    cashLeftOut: string
+    countWithoutClient: string
+    mixedCash: string
+    noRecount: string
+    partialReturn: string
+    rejectedNotes: string
+    noId: string
+    safeOpen: string
+    keyLeft: string
+    stampsLeft: string
     personalItems: string
-    phone: string
-    fixture: string
-    fixtureDescription: string
-    document: string
+    sessionUnlocked: string
+    doorOpen: string
+    notReady: string
   }
   review: {
     confirm: string
@@ -287,6 +292,58 @@ export interface Messages {
   }
   demo: {
     title: string
+  }
+  ruleRequires: {
+    cashLeftOut: string
+    countWithoutClient: string
+    mixedCash: string
+    noRecount: string
+    partialReturn: string
+    rejectedNotes: string
+    noId: string
+    safeOpen: string
+    keyLeft: string
+    stampsLeft: string
+    personalItems: string
+    sessionUnlocked: string
+    doorOpen: string
+    notReady: string
+  }
+  ruleCheck: {
+    cashLeftOut: string
+    countWithoutClient: string
+    mixedCash: string
+    noRecount: string
+    partialReturn: string
+    rejectedNotes: string
+    noId: string
+    safeOpen: string
+    keyLeft: string
+    stampsLeft: string
+    personalItems: string
+    sessionUnlocked: string
+    doorOpen: string
+    notReady: string
+  }
+  acts: {
+    nbrk231: string
+    nbrk14: string
+    nbrk230: string
+    ardfm53: string
+    aml: string
+  }
+  actTitles: {
+    nbrk231: string
+    nbrk14: string
+    nbrk230: string
+    ardfm53: string
+    aml: string
+  }
+  applicability: {
+    direct: string
+    conditional: string
+    verify: string
+    internal: string
   }
 }
 

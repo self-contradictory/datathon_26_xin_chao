@@ -1,6 +1,5 @@
-import { FIXTURE_TYPE } from '@/api/fixtureSource'
 import type { Violation } from '@/api/types'
-import { format, useStrings } from '@/i18n'
+import { useStrings } from '@/i18n'
 import { findRule } from '@/rules'
 
 export function useViolationText() {
@@ -8,23 +7,19 @@ export function useViolationText() {
 
   function typeName(type: string): string {
     const rule = findRule(type)
-    if (rule) return t[rule.id]
-    return type === FIXTURE_TYPE ? t.fixture : type
+    return rule ? t[rule.id] : type
   }
 
   function typeLang(type: string): 'ru' | undefined {
-    return findRule(type) || type === FIXTURE_TYPE ? undefined : 'ru'
+    return findRule(type) ? undefined : 'ru'
   }
 
   function description(violation: Violation): string {
-    if (violation.type !== FIXTURE_TYPE) return violation.description
-    return format(t.fixtureDescription, {
-      second: Math.round(violation.timecode_sec),
-    })
+    return violation.description
   }
 
-  function descriptionLang(violation: Violation): 'ru' | undefined {
-    return violation.type === FIXTURE_TYPE ? undefined : 'ru'
+  function descriptionLang(): 'ru' {
+    return 'ru'
   }
 
   return { typeName, typeLang, description, descriptionLang }

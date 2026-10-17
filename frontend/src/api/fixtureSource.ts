@@ -1,9 +1,8 @@
 import { sleep as wait } from '@/utils/async'
+import { RULES } from '@/rules'
 import { lookupLabel } from './labels'
 import { JobError, type JobSource } from './source'
 import type { JobResponse, JobStatus, Violation } from './types'
-
-export const FIXTURE_TYPE = 'Признак нарушения (тестовые данные)'
 
 export type CaptureFn = (
   file: File,
@@ -60,20 +59,21 @@ export function createFixtureSource({
       file,
       FRAME_OFFSETS.map((offset) => label.second + offset),
     )
-    const violation: Violation = {
-      type: FIXTURE_TYPE,
+    const evidence = frames.map((frame) => ({
+      timestamp_sec: Math.round(frame.time * 10) / 10,
+      image_base64: frame.base64,
+    }))
+    const violations: Violation[] = label.rules.map((id) => ({
+      type: RULES.find((rule) => rule.id === id)?.type ?? id,
       timecode_sec: label.second,
-      description: `Тестовые данные этапа 1: по разметке датасета нарушение около ${label.second}-й секунды. Описание того, что видно на видео, появится после подключения анализа.`,
-      evidence_frames: frames.map((frame) => ({
-        timestamp_sec: Math.round(frame.time * 10) / 10,
-        image_base64: frame.base64,
-      })),
-    }
+      description: label.finding,
+      evidence_frames: evidence,
+    }))
     return {
       job_id: jobId,
       status: 'done',
       verdict: 'violation',
-      violations: [violation],
+      violations,
     }
   }
 

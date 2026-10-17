@@ -1,57 +1,181 @@
 import type { Messages } from '@/i18n'
 
-export type RuleId = keyof Messages['ruleLooks']
+export type RuleId = keyof Messages['ruleRequires']
+export type ActId = keyof Messages['acts']
+export type Applicability = keyof Messages['applicability']
+
+export type Ref =
+  | { point: string; subs?: readonly string[] }
+  | { article: string; point: string }
+
+export interface Norm {
+  act: ActId
+  refs: readonly Ref[]
+}
 
 export interface Rule {
   id: RuleId
   type: string
-  document: string
-  clause: string | null
-  url: string | null
+  norms: readonly Norm[]
+  applicability: Applicability
+}
+
+export const ACT_URLS: Record<ActId, string> = {
+  nbrk231: 'https://adilet.zan.kz/rus/docs/V1900019680',
+  nbrk14: 'https://adilet.zan.kz/rus/docs/V2000020075',
+  nbrk230: 'https://adilet.zan.kz/rus/docs/V1700016120',
+  ardfm53: 'https://adilet.zan.kz/rus/docs/V2600038336',
+  aml: 'https://adilet.zan.kz/rus/docs/Z090000191_',
 }
 
 export const RULES: readonly Rule[] = [
   {
-    id: 'cashOutOfView',
-    type: 'Наличные вне зоны видимости камеры',
-    document: 'Постановление НБРК № 231',
-    clause: null,
-    url: null,
+    id: 'cashLeftOut',
+    type: 'Принятые деньги не убраны в запираемое место',
+    norms: [{ act: 'nbrk231', refs: [{ point: '20' }, { point: '74' }] }],
+    applicability: 'direct',
   },
   {
-    id: 'outsider',
-    type: 'Посторонний в кассовой зоне',
-    document: 'Постановление НБРК № 231',
-    clause: null,
-    url: null,
+    id: 'countWithoutClient',
+    type: 'Пересчёт без клиента',
+    norms: [
+      {
+        act: 'nbrk231',
+        refs: [{ point: '20' }, { point: '31', subs: ['4'] }, { point: '35' }],
+      },
+    ],
+    applicability: 'direct',
   },
   {
-    id: 'unattended',
-    type: 'Касса без присмотра',
-    document: 'Постановление НБРК № 231',
-    clause: null,
-    url: null,
+    id: 'mixedCash',
+    type: 'Деньги разных клиентов смешаны',
+    norms: [
+      {
+        act: 'nbrk231',
+        refs: [
+          { point: '19', subs: ['2', '4'] },
+          { point: '20' },
+          { point: '21' },
+        ],
+      },
+    ],
+    applicability: 'direct',
   },
   {
-    id: 'countHidden',
-    type: 'Пересчёт не на виду у клиента',
-    document: 'Постановление НБРК № 231',
-    clause: null,
-    url: null,
+    id: 'noRecount',
+    type: 'Деньги приняты без пересчёта и учёта',
+    norms: [
+      {
+        act: 'nbrk231',
+        refs: [
+          { point: '19', subs: ['2', '4'] },
+          { point: '20' },
+          { point: '26' },
+        ],
+      },
+    ],
+    applicability: 'direct',
+  },
+  {
+    id: 'partialReturn',
+    type: 'Часть принятых денег возвращена клиенту',
+    norms: [
+      {
+        act: 'nbrk231',
+        refs: [{ point: '19', subs: ['2', '4'] }, { point: '20' }],
+      },
+    ],
+    applicability: 'verify',
+  },
+  {
+    id: 'rejectedNotes',
+    type: 'Отклонённые банкноты смешаны с принятыми',
+    norms: [
+      {
+        act: 'nbrk231',
+        refs: [{ point: '19', subs: ['2'] }, { point: '57' }, { point: '59' }],
+      },
+      { act: 'nbrk230', refs: [] },
+    ],
+    applicability: 'verify',
+  },
+  {
+    id: 'noId',
+    type: 'Клиент обслужен без удостоверения личности',
+    norms: [
+      {
+        act: 'nbrk231',
+        refs: [
+          { point: '19', subs: ['1'] },
+          { point: '31', subs: ['1'] },
+          { point: '7' },
+        ],
+      },
+      { act: 'aml', refs: [{ article: '5', point: '1' }] },
+    ],
+    applicability: 'conditional',
+  },
+  {
+    id: 'safeOpen',
+    type: 'Сейф оставлен открытым',
+    norms: [
+      {
+        act: 'nbrk231',
+        refs: [{ point: '20' }, { point: '80' }, { point: '75–78' }],
+      },
+    ],
+    applicability: 'direct',
+  },
+  {
+    id: 'keyLeft',
+    type: 'Ключ оставлен в сейфе',
+    norms: [{ act: 'nbrk231', refs: [{ point: '76' }, { point: '80' }] }],
+    applicability: 'internal',
+  },
+  {
+    id: 'stampsLeft',
+    type: 'Печати и штампы оставлены на столе',
+    norms: [{ act: 'nbrk231', refs: [{ point: '80' }] }],
+    applicability: 'internal',
   },
   {
     id: 'personalItems',
-    type: 'Наличные в личных вещах',
-    document: 'Постановление НБРК № 231',
-    clause: null,
-    url: null,
+    type: 'Личные вещи в кассовом узле',
+    norms: [{ act: 'nbrk231', refs: [{ point: '12' }] }],
+    applicability: 'direct',
   },
   {
-    id: 'phone',
-    type: 'Телефон в руках при работе с наличными',
-    document: 'Постановление НБРК № 231',
-    clause: null,
-    url: null,
+    id: 'sessionUnlocked',
+    type: 'Компьютер оставлен без блокировки',
+    norms: [
+      {
+        act: 'ardfm53',
+        refs: [
+          { point: '71', subs: ['9'] },
+          { point: '53' },
+          { point: '106' },
+          { point: '108' },
+        ],
+      },
+    ],
+    applicability: 'verify',
+  },
+  {
+    id: 'doorOpen',
+    type: 'Служебная дверь кассы открыта',
+    norms: [
+      { act: 'nbrk14', refs: [{ point: '16', subs: ['1'] }, { point: '8' }] },
+    ],
+    applicability: 'verify',
+  },
+  {
+    id: 'notReady',
+    type: 'Обслуживание до включения оборудования',
+    norms: [
+      { act: 'nbrk231', refs: [{ point: '9' }] },
+      { act: 'nbrk14', refs: [{ point: '16', subs: ['6'] }, { point: '3' }] },
+    ],
+    applicability: 'conditional',
   },
 ]
 
@@ -61,10 +185,18 @@ function normalize(type: string): string {
 
 export function findRule(type: string): Rule | null {
   const key = normalize(type)
-  return RULES.find((rule) => normalize(rule.type) === key) ?? null
+  return (
+    RULES.find(
+      (rule) => normalize(rule.type) === key || rule.id.toLowerCase() === key,
+    ) ?? null
+  )
 }
 
 export function ruleHref(type: string): string | null {
   const rule = findRule(type)
   return rule ? `#/rules/${rule.id}` : null
+}
+
+export function ruleActs(rule: Rule): ActId[] {
+  return [...new Set(rule.norms.map((norm) => norm.act))]
 }

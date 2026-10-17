@@ -6,7 +6,7 @@ import { Button } from '@/components/Button'
 import { CheckIcon, CloseIcon } from '@/components/icons'
 import type { ReviewDecision } from '@/history/types'
 import { format, useStrings } from '@/i18n'
-import { findRule, ruleHref } from '@/rules'
+import { ACT_URLS, findRule, ruleActs, type Rule } from '@/rules'
 import { ClipButton } from '@/components/clip/ClipButton'
 import { EvidenceFrames } from './EvidenceFrames'
 import { useViolationText } from './violationText'
@@ -29,24 +29,41 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function RuleCitation({ type }: { type: string }) {
+function AdiletLinks({ rule }: { rule: Rule }) {
   const t = useStrings('violationCard')
-  const rule = findRule(type)
-  if (!rule) return <span className="text-text-muted">{t.ruleUnknown}</span>
-
+  const rules = useStrings('rules')
+  const acts = useStrings('acts')
   return (
-    <div className="flex flex-col gap-1">
+    <ul className="flex flex-col">
+      {ruleActs(rule).map((act) => (
+        <li key={act}>
+          <TextLink
+            href={ACT_URLS[act]}
+            external
+            label={format(rules.linkLabel, { act: acts[act] })}
+          >
+            {format(t.adilet, { act: acts[act] })}
+          </TextLink>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function RuleCitation({ rule }: { rule: Rule }) {
+  const applicability = useStrings('applicability')
+  return (
+    <div className="flex flex-col items-start gap-2">
       <a
-        href={ruleHref(type) ?? undefined}
-        className="inline-flex min-h-11 w-fit items-center rounded-sm text-text no-underline transition-colors duration-150 ease-out hover:text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        href={`#/rules/${rule.id}`}
+        className="inline-flex min-h-11 w-fit items-center rounded-sm text-text underline decoration-border underline-offset-4 transition-colors hover:text-brand hover:decoration-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
       >
         <RuleNorm rule={rule} />
       </a>
-      {rule.url && (
-        <TextLink href={rule.url} external>
-          {t.adilet}
-        </TextLink>
-      )}
+      <span className="rounded-full bg-surface px-3 py-1 text-secondary font-semibold">
+        {applicability[rule.applicability]}
+      </span>
+      <AdiletLinks rule={rule} />
     </div>
   )
 }
@@ -113,7 +130,10 @@ export function ViolationDetails({
   clip: ClipSource | null
 }) {
   const t = useStrings('violationCard')
+  const requires = useStrings('ruleRequires')
+  const check = useStrings('ruleCheck')
   const { typeName, description, descriptionLang } = useViolationText()
+  const rule = findRule(violation.type)
 
   return (
     <div className="flex flex-col gap-4">
@@ -134,13 +154,19 @@ export function ViolationDetails({
       </div>
       <dl className="flex flex-col">
         <Row label={t.description}>
-          <span lang={descriptionLang(violation)}>
-            {description(violation)}
-          </span>
+          <span lang={descriptionLang()}>{description(violation)}</span>
         </Row>
-        <Row label={t.rule}>
-          <RuleCitation type={violation.type} />
-        </Row>
+        {rule ? (
+          <>
+            <Row label={t.requires}>{requires[rule.id]}</Row>
+            <Row label={t.check}>{check[rule.id]}</Row>
+            <Row label={t.rule}>
+              <RuleCitation rule={rule} />
+            </Row>
+          </>
+        ) : (
+          <Row label={t.rule}>{t.ruleUnknown}</Row>
+        )}
       </dl>
       <ReviewControls decision={decision} onDecide={onDecide} />
     </div>

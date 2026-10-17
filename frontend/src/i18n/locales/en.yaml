@@ -80,10 +80,12 @@ verdictSummary:
   clean: No violations found
   checked: 'checked {date}'
 violationCard:
-  description: Description
-  rule: Rule
-  adilet: Open on adilet.zan.kz
-  ruleUnknown: The regulation clause is being clarified
+  description: 'Description'
+  rule: 'Regulation'
+  requires: 'Requires'
+  check: 'What to check'
+  adilet: '{act} on adilet.zan.kz'
+  ruleUnknown: 'Type not in the rules list: a person decides the regulation'
 evidenceFrames:
   frames: Frames
   enlarge: 'Enlarge frame {k}, {time}'
@@ -117,17 +119,21 @@ player:
   noSource: Video unavailable
   cannotPlay: This browser cannot play the video
 rules:
-  title: Detection rules
-  colType: Violation type
-  colLooks: How it looks on video
-  colNorm: Document and clause
-  colLink: Link
-  linkLabel: 'Regulation for “{type}” on adilet.zan.kz, opens in a new tab'
-  noLink: No link yet
-  note: 'The list is open: the service may find signs of other types too. We will extend the table and the clauses after reviewing the regulations. A person checks every case found.'
+  title: 'Detection rules'
+  colType: 'Violation'
+  colRequires: 'What the rule requires'
+  colNorm: 'Regulation'
+  check: 'What to check'
+  linkLabel: '{act} on adilet.zan.kz, opens in a new tab'
+  documents: 'Regulations'
+  note: 'A sign on video is not yet a violation: a person checks every case. The service may find other types too; their names are shown as received.'
 ruleNorm:
-  clause: '{document}, cl. {clause}'
-  clausePending: '{document}, clause to be confirmed'
+  point: 'para. {p}'
+  sub: 'para. {p}{s}'
+  article: 'Art. {a}({p})'
+  norm: '{act}: {refs}'
+  subItem: '({s})'
+  subJoin: ' '
 textLink:
   newTab: (opens in a new tab)
 apiDocs:
@@ -143,6 +149,8 @@ apiDocs:
   jobPolling: 'While the status is {processing}, {verdict} and {violations} are {null}: repeat the request in a few seconds. With {noViolation}, the {violations} list is empty.'
   rulesLink: Detection rules
   jobResponse: Response · jury schema
+  typesTitle: Violation types
+  typesText: 'The type field is one of these strings. The site uses it to find the regulation and show a translated name. Other strings are accepted too and shown as received.'
   errorsTitle: Errors
   e401: The X-API-Key header is missing or the key is wrong.
   e404: No job with this job_id.
@@ -151,13 +159,6 @@ codeBlock:
   copy: Copy
   copied: Copied
   copyFailed: Could not copy. Select the text and copy it manually.
-ruleLooks:
-  cashOutOfView: 'Hands holding banknotes go below the desk edge or out of the frame.'
-  outsider: 'Someone who is not the cashier stands next to an open cash drawer or safe.'
-  unattended: 'The cash drawer or safe is open and the cashier is not in the frame.'
-  countHidden: 'Counting happens with the back to the client window or under the desk.'
-  personalItems: 'Banknotes move to a pocket, a bag or personal belongings.'
-  phone: 'A mobile phone is in hand while cash is on the desk or the drawer is open.'
 units:
   b: B
   kb: KB
@@ -185,15 +186,20 @@ batchRow:
   retryLabel: 'Try again: {name}'
   progress: 'Uploading {name}'
 violationTypes:
-  cashOutOfView: Cash out of the camera's view
-  outsider: Outsider in the cash desk area
-  unattended: Cash desk left unattended
-  countHidden: Counting out of the client's sight
-  personalItems: Cash in personal belongings
-  phone: Phone in hand while handling cash
-  fixture: Sign of a violation (test data)
-  fixtureDescription: 'Test data: by the dataset labels the violation is around second {second}. A description of what is visible will appear once the analysis is connected.'
-  document: NBRK Resolution No. 231
+  cashLeftOut: 'Accepted cash not locked away'
+  countWithoutClient: 'Counting without the client'
+  mixedCash: 'Cash from different clients mixed'
+  noRecount: 'Cash accepted without counting or recording'
+  partialReturn: 'Part of accepted cash handed back'
+  rejectedNotes: 'Rejected banknotes mixed with accepted ones'
+  noId: 'Client served without an ID document'
+  safeOpen: 'Safe left open'
+  keyLeft: 'Key left in the safe'
+  stampsLeft: 'Seals and stamps left on the desk'
+  personalItems: 'Personal items in the cash unit'
+  sessionUnlocked: 'Computer left unlocked'
+  doorOpen: 'Cash room service door open'
+  notReady: 'Serving before equipment is on'
 review:
   confirm: Confirm
   reject: False alarm
@@ -204,7 +210,7 @@ review:
   complete: All violations reviewed by a person
 act:
   title: Video recording check report
-  number: 'No. {n}'
+  number: 'No. {n}'
   object: Checked object
   file: File
   size: Size
@@ -244,3 +250,50 @@ clip:
   failed: Could not record the clip, try again
 demo:
   title: Demo states
+ruleRequires:
+  cashLeftOut: 'Only the cash of the client being served may lie on the desk. Cash accepted earlier is kept in a device that locks with a key.'
+  countWithoutClient: 'Incoming cash is counted in the presence of the client. When paying out, the prepared amount is also counted in front of the client.'
+  mixedCash: 'Only the cash of the client being served is at the workplace. Amounts under different receipt documents are accepted separately and checked against each document.'
+  noRecount: 'When accepting cash, the cashier counts and checks it and matches the amount against the receipt document. Cash accepted during the day is credited the same day.'
+  partialReturn: 'The cashier counts incoming cash in front of the client and matches the amount actually accepted against the receipt document.'
+  rejectedNotes: 'The cashier makes sure incoming cash is checked for authenticity and validity. Suspicious banknotes are recorded and sent for examination under a special procedure.'
+  noId: 'Before accepting or paying out cash, the cashier identifies the client by an ID document or by data from the digital documents service.'
+  safeOpen: 'Cash accepted earlier is kept at the workplace in devices that lock with a key. The bank sets the procedure for handling keys.'
+  keyLeft: "Keys to the vault and safe room stay with the responsible staff. The bank's internal documents set how keys to a working safe are kept."
+  stampsLeft: 'The bank sets how seals, stamps, sealing tools, keys and codes are stored so that no one can use them without authorisation.'
+  personalItems: 'Staff personal items, personal cash and valuables are kept outside the cash unit. Exceptions: medicines, medical devices and phones without photo or video capture.'
+  sessionUnlocked: "After more than 30 minutes of inactivity, the system ends the session or locks the workstation. The bank's security policy sets when to lock it immediately."
+  doorOpen: 'The cash desk has its own entrance with a door that locks. The cash unit is isolated by a closing service entrance.'
+  notReady: 'Tools that check cash authenticity and validity work during cash operations. The cash room has video surveillance and is guarded.'
+ruleCheck:
+  cashLeftOut: "Whose cash it is: the current client's cash may stay on the desk for counting. A locking drawer or trolley counts instead of a safe."
+  countWithoutClient: 'Whether counting went on without the client. If the cashier stopped until the client returned, there is no violation.'
+  mixedCash: 'Whether these were different clients, operations or receipt documents, and whether each amount was fully accepted.'
+  noRecount: 'Two separate facts: no counting, and the operation not recorded in the system. Check the receipt and the operations log.'
+  partialReturn: 'Whether the accepted amount matches the receipt document and why part of the cash went back to the client.'
+  rejectedNotes: 'Whether the rejected banknotes went through the required check. If not, the violation is confirmed.'
+  noId: 'Whether the client was identified by a digital document and whether the operation went through. A missing plastic ID alone is not a violation.'
+  safeOpen: 'Whether the open safe held cash and whether the desk was left unattended. The rule does not require closing an empty safe every minute.'
+  keyLeft: "The type of safe and whether an outsider could take the key. A ban on leaving the key in the lock belongs to the bank's internal instructions."
+  stampsLeft: "There is no general rule that seals must stay in the safe. Check the bank's rules and whether outsiders had access."
+  personalItems: 'Whether the items were inside the cash unit and whether they fall under the allowed exceptions.'
+  sessionUnlocked: 'A computer that is on is not yet a violation. Whether the session was unlocked and how long the employee was away.'
+  doorOpen: 'An open door on video is not yet a violation. Whether it is the service door and whether anyone entered without authorisation.'
+  notReady: 'Letting a client in before the equipment is set up is not directly banned. Which devices were off and whether an operation took place.'
+acts:
+  nbrk231: 'NBK Resolution No. 231'
+  nbrk14: 'NBK Resolution No. 14'
+  nbrk230: 'NBK Resolution No. 230'
+  ardfm53: 'ARDFM Resolution No. 53'
+  aml: 'Law No. 191-IV'
+actTitles:
+  nbrk231: 'Rules for cash operations and cash collection in banks, NBK Board Resolution No. 231 of 29.11.2019'
+  nbrk14: 'Rules for the security and layout of bank premises, NBK Board Resolution No. 14 of 24.02.2020'
+  nbrk230: 'Rules for determining the validity of banknotes and coins, NBK Board Resolution No. 230 of 29.11.2017'
+  ardfm53: 'Information security requirements for banks, ARDFM Board Resolution No. 53 of 03.04.2026'
+  aml: 'Law of the Republic of Kazakhstan No. 191-IV of 28.08.2009 on countering money laundering and terrorist financing'
+applicability:
+  direct: 'Direct requirement'
+  conditional: 'Applies conditionally'
+  verify: 'Depends on circumstances'
+  internal: "Bank's internal rules"

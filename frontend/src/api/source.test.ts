@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import { createFixtureSource, FIXTURE_TYPE } from './fixtureSource'
+import { findRule } from '@/rules'
+import { createFixtureSource } from './fixtureSource'
 import { parseJobResponse } from './parse'
 import { pollJob } from './poll'
 import { JobError, type JobSource } from './source'
@@ -59,10 +60,27 @@ describe('fixture source', () => {
     const job = parseJobResponse(await source.getJob(job_id))
     expect(job.verdict).toBe('violation')
     const [violation] = job.violations ?? []
-    expect(violation?.type).toBe(FIXTURE_TYPE)
+    expect(findRule(violation?.type ?? '')?.id).toBe('noId')
     expect(violation?.timecode_sec).toBe(7)
     expect(violation?.evidence_frames.map((f) => f.timestamp_sec)).toEqual([
       6.4, 7, 7.6,
+    ])
+  })
+
+  test('a file with two labelled facts gets two violations', async () => {
+    const c = clock()
+    const source = createFixtureSource({
+      capture,
+      analyzeMs: 0,
+      uploadMs: 0,
+      sleep: c.sleep,
+      now: c.now,
+    })
+    const { job_id } = await source.upload(fakeFile('Х-47.mov'), () => {})
+    const job = parseJobResponse(await source.getJob(job_id))
+    expect(job.violations?.map((v) => findRule(v.type)?.id)).toEqual([
+      'cashLeftOut',
+      'mixedCash',
     ])
   })
 

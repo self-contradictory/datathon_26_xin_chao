@@ -2,11 +2,13 @@ import { CodeBlock } from '@/components/docs/CodeBlock'
 import { DocSection, DocSubheading } from '@/components/docs/DocSection'
 import { Code } from '@/components/docs/Inline'
 import { MethodBadge } from '@/components/docs/MethodBadge'
+import { RuleNorm } from '@/components/RuleNorm'
 import { Template } from '@/components/Template'
 import { Toast } from '@/components/Toast'
 import { useToast } from '@/components/useToast'
 import { API_BASE_URL } from '@/config'
 import { useStrings } from '@/i18n'
+import { RULES } from '@/rules'
 import {
   ANALYZE_RESPONSE,
   analyzeCurl,
@@ -148,6 +150,35 @@ export function ApiDocsPage() {
           code={toJson(JOB_RESPONSE)}
           notify={toast.show}
         />
+      </DocSection>
+
+      <DocSection id="api-types" divided heading={t.typesTitle}>
+        <p className="max-w-[72ch]">{t.typesText}</p>
+        <div className="overflow-hidden rounded-lg border border-border bg-bg shadow-card">
+          <table aria-labelledby="api-types" className="w-full border-collapse">
+            <tbody className="[&>tr:last-child>*]:border-b-0">
+              {RULES.map((rule) => (
+                <tr key={rule.id}>
+                  <th
+                    scope="row"
+                    lang="ru"
+                    className="border-b border-border px-4 py-3 text-left align-top font-mono text-secondary leading-6 font-medium"
+                  >
+                    {rule.type}
+                  </th>
+                  <td className="border-b border-border px-4 py-3 align-top">
+                    <a
+                      href={`#/rules/${rule.id}`}
+                      className="rounded-sm text-text underline decoration-border underline-offset-4 hover:text-brand hover:decoration-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    >
+                      <RuleNorm rule={rule} />
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </DocSection>
 
       <DocSection id="api-errors" divided heading={t.errorsTitle}>

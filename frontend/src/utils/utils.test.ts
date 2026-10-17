@@ -146,9 +146,20 @@ describe('dataset labels', () => {
   })
 
   test('lookup', () => {
-    expect(lookupLabel('Х-17.mov')).toEqual({ kind: 'violation', second: 7 })
-    expect(lookupLabel('X-1.mov')).toEqual({ kind: 'violation', second: 22 })
-    expect(lookupLabel('Х-47.mov')).toEqual({ kind: 'violation', second: 68 })
+    expect(lookupLabel('Х-17.mov')).toMatchObject({
+      kind: 'violation',
+      second: 7,
+      rules: ['noId'],
+    })
+    expect(lookupLabel('X-1.mov')).toMatchObject({
+      kind: 'violation',
+      second: 22,
+    })
+    expect(lookupLabel('Х-47.mov')).toMatchObject({
+      kind: 'violation',
+      second: 68,
+      rules: ['cashLeftOut', 'mixedCash'],
+    })
     expect(lookupLabel('Х-3.mov')).toEqual({ kind: 'clean' })
     expect(lookupLabel('my-video.mov')).toEqual({ kind: 'unknown' })
   })
@@ -165,8 +176,11 @@ describe('frames', () => {
 
 describe('rules', () => {
   test('findRule ignores case, ё and extra spaces', () => {
-    expect(findRule('наличные  вне зоны видимости камеры ')).toBe(RULES[0]!)
-    expect(findRule('Пересчет не на виду у клиента')).toBe(RULES[3]!)
+    expect(findRule('клиент  обслужен без удостоверения личности ')?.id).toBe(
+      'noId',
+    )
+    expect(findRule('Пересчет без клиента')?.id).toBe('countWithoutClient')
+    expect(findRule('noId')?.id).toBe('noId')
     expect(findRule('Неизвестный тип')).toBeNull()
   })
 })

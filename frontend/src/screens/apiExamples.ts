@@ -13,10 +13,10 @@ export const JOB_RESPONSE: DoneJob = {
   verdict: 'violation',
   violations: [
     {
-      type: 'Наличные вне зоны видимости камеры',
+      type: 'Клиент обслужен без удостоверения личности',
       timecode_sec: 7,
       description:
-        'Кассир опускает руки с купюрами ниже края стола, 2 с их не видно.',
+        'Клиент не предъявил удостоверение личности, кассир продолжает операцию.',
       evidence_frames: [
         { timestamp_sec: 6.8, image_base64: FRAME_BASE64 },
         { timestamp_sec: 7.4, image_base64: FRAME_BASE64 },

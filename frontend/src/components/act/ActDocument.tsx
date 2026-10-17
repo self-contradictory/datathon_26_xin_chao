@@ -10,6 +10,7 @@ import {
   formatFullDate,
   formatTime,
 } from '@/utils/time'
+import { ACT_URLS, ruleActs } from '@/rules'
 import type { ActModel, ActViolation } from './model'
 
 const CELL = 'border border-border px-2 py-1.5 text-left align-top'
@@ -40,6 +41,8 @@ function Rule({ violation }: { violation: ActViolation }) {
 function ViolationBlock({ violation }: { violation: ActViolation }) {
   const t = useStrings('act')
   const card = useStrings('violationCard')
+  const requires = useStrings('ruleRequires')
+  const check = useStrings('ruleCheck')
   const { typeName, typeLang, description, descriptionLang } =
     useViolationText()
 
@@ -68,10 +71,20 @@ function ViolationBlock({ violation }: { violation: ActViolation }) {
       </div>
       <p className="text-[12px]">
         <span className="font-semibold">{card.description}: </span>
-        <span lang={descriptionLang(violation.source)}>
-          {description(violation.source)}
-        </span>
+        <span lang={descriptionLang()}>{description(violation.source)}</span>
       </p>
+      {violation.rule && (
+        <>
+          <p className="text-[12px]">
+            <span className="font-semibold">{card.requires}: </span>
+            {requires[violation.rule.id]}
+          </p>
+          <p className="text-[12px]">
+            <span className="font-semibold">{card.check}: </span>
+            {check[violation.rule.id]}
+          </p>
+        </>
+      )}
       <p className="text-[12px]">
         <span className="font-semibold">{card.rule}: </span>
         <Rule violation={violation} />
@@ -86,6 +99,15 @@ function ViolationBlock({ violation }: { violation: ActViolation }) {
 
 export function ActDocument({ model }: { model: ActModel }) {
   const t = useStrings('act')
+  const rulesText = useStrings('rules')
+  const titles = useStrings('actTitles')
+  const acts = [
+    ...new Set(
+      model.violations.flatMap((violation) =>
+        violation.rule ? ruleActs(violation.rule) : [],
+      ),
+    ),
+  ]
   const verdict = useStrings('verdictSummary')
   const units = useStrings('units')
   const locale = localeOf(useLang().lang)
@@ -193,6 +215,20 @@ export function ActDocument({ model }: { model: ActModel }) {
           {model.violations.map((violation) => (
             <ViolationBlock key={violation.index} violation={violation} />
           ))}
+        </section>
+      )}
+
+      {acts.length > 0 && (
+        <section className="act-block flex flex-col gap-1">
+          <h2 className="text-[14px] font-semibold">{rulesText.documents}</h2>
+          <ul className="flex flex-col gap-1">
+            {acts.map((act) => (
+              <li key={act}>
+                <p>{titles[act]}</p>
+                <p>{ACT_URLS[act]}</p>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

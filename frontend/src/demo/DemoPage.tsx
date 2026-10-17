@@ -2,7 +2,6 @@ import type { DoneJob } from '@/api/types'
 import type { BatchStage } from '@/batch/types'
 import { useStrings } from '@/i18n'
 import { jpegDataUrl } from '@/utils/frames'
-import { RULES } from '@/rules'
 import { ActDocument } from '@/components/act/ActDocument'
 import { buildReportModel } from '@/components/act/model'
 import { BatchScreen } from '@/screens/Batch'
@@ -32,10 +31,10 @@ const ONE: DoneJob = {
   verdict: 'violation',
   violations: [
     {
-      type: RULES[0]!.type,
+      type: 'Клиент обслужен без удостоверения личности',
       timecode_sec: 7,
       description:
-        'Кассир опускает руки с пачкой купюр ниже края стола. 2 секунды руки и купюры не видны в кадре.',
+        'Клиент не предъявил удостоверение личности, кассир продолжает операцию.',
       evidence_frames: frames,
     },
   ],
@@ -48,9 +47,10 @@ const TWO: DoneJob = {
   violations: [
     ONE.violations[0]!,
     {
-      type: RULES[1]!.type,
+      type: 'Принятые деньги не убраны в запираемое место',
       timecode_sec: 11.5,
-      description: 'Второй человек стоит рядом с открытым денежным ящиком.',
+      description:
+        'На столе лежат деньги предыдущего клиента, пока обслуживают нового.',
       evidence_frames: frames.slice(1),
     },
   ],
