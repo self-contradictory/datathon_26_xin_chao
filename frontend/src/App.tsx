@@ -1,28 +1,105 @@
-import { useState } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
+import { Header } from '@/components/Header'
+import { jobSource, POLL_INTERVAL_MS, POLL_TIMEOUT_MS } from '@/config'
+import { useJobFlow, type FlowState } from '@/flow'
+import { format, useStrings, type Messages } from '@/i18n'
+import { LangProvider } from '@/i18n/LangProvider'
+import { useHashRoute } from '@/route'
+import { ApiDocsPage } from '@/screens/ApiDocs'
+import { ProcessingScreen } from '@/screens/Processing'
+import { ReportScreen } from '@/screens/Report'
+import { RulesPage } from '@/screens/Rules'
+import { UploadScreen } from '@/screens/Upload'
+import { useStrayDropGuard } from '@/useStrayDropGuard'
 
-function App() {
-  const [count, setCount] = useState(0)
+const DemoPage =
+  process.env.NODE_ENV === 'production'
+    ? null
+    : lazy(() => import('@/demo/DemoPage'))
+
+function MainFlow({ flow }: { flow: ReturnType<typeof useJobFlow> }) {
+  const { state, start, retry, reset } = flow
+
+  if (state.screen === 'upload') return <UploadScreen onSubmit={start} />
+
+  if (state.screen === 'processing') {
+    return (
+      <ProcessingScreen
+        fileName={state.video.file.name}
+        fileSize={state.video.file.size}
+        duration={state.video.duration}
+        posterUrl={state.video.posterUrl}
+        phase={state.phase}
+        uploadProgress={state.uploadProgress}
+        startedAt={state.startedAt}
+        stoppedAt={state.stoppedAt}
+        error={state.error}
+        failedStep={state.failedStep}
+        onRetry={retry}
+        onNewVideo={reset}
+      />
+    )
+  }
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-slate-950 px-6 py-12 text-slate-100">
-      <section className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900 p-8 sm:p-12">
-        <p className="text-sm font-medium text-emerald-400">Datathon 2026</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-          Xin Chao
-        </h1>
-        <p className="mt-5 leading-relaxed text-slate-300">
-          Frontend starter with Bun, React, TypeScript, and Tailwind CSS.
-        </p>
-        <button
-          type="button"
-          className="mt-8 cursor-pointer rounded-lg bg-emerald-400 px-5 py-3 font-medium text-slate-950 transition-colors hover:bg-emerald-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400"
-          onClick={() => setCount((value) => value + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-    </main>
+    <ReportScreen
+      job={state.job}
+      fileName={state.video.file.name}
+      fileSize={state.video.file.size}
+      duration={state.video.duration}
+      videoUrl={state.video.url}
+      posterUrl={state.video.posterUrl}
+      checkedAt={state.checkedAt}
+      onNewVideo={reset}
+    />
   )
 }
 
-export default App
+function mainTitleKey(state: FlowState): keyof Messages['titles'] {
+  if (state.screen !== 'report') return state.screen
+  return state.job.verdict === 'violation' && state.job.violations.length > 0
+    ? 'violation'
+    : 'clean'
+}
+
+function Shell() {
+  useStrayDropGuard()
+  const route = useHashRoute()
+  const flow = useJobFlow(jobSource, {
+    intervalMs: POLL_INTERVAL_MS,
+    timeoutMs: POLL_TIMEOUT_MS,
+  })
+  const t = useStrings('titles')
+  const page = route.page === 'demo' && !DemoPage ? 'main' : route.page
+
+  const titleKey =
+    page === 'rules' || page === 'api' ? page : mainTitleKey(flow.state)
+  const documentTitle = format(t.suffix, { title: t[titleKey] })
+  useEffect(() => {
+    document.title = documentTitle
+  }, [documentTitle])
+
+  return (
+    <div className="min-h-svh bg-bg font-sans text-body text-text">
+      <Header route={page === 'rules' || page === 'api' ? page : 'main'} />
+      {page === 'rules' && <RulesPage />}
+      {page === 'api' && <ApiDocsPage />}
+      {route.page === 'demo' && DemoPage && (
+        <Suspense fallback={null}>
+          <DemoPage state={route.state} />
+        </Suspense>
+      )}
+      <div hidden={page !== 'main'}>
+        <MainFlow flow={flow} />
+      </div>
+    </div>
+  )
+}
+
+export default function App() {
+  return (
+    <LangProvider>
+      <Shell />
+    </LangProvider>
+  )
+}
