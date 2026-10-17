@@ -18,12 +18,12 @@ export function UploadScreen({
   }, [focusTitle])
   return (
     <main className="flex min-h-[calc(100svh-65px)] flex-col items-center justify-center gap-8 px-4 pt-12 pb-16 sm:pt-16 sm:pb-24">
-      <div className="flex w-full max-w-[760px] items-center justify-center gap-4 sm:gap-5">
-        <Owl mood="hello" className="w-20 shrink-0 sm:w-28" />
+      <div className="flex flex-col items-center gap-4 text-center">
+        <Owl mood="welcome" className="w-56 sm:w-72" />
         <h1
           ref={titleRef}
           tabIndex={-1}
-          className="max-w-[16ch] text-title font-semibold focus:outline-none sm:max-w-none sm:whitespace-nowrap"
+          className="text-[28px] leading-9 font-bold focus:outline-none sm:text-[36px] sm:leading-11"
         >
           {t.title}
         </h1>

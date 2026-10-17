@@ -6,6 +6,7 @@ import hello from '@/assets/owls/hello.webp'
 import idle from '@/assets/owls/idle-still.webp'
 import reading from '@/assets/owls/reading.webp'
 import warning from '@/assets/owls/warning.svg'
+import welcome from '@/assets/owls/welcome.webp'
 import warningStill from '@/assets/owls/warning-still.webp'
 
 interface OwlImage {
@@ -18,6 +19,7 @@ interface OwlImage {
 const OWLS = {
   idle: { src: idle, width: 192, height: 206 },
   hello: { src: hello, still: idle, width: 192, height: 206 },
+  welcome: { src: welcome, width: 640, height: 480 },
   reading: { src: reading, width: 480, height: 267 },
   happy: { src: happy, still: happyStill, width: 640, height: 640 },
   warning: { src: warning, still: warningStill, width: 640, height: 640 },
