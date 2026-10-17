@@ -1,6 +1,11 @@
 export type FileProblem =
   { kind: 'not_mov'; extension: string } | { kind: 'empty' }
 
+export interface RejectedFile {
+  fileName: string
+  problem: FileProblem
+}
+
 export function fileExtension(name: string): string {
   const match = /\.([^.\\/]+)$/.exec(name)
   return match ? match[1]!.toLowerCase() : ''
