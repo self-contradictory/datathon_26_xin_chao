@@ -1,17 +1,21 @@
 import { basename, join } from 'node:path'
 import index from './index.html'
 
+const hostname = process.env.HOST ?? '127.0.0.1'
 const port = Number(process.env.PORT ?? 3000)
 const apiUrl = process.env.API_URL ?? 'http://127.0.0.1:8000'
+const apiKey = process.env.API_KEY ?? ''
 const datasetDir = join(import.meta.dir, '..', 'data', 'open', 'videos')
 
 async function proxy(req: Request) {
   const url = new URL(req.url)
   const target = new URL(url.pathname + url.search, apiUrl)
+  const headers = new Headers(req.headers)
+  if (apiKey && !headers.has('X-API-Key')) headers.set('X-API-Key', apiKey)
   try {
     return await fetch(target, {
       method: req.method,
-      headers: req.headers,
+      headers,
       body: req.body,
       redirect: 'manual',
     })
@@ -56,7 +60,9 @@ async function dataset(req: Request) {
 }
 
 const server = Bun.serve({
+  hostname,
   port,
+  maxRequestBodySize: 4 * 1024 ** 3,
   routes: {
     '/api/*': proxy,
     '/__dataset/*': dataset,

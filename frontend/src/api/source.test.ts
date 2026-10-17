@@ -218,4 +218,24 @@ describe('pollJob', () => {
       }),
     ).rejects.toMatchObject({ kind: 'unauthorized' })
   })
+
+  test('stops with aborted when the run is cancelled between polls', async () => {
+    const c = clock()
+    const controller = new AbortController()
+    const source = scripted([processing])
+    const sleep = async (ms: number) => {
+      await c.sleep(ms)
+      controller.abort()
+    }
+    await expect(
+      pollJob(source, 'j', {
+        intervalMs: 1,
+        timeoutMs: 60_000,
+        signal: controller.signal,
+        now: c.now,
+        sleep,
+      }),
+    ).rejects.toMatchObject({ kind: 'aborted' })
+    expect(source.calls).toBe(1)
+  })
 })

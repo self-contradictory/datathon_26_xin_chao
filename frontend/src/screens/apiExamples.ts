@@ -1,3 +1,4 @@
+import { ANALYZE_PATH, API_PREFIX, apiUrl, jobPath } from '@/api/paths'
 import type { AnalyzeResponse, DoneJob } from '@/api/types'
 
 export const EXAMPLE_JOB_ID = '3f2a9c1e'
@@ -25,25 +26,25 @@ export const JOB_RESPONSE: DoneJob = {
   ],
 }
 
-export function apiBase(host: string): string {
-  return `https://${host}/api/v1`
+export function apiBase(origin: string): string {
+  return apiUrl(origin, API_PREFIX)
 }
 
 export function authHeader(key: string): string {
   return `X-API-Key: ${key}`
 }
 
-export function analyzeCurl(host: string): string {
+export function analyzeCurl(origin: string): string {
   return [
-    `curl -X POST "${apiBase(host)}/analyze" \\`,
+    `curl -X POST "${apiUrl(origin, ANALYZE_PATH)}" \\`,
     '  -H "X-API-Key: $FORTE_API_KEY" \\',
     '  -F "file=@Х-17.mov"',
   ].join('\n')
 }
 
-export function jobCurl(host: string): string {
+export function jobCurl(origin: string): string {
   return [
-    `curl "${apiBase(host)}/jobs/${EXAMPLE_JOB_ID}" \\`,
+    `curl "${apiUrl(origin, jobPath(EXAMPLE_JOB_ID))}" \\`,
     '  -H "X-API-Key: $FORTE_API_KEY"',
   ].join('\n')
 }

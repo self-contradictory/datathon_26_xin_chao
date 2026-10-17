@@ -4,8 +4,9 @@ export interface JobSource {
   upload(
     file: File,
     onProgress: (fraction: number) => void,
+    signal?: AbortSignal,
   ): Promise<AnalyzeResponse>
-  getJob(jobId: string): Promise<JobResponse>
+  getJob(jobId: string, signal?: AbortSignal): Promise<JobResponse>
 }
 
 export type JobErrorKind =
@@ -17,6 +18,7 @@ export type JobErrorKind =
   | 'bad_response'
   | 'timeout'
   | 'failed'
+  | 'aborted'
 
 export class JobError extends Error {
   readonly kind: JobErrorKind

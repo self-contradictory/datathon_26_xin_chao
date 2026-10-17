@@ -18,6 +18,7 @@ export class CheckFailure extends Error {
 export interface CheckOptions {
   intervalMs: number
   timeoutMs: number
+  signal?: AbortSignal
   onUploadProgress: (fraction: number) => void
   onUploaded: () => void
 }
@@ -25,14 +26,18 @@ export interface CheckOptions {
 export async function runCheck(
   source: JobSource,
   file: File,
-  { intervalMs, timeoutMs, onUploadProgress, onUploaded }: CheckOptions,
+  { intervalMs, timeoutMs, signal, onUploadProgress, onUploaded }: CheckOptions,
 ): Promise<DoneJob> {
   let step: ProcessingStep = 'upload'
   try {
-    const { job_id } = await source.upload(file, onUploadProgress)
+    const { job_id } = await source.upload(file, onUploadProgress, signal)
     step = 'analysis'
     onUploaded()
-    const job = await pollJob(source, job_id, { intervalMs, timeoutMs })
+    const job = await pollJob(source, job_id, {
+      intervalMs,
+      timeoutMs,
+      signal,
+    })
     if (job.status === 'failed') throw new JobError('failed')
     if (!isDone(job)) throw new JobError('bad_response')
     return job

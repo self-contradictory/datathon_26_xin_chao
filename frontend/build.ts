@@ -1,6 +1,15 @@
 import { rm } from 'node:fs/promises'
 import tailwind from 'bun-plugin-tailwind'
 
+const usesFixtures = process.env.BUN_PUBLIC_DATA_SOURCE === 'fixtures'
+const apiOrigin = process.env.BUN_PUBLIC_API_URL ?? ''
+if (!usesFixtures && !/^https?:\/\/[^/]+\/?$/.test(apiOrigin)) {
+  console.error(
+    'Set BUN_PUBLIC_API_URL to the backend origin, e.g. https://api.example.kz (without /api/v1), or BUN_PUBLIC_DATA_SOURCE=fixtures.',
+  )
+  process.exit(1)
+}
+
 const outdir = `${import.meta.dir}/dist`
 await rm(outdir, { recursive: true, force: true })
 

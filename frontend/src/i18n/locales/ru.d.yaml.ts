@@ -172,7 +172,6 @@ export interface Messages {
     subtitle: string
     authTitle: string
     authText: string
-    host: string
     key: string
     headerLabel: string
     analyzeText: string
@@ -185,7 +184,7 @@ export interface Messages {
     errorsTitle: string
     e401: string
     e404: string
-    e415: string
+    e422: string
   }
   codeBlock: {
     copy: string

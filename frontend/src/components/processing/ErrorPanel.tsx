@@ -19,6 +19,7 @@ const MESSAGE_BY_KIND: Record<JobErrorKind, MessageKey> = {
   bad_file: 'badFile',
   server: 'server',
   bad_response: 'server',
+  aborted: 'failed',
 }
 
 export function ErrorPanel({

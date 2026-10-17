@@ -115,4 +115,26 @@ describe('runCheck', () => {
     )
     expect([failure.step, failure.kind]).toEqual(['upload', 'failed'])
   })
+
+  test('passes the caller signal to the upload and every poll', async () => {
+    const controller = new AbortController()
+    const seen: (AbortSignal | undefined)[] = []
+    const watched: JobSource = {
+      upload: async (_file, _onProgress, signal) => {
+        seen.push(signal)
+        return { job_id: 'j' }
+      },
+      getJob: async (_jobId, signal) => {
+        seen.push(signal)
+        return done
+      },
+    }
+    await runCheck(watched, file, {
+      ...fast,
+      signal: controller.signal,
+      onUploadProgress() {},
+      onUploaded() {},
+    })
+    expect(seen).toEqual([controller.signal, controller.signal])
+  })
 })

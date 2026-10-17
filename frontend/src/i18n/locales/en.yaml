@@ -143,7 +143,6 @@ apiDocs:
   subtitle: Start video checks from your own system and get the report as JSON in the jury schema.
   authTitle: Authorization
   authText: 'Every request must include the {header} header. Base address: {base}'
-  host: '<service address>'
   key: '<your key>'
   headerLabel: Header
   analyzeText: 'Uploads a .mov video and starts the analysis. Returns {jobId} at once; use it to fetch the report later. Form field: {file} (multipart/form-data, required).'
@@ -156,7 +155,7 @@ apiDocs:
   errorsTitle: Errors
   e401: The X-API-Key header is missing or the key is wrong.
   e404: No job with this job_id.
-  e415: The file is not a .mov.
+  e422: The request has no file field with the video.
 codeBlock:
   copy: Copy
   copied: Copied

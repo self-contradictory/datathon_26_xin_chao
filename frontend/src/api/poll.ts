@@ -17,7 +17,7 @@ export async function pollJob(
   {
     intervalMs,
     timeoutMs,
-    maxTransientErrors = 3,
+    maxTransientErrors = 5,
     signal,
     now = () => Date.now(),
     sleep = wait,
@@ -27,9 +27,9 @@ export async function pollJob(
   let transientErrors = 0
 
   for (;;) {
-    if (signal?.aborted) throw new JobError('network', 'aborted')
+    if (signal?.aborted) throw new JobError('aborted')
     try {
-      const job = await source.getJob(jobId)
+      const job = await source.getJob(jobId, signal)
       transientErrors = 0
       if (job.status !== 'processing') return job
     } catch (error) {

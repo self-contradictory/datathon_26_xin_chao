@@ -1,11 +1,12 @@
-import { Toast } from '@/components/Toast'
-import { useToast } from '@/components/useToast'
-import { useStrings } from '@/i18n'
 import { CodeBlock } from '@/components/docs/CodeBlock'
 import { DocSection, DocSubheading } from '@/components/docs/DocSection'
 import { Code } from '@/components/docs/Inline'
-import { Template } from '@/components/Template'
 import { MethodBadge } from '@/components/docs/MethodBadge'
+import { Template } from '@/components/Template'
+import { Toast } from '@/components/Toast'
+import { useToast } from '@/components/useToast'
+import { API_BASE_URL } from '@/config'
+import { useStrings } from '@/i18n'
 import {
   ANALYZE_RESPONSE,
   analyzeCurl,
@@ -18,12 +19,13 @@ import {
 
 export function ApiDocsPage() {
   const t = useStrings('apiDocs')
+  const origin = API_BASE_URL || window.location.origin
   const toast = useToast()
 
   const errors: [code: number, text: string][] = [
     [401, t.e401],
     [404, t.e404],
-    [415, t.e415],
+    [422, t.e422],
   ]
 
   return (
@@ -41,7 +43,7 @@ export function ApiDocsPage() {
               header: <Code pill>X-API-Key</Code>,
               base: (
                 <span className="whitespace-nowrap">
-                  <Code>{apiBase(t.host)}</Code>
+                  <Code>{apiBase(origin)}</Code>
                 </span>
               ),
             }}
@@ -76,7 +78,7 @@ export function ApiDocsPage() {
         <CodeBlock
           label="cURL"
           context="POST /api/v1/analyze"
-          code={analyzeCurl(t.host)}
+          code={analyzeCurl(origin)}
           notify={toast.show}
         />
         <DocSubheading>{t.response}</DocSubheading>
@@ -139,7 +141,7 @@ export function ApiDocsPage() {
         <CodeBlock
           label="cURL"
           context="GET /api/v1/jobs/{job_id}"
-          code={jobCurl(t.host)}
+          code={jobCurl(origin)}
           notify={toast.show}
         />
         <DocSubheading>{t.jobResponse}</DocSubheading>

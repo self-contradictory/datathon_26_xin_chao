@@ -40,7 +40,7 @@ describe('API page examples', () => {
   test('both requests use the same job and the X-API-Key header', () => {
     expect(ANALYZE_RESPONSE.job_id).toBe(EXAMPLE_JOB_ID)
     expect(JOB_RESPONSE.job_id).toBe(EXAMPLE_JOB_ID)
-    const host = '<адрес сервиса>'
+    const host = 'https://api.example.kz'
     expect(analyzeCurl(host)).toContain(`"${apiBase(host)}/analyze"`)
     expect(jobCurl(host)).toContain(`"${apiBase(host)}/jobs/${EXAMPLE_JOB_ID}"`)
     for (const curl of [analyzeCurl(host), jobCurl(host)]) {

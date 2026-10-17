@@ -34,19 +34,35 @@ export function useJobFlow(
 ) {
   const [state, setState] = useState<FlowState>({ screen: 'upload' })
   const run = useRef(0)
+  const controller = useRef<AbortController | null>(null)
   const videoRef = useRef<PickedVideo | null>(null)
+
+  const cancelRun = useCallback(() => {
+    run.current += 1
+    controller.current?.abort()
+    controller.current = null
+  }, [])
 
   const releaseVideo = useCallback(() => {
     if (videoRef.current) URL.revokeObjectURL(videoRef.current.url)
     videoRef.current = null
   }, [])
 
-  useEffect(() => releaseVideo, [releaseVideo])
+  useEffect(
+    () => () => {
+      cancelRun()
+      releaseVideo()
+    },
+    [cancelRun, releaseVideo],
+  )
 
   const process = useCallback(
     async (video: PickedVideo) => {
-      const token = ++run.current
+      cancelRun()
+      const token = run.current
       const live = () => token === run.current
+      const abort = new AbortController()
+      controller.current = abort
       const startedAt = Date.now()
       setState({
         screen: 'processing',
@@ -69,6 +85,7 @@ export function useJobFlow(
         const job = await runCheck(source, video.file, {
           intervalMs,
           timeoutMs,
+          signal: abort.signal,
           onUploadProgress: (uploadProgress) => update({ uploadProgress }),
           onUploaded: () => update({ phase: 'analyzing', uploadProgress: 1 }),
         })
@@ -92,7 +109,7 @@ export function useJobFlow(
         })
       }
     },
-    [source, intervalMs, timeoutMs],
+    [source, intervalMs, timeoutMs, cancelRun],
   )
 
   const start = useCallback(
@@ -129,10 +146,10 @@ export function useJobFlow(
   }, [process])
 
   const reset = useCallback(() => {
-    run.current += 1
+    cancelRun()
     releaseVideo()
     setState({ screen: 'upload' })
-  }, [releaseVideo])
+  }, [cancelRun, releaseVideo])
 
   return { state, start, retry, reset }
 }
