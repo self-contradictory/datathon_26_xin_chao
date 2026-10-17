@@ -9,13 +9,7 @@ import { format, localeOf, useLang, useStrings } from '@/i18n'
 import { copyText } from '@/utils/clipboard'
 import { fullJson, screenJson } from './json'
 
-export function JsonView({
-  job,
-  review = {},
-}: {
-  job: DoneJob
-  review?: Review
-}) {
+export function JsonView({ job, review }: { job: DoneJob; review: Review }) {
   const t = useStrings('jsonView')
   const locale = localeOf(useLang().lang)
   const toast = useToast()

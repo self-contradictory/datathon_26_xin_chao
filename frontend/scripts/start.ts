@@ -129,7 +129,9 @@ if (await reachable(FRONTEND_URL)) {
 console.log('Checking the whole path with a dataset video...')
 try {
   const result = await smokeTest(FRONTEND_URL)
-  console.log(`OK  ${describeResult(result)}`)
+  const passed = result.job.status === 'done'
+  console.log(`${passed ? 'OK' : 'FAIL'}  ${describeResult(result)}`)
+  if (!passed) stopAll(1)
 } catch (error) {
   console.error(`FAIL  ${error instanceof Error ? error.message : error}`)
   stopAll(1)

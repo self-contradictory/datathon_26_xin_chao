@@ -12,6 +12,7 @@ export function ViolationList({
   playheadIndex,
   review,
   onSelect,
+  onClose,
   onDecide,
   rowRef,
   clip,
@@ -21,6 +22,7 @@ export function ViolationList({
   playheadIndex: number | null
   review: Review
   onSelect: (index: number) => void
+  onClose: () => void
   onDecide: (index: number, decision: ReviewDecision | null) => void
   rowRef: (index: number, row: HTMLLIElement | null) => void
   clip: ClipSource | null
@@ -45,8 +47,8 @@ export function ViolationList({
             <button
               type="button"
               aria-expanded={active}
-              aria-controls={detailsId}
-              onClick={() => onSelect(index)}
+              aria-controls={active ? detailsId : undefined}
+              onClick={() => (active ? onClose() : onSelect(index))}
               className={`flex min-h-14 w-full cursor-pointer items-center gap-3 border-l-[3px] py-3 pr-4 pl-[13px] text-left transition-colors duration-150 ease-out focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand ${
                 playing ? 'border-brand' : 'border-transparent'
               } ${active ? 'bg-brand-tint' : 'bg-bg hover:bg-surface'}`}
@@ -69,7 +71,6 @@ export function ViolationList({
             {active && (
               <div id={detailsId} className="px-4 pt-4 pb-5 sm:px-6">
                 <ViolationDetails
-                  key={index}
                   violation={violation}
                   decision={decision}
                   onDecide={(next) => onDecide(index, next)}

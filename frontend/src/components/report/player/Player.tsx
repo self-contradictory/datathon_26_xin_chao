@@ -16,12 +16,7 @@ import { clamp, fallbackSpan } from './markers'
 import { Scrubber } from './Scrubber'
 import type { PlayerProps } from './types'
 
-export type {
-  PlayerHandle,
-  PlayerMarker,
-  PlayerProps,
-  SeekOptions,
-} from './types'
+export type { PlayerHandle, PlayerMarker } from './types'
 
 const RATES: readonly number[] = [1, 1.5, 2, 0.5]
 const PORTRAIT = 9 / 16
@@ -114,8 +109,7 @@ export function Player({
   useImperativeHandle(
     ref,
     () => ({
-      seek: (time, { lead = SEEK_LEAD_SEC, pause = true } = {}) =>
-        seekTo(time - lead, pause),
+      seek: (time) => seekTo(time - SEEK_LEAD_SEC, true),
       pause: () => videoRef.current?.pause(),
     }),
     [seekTo],

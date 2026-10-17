@@ -1,4 +1,3 @@
-import type { Violation } from '@/api/types'
 import { useStrings } from '@/i18n'
 import { findRule } from '@/rules'
 
@@ -14,13 +13,5 @@ export function useViolationText() {
     return findRule(type) ? undefined : 'ru'
   }
 
-  function description(violation: Violation): string {
-    return violation.description
-  }
-
-  function descriptionLang(): 'ru' {
-    return 'ru'
-  }
-
-  return { typeName, typeLang, description, descriptionLang }
+  return { typeName, typeLang }
 }

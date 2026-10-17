@@ -15,7 +15,6 @@ export interface ActViolation {
   timecode: number
   type: string
   rule: Rule | null
-  description: string
   frames: EvidenceFrame[]
   decision: ReviewDecision | null
 }
@@ -60,7 +59,6 @@ export function buildReportModel(
       timecode: item.timecode_sec,
       type: item.type,
       rule: findRule(item.type),
-      description: item.description,
       frames: item.evidence_frames.slice(0, 3),
       decision: record.review[index]?.decision ?? null,
     })),

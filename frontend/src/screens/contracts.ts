@@ -42,7 +42,6 @@ export interface ReportScreenProps {
   checkedAt: number
   file: File | null
   exit: ReportExit
-  savedAt?: number
   onRecheck?: () => void
 }
 

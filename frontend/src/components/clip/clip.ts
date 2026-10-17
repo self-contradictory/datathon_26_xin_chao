@@ -1,3 +1,4 @@
+import { baseName } from '@/utils/file'
 export const CLIP_BEFORE_SEC = 2
 export const CLIP_AFTER_SEC = 3
 export const CLIP_BITRATE = 2_500_000
@@ -30,6 +31,5 @@ export function pickRecorderMime(
 }
 
 export function clipFileName(fileName: string, time: string, ext: string) {
-  const base = fileName.replace(/\.[^.]+$/, '')
-  return `${base}_${time.replace(/:/g, '-')}.${ext}`
+  return `${baseName(fileName)}_${time.replace(/:/g, '-')}.${ext}`
 }

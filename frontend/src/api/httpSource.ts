@@ -8,6 +8,7 @@ export interface HttpSourceOptions {
   baseUrl: string
   apiKey: string
   responseTimeoutMs?: number
+  uploadReplyTimeoutMs?: number
   createRequest?: () => XMLHttpRequest
   fetch?: Fetch
 }
@@ -49,6 +50,7 @@ export function createHttpSource({
   baseUrl,
   apiKey,
   responseTimeoutMs = 15_000,
+  uploadReplyTimeoutMs = 120_000,
   createRequest = () => new XMLHttpRequest(),
   fetch = (url, init) => globalThis.fetch(url, init),
 }: HttpSourceOptions): JobSource {
@@ -59,12 +61,23 @@ export function createHttpSource({
       return new Promise((resolve, reject) => {
         if (signal?.aborted) return reject(new JobError('aborted'))
         const request = createRequest()
+        let waiting: ReturnType<typeof setTimeout> | undefined
+        let timedOut = false
         const cancel = () => request.abort()
-        const settle = () => signal?.removeEventListener('abort', cancel)
+        const settle = () => {
+          clearTimeout(waiting)
+          signal?.removeEventListener('abort', cancel)
+        }
 
         request.open('POST', apiUrl(baseUrl, ANALYZE_PATH))
         for (const [name, value] of Object.entries(headers)) {
           request.setRequestHeader(name, value)
+        }
+        request.upload.onload = () => {
+          waiting = setTimeout(() => {
+            timedOut = true
+            request.abort()
+          }, uploadReplyTimeoutMs)
         }
         request.upload.onprogress = (event) => {
           if (event.lengthComputable && event.total > 0) {
@@ -93,7 +106,11 @@ export function createHttpSource({
         }
         request.onabort = () => {
           settle()
-          reject(new JobError('aborted'))
+          reject(
+            timedOut
+              ? new JobError('network', 'no response in time')
+              : new JobError('aborted'),
+          )
         }
         signal?.addEventListener('abort', cancel, { once: true })
 
@@ -129,8 +146,6 @@ export function createHttpSource({
           })
         } catch {
           throw failure()
-        } finally {
-          clearTimeout(timer)
         }
         if (!response.ok) throw errorForStatus(response.status)
         let text: string
@@ -141,6 +156,7 @@ export function createHttpSource({
         }
         return parseJsonBody(text, parseJobResponse)
       } finally {
+        clearTimeout(timer)
         request.unlink()
       }
     },

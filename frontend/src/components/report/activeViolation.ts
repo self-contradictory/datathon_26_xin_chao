@@ -1,18 +1,17 @@
 import type { Violation } from '@/api/types'
 
-export const ACTIVE_WINDOW_SEC = 3
+const ACTIVE_WINDOW_SEC = 3
 export const SEEK_LEAD_SEC = 2
 
 export function activeViolationIndex(
   violations: readonly Pick<Violation, 'timecode_sec'>[],
   time: number,
-  window = ACTIVE_WINDOW_SEC,
 ): number | null {
   let best: number | null = null
   let bestDistance = Infinity
   violations.forEach(({ timecode_sec }, index) => {
     const distance = Math.abs(timecode_sec - time)
-    if (distance <= window && distance < bestDistance) {
+    if (distance <= ACTIVE_WINDOW_SEC && distance < bestDistance) {
       best = index
       bestDistance = distance
     }
@@ -33,8 +32,4 @@ export function playheadIndex(
   )
     return pinned
   return activeViolationIndex(violations, time)
-}
-
-export function stepIndex(index: number, by: 1 | -1, count: number): number {
-  return (index + by + count) % count
 }

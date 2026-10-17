@@ -116,7 +116,7 @@ player:
   marker: 'Бұзушылық {i}/{n}: {label}, {time}'
   markerGroup: 'Бұзушылық {i}/{n}: {label}, {time}, қасында тағы {more}'
   unavailable: Бейне қолжетімсіз
-  noSource: Бейне қолжетімсіз
+  noSource: Бейне сақталмаған
   cannotPlay: Браузер бұл бейнені ойната алмайды
 rules:
   title: 'Тексеру ережелері'
@@ -126,7 +126,6 @@ rules:
   check: 'Нені тексеру керек'
   linkLabel: '{act} adilet.zan.kz сайтында, жаңа қойындыда ашылады'
   documents: 'Нормативтік актілер'
-  note: 'Бейнедегі белгі әлі бұзушылық емес: әр жағдайды адам тексереді. Сервис басқа түрлерді де табуы мүмкін, олардың атауы келген күйінде көрсетіледі.'
 ruleNorm:
   point: '{p}-т.'
   sub: '{p}-т. {s} тт.'
@@ -134,8 +133,6 @@ ruleNorm:
   norm: '{act}: {refs}'
   subItem: '{s})'
   subJoin: ', '
-textLink:
-  newTab: (жаңа қойындыда ашылады)
 apiDocs:
   title: API
   authTitle: Авторизация

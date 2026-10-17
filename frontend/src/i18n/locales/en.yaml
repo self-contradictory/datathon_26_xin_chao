@@ -116,7 +116,7 @@ player:
   marker: 'Violation {i} of {n}: {label}, {time}'
   markerGroup: 'Violation {i} of {n}: {label}, {time}, and {more} more nearby'
   unavailable: Video unavailable
-  noSource: Video unavailable
+  noSource: The video was not saved
   cannotPlay: This browser cannot play the video
 rules:
   title: 'Detection rules'
@@ -126,7 +126,6 @@ rules:
   check: 'What to check'
   linkLabel: '{act} on adilet.zan.kz, opens in a new tab'
   documents: 'Regulations'
-  note: 'A sign on video is not yet a violation: a person checks every case. The service may find other types too; their names are shown as received.'
 ruleNorm:
   point: 'para. {p}'
   sub: 'para. {p}{s}'
@@ -134,8 +133,6 @@ ruleNorm:
   norm: '{act}: {refs}'
   subItem: '({s})'
   subJoin: ' '
-textLink:
-  newTab: (opens in a new tab)
 apiDocs:
   title: API
   authTitle: Authorization
@@ -180,7 +177,7 @@ batch:
 batchRow:
   queued: Queued
   uploading: 'Uploading {percent}%'
-  analyzing: Analyzing the video
+  analyzing: Analysing the video
   open: Open report
   openLabel: 'Open report: {name}'
   retryLabel: 'Try again: {name}'

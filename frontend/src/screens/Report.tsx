@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ActDocument } from '@/components/act/ActDocument'
 import { buildReportModel } from '@/components/act/model'
@@ -17,9 +17,11 @@ import {
 import { panelId, tabId } from '@/components/tabIds'
 import { Tabs } from '@/components/Tabs'
 import { format, useStrings } from '@/i18n'
-import { formatTime } from '@/utils/time'
+import { formatTime, isoDate } from '@/utils/time'
+import { baseName } from '@/utils/file'
 import { JsonView } from '@/components/report/JsonView'
-import { playheadIndex, stepIndex } from '@/components/report/activeViolation'
+import { playheadIndex } from '@/components/report/activeViolation'
+import { wrapIndex } from '@/utils/wrap'
 import { ReportMeta } from '@/components/report/ReportMeta'
 import { SavedChip } from '@/components/history/SavedChip'
 import { isTypingTarget } from '@/utils/keys'
@@ -32,7 +34,6 @@ import { ViolationList } from '@/components/report/ViolationList'
 import type { ReportScreenProps } from './contracts'
 
 type Tab = 'report' | 'json'
-const TABS = 'report'
 
 export function ReportScreen({
   job,
@@ -44,10 +45,10 @@ export function ReportScreen({
   checkedAt,
   file,
   exit,
-  savedAt,
   onRecheck,
 }: ReportScreenProps) {
   const t = useStrings('report')
+  const TABS = useId()
   const [tab, setTab] = useState<Tab>('report')
   const [selected, setSelected] = useState<number | null>(0)
   const [picked, setPicked] = useState(false)
@@ -87,7 +88,9 @@ export function ReportScreen({
         dimmed: review[index]?.decision === 'rejected',
       }))
     : []
-  const [playhead, setPlayhead] = useState<number | null>(null)
+  const [time, setTime] = useState<number | null>(null)
+  const playhead =
+    time === null ? null : playheadIndex(violations, time, activeIndex)
   const rows = useRef(new Map<number, HTMLLIElement>())
 
   useEffect(() => {
@@ -104,9 +107,21 @@ export function ReportScreen({
     if (reveal) requestAnimationFrame(() => revealRow(index))
   }
 
-  async function mark(index: number, decision: ReviewDecision | null) {
-    await decide(index, decision)
-    if (!decision) return
+  function focusIn(index: number, selector: string) {
+    requestAnimationFrame(() =>
+      rows.current
+        .get(index)
+        ?.querySelector<HTMLElement>(selector)
+        ?.focus({ preventScroll: true }),
+    )
+  }
+
+  function mark(index: number, decision: ReviewDecision | null) {
+    decide(index, decision).catch(() => {})
+    if (!decision) {
+      focusIn(index, '[data-review="confirm"]')
+      return
+    }
     const next = nextUnreviewed(
       { ...review, [index]: { decision, at: 0 } },
       count,
@@ -114,6 +129,7 @@ export function ReportScreen({
     )
     if (next === null) setSelected(null)
     else select(next, true)
+    focusIn(next ?? index, 'button')
   }
 
   function revealRow(index: number) {
@@ -126,21 +142,23 @@ export function ReportScreen({
   const onStepKey = useEffectEvent((event: KeyboardEvent) => {
     if (!hasViolations || tab !== 'report') return
     if (titleRef.current?.closest('[hidden]')) return
-    if (event.altKey || event.ctrlKey || event.metaKey) return
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
     if (isTypingTarget(event.target)) return
+    if (event.target instanceof Element && event.target.closest('dialog'))
+      return
     if (
       activeIndex !== null &&
       (event.code === 'KeyY' || event.code === 'KeyX')
     ) {
       event.preventDefault()
       if (event.repeat) return
-      void mark(activeIndex, event.code === 'KeyY' ? 'confirmed' : 'rejected')
+      mark(activeIndex, event.code === 'KeyY' ? 'confirmed' : 'rejected')
       return
     }
     const by = event.code === 'KeyN' ? 1 : event.code === 'KeyP' ? -1 : 0
     if (!by) return
     event.preventDefault()
-    select(stepIndex(activeIndex ?? (by === 1 ? -1 : 0), by, count), true)
+    select(wrapIndex(activeIndex ?? (by === 1 ? -1 : 0), by, count), true)
   })
 
   useEffect(() => {
@@ -155,22 +173,13 @@ export function ReportScreen({
 
   function download() {
     const reviewed = hasViolations ? review : {}
-    const base = fileName.replace(/\.[^.]+$/, '')
+    const base = baseName(fileName)
     if (tab === 'json') {
       saveFile(`${base}.json`, fullJson(job, reviewed), 'application/json')
       return
     }
-    const saved = record ?? {
-      jobId: job.job_id,
-      fileName,
-      fileSize: fileSize ?? 0,
-      fileHash: null,
-      createdAt: checkedAt,
-      result: job,
-      review,
-    }
-    const model = buildReportModel({ ...saved, review: reviewed }, duration)
-    const date = new Date(checkedAt).toISOString().slice(0, 10)
+    const model = buildReportModel({ ...record, review: reviewed }, duration)
+    const date = isoDate(checkedAt)
     printer.print(model, format(act.documentName, { file: base, date }))
   }
 
@@ -211,7 +220,7 @@ export function ReportScreen({
         </div>
 
         <div className="flex flex-col gap-3 lg:col-start-2 lg:row-start-2">
-          {savedAt !== undefined && <SavedChip onRecheck={onRecheck} />}
+          {exit.kind === 'history' && <SavedChip onRecheck={onRecheck} />}
           <VerdictSummary
             violation={hasViolations}
             count={count}
@@ -238,9 +247,7 @@ export function ReportScreen({
             markers={markers}
             activeMarkerId={playhead === null ? null : String(playhead)}
             onMarkerSelect={(id) => select(Number(id), true)}
-            onTimeChange={(time) =>
-              setPlayhead(playheadIndex(violations, time, selected))
-            }
+            onTimeChange={setTime}
           />
           {exit.kind === 'newVideo' && (
             <Button
@@ -267,7 +274,8 @@ export function ReportScreen({
                 playheadIndex={playhead}
                 review={review}
                 onSelect={select}
-                onDecide={(index, decision) => void mark(index, decision)}
+                onClose={() => setSelected(null)}
+                onDecide={(index, decision) => mark(index, decision)}
                 clip={videoUrl ? { videoUrl, fileName } : null}
                 rowRef={(index, row) => {
                   if (row) rows.current.set(index, row)

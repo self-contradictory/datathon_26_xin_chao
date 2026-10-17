@@ -24,6 +24,11 @@ export function formatFullDate(timestamp: number): string {
   return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} · ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
+export function isoDate(timestamp: number): string {
+  const date = new Date(timestamp)
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
 export function formatFrameTime(totalSeconds: number): string {
   const safe =
     Number.isFinite(totalSeconds) && totalSeconds > 0 ? totalSeconds : 0
@@ -47,6 +52,10 @@ export function formatFileSize(
   let value = bytes
   let unit = 0
   while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024
+    unit += 1
+  }
+  if (unit > 0 && unit < units.length - 1 && Math.round(value) >= 1024) {
     value /= 1024
     unit += 1
   }

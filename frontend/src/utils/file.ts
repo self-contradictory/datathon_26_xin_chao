@@ -6,6 +6,10 @@ export interface RejectedFile {
   problem: FileProblem
 }
 
+export function baseName(name: string): string {
+  return name.replace(/\.[^.]+$/, '')
+}
+
 export function fileExtension(name: string): string {
   const match = /\.([^.\\/]+)$/.exec(name)
   return match ? match[1]!.toLowerCase() : ''

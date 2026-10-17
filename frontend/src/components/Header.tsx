@@ -126,7 +126,7 @@ function MobileMenu({ route }: { route: Route }) {
         aria-label={open ? t.closeMenu : t.openMenu}
         title={open ? t.closeMenu : t.openMenu}
         aria-expanded={open}
-        aria-controls="mobile-menu"
+        aria-controls={open ? 'mobile-menu' : undefined}
         onClick={() => setOpenOn(open ? null : route)}
         className={`flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface text-text ${FOCUS}`}
       >

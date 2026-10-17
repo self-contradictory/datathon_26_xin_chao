@@ -1,6 +1,6 @@
 import { USE_FIXTURES } from '@/config'
 import { pickVideosToEvict, VIDEO_LIMIT_BYTES } from './evict'
-import type { CheckRecord, CheckStore } from './types'
+import { mergeRecord, type CheckRecord, type CheckStore } from './types'
 
 const DB_NAME = USE_FIXTURES ? 'forte-checks-demo' : 'forte-checks'
 const CHECKS = 'checks'
@@ -57,6 +57,19 @@ export function createIdbStore(db: IDBDatabase): CheckStore {
     await done(tx)
   }
 
+  async function write(record: CheckRecord, video: Blob | undefined) {
+    const tx = db.transaction([CHECKS, VIDEOS], 'readwrite')
+    const previous = await request(
+      tx.objectStore(CHECKS).get(record.jobId) as IDBRequest<
+        CheckRecord | undefined
+      >,
+    )
+    const hasVideo = video !== undefined || previous?.hasVideo === true
+    tx.objectStore(CHECKS).put({ ...mergeRecord(previous, record), hasVideo })
+    if (video) tx.objectStore(VIDEOS).put(video, record.jobId)
+    await done(tx)
+  }
+
   return {
     async get(jobId) {
       const tx = db.transaction([CHECKS, VIDEOS], 'readonly')
@@ -81,16 +94,13 @@ export function createIdbStore(db: IDBDatabase): CheckStore {
       return found.sort((a, b) => b.createdAt - a.createdAt)[0]
     },
     async put({ video, ...record }) {
-      const tx = db.transaction([CHECKS, VIDEOS], 'readwrite')
-      const previous = await request(
-        tx.objectStore(CHECKS).get(record.jobId) as IDBRequest<
-          CheckRecord | undefined
-        >,
-      )
-      const hasVideo = video !== undefined || previous?.hasVideo === true
-      tx.objectStore(CHECKS).put({ ...record, hasVideo })
-      if (video) tx.objectStore(VIDEOS).put(video, record.jobId)
-      await done(tx)
+      try {
+        await write(record, video)
+      } catch (error) {
+        if (!video) throw error
+        await write(record, undefined)
+        return
+      }
       if (video) await evictVideos()
     },
     async list() {

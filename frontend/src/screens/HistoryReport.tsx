@@ -88,7 +88,6 @@ export function HistoryReport({
       posterUrl={record.poster ?? firstFrame(job)}
       checkedAt={record.createdAt}
       file={null}
-      savedAt={record.createdAt}
       onRecheck={
         video
           ? () =>

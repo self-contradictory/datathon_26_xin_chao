@@ -43,8 +43,7 @@ function ViolationBlock({ violation }: { violation: ActViolation }) {
   const card = useStrings('violationCard')
   const requires = useStrings('ruleRequires')
   const check = useStrings('ruleCheck')
-  const { typeName, typeLang, description, descriptionLang } =
-    useViolationText()
+  const { typeName, typeLang } = useViolationText()
 
   return (
     <section className="act-block mt-5 flex flex-col gap-2">
@@ -71,7 +70,7 @@ function ViolationBlock({ violation }: { violation: ActViolation }) {
       </div>
       <p className="text-[12px]">
         <span className="font-semibold">{card.description}: </span>
-        <span lang={descriptionLang()}>{description(violation.source)}</span>
+        <span lang="ru">{violation.source.description}</span>
       </p>
       {violation.rule && (
         <>

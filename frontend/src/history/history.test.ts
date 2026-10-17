@@ -4,7 +4,7 @@ import { sha256Hex } from './hash'
 import { pickVideosToEvict } from './evict'
 import { createMemoryStore } from './memoryStore'
 import { openCheckStore } from './store'
-import { violationKey, type CheckRecord } from './types'
+import { mergeRecord, type CheckRecord } from './types'
 
 const result: JobResponse = {
   job_id: 'j1',
@@ -51,8 +51,19 @@ describe('check store', () => {
 })
 
 describe('history helpers', () => {
-  test('violationKey joins the job id and the index', () => {
-    expect(violationKey('abc', 2)).toBe('abc:2')
+  test('mergeRecord keeps poster, duration and hash a bare write lacks', () => {
+    const full = {
+      ...record('j', 1),
+      fileHash: 'h',
+      poster: 'p',
+      duration: 12,
+    }
+    const bare = { ...record('j', 1), fileHash: null }
+    expect(mergeRecord(full, bare)).toMatchObject({
+      fileHash: 'h',
+      poster: 'p',
+      duration: 12,
+    })
   })
 
   test('sha256Hex hashes the file bytes', async () => {

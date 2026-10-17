@@ -1,3 +1,4 @@
+import { once } from '@/utils/frames'
 import { clipWindow, CLIP_BITRATE, pickRecorderMime } from './clip'
 
 export interface ClipLabel {
@@ -50,19 +51,24 @@ export function drawClipFrame(
   }
 }
 
-function once(target: EventTarget, event: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const ok = () => {
-      target.removeEventListener('error', fail)
-      resolve()
-    }
-    const fail = () => {
-      target.removeEventListener(event, ok)
-      reject(new Error(`clip: ${event} failed`))
-    }
-    target.addEventListener(event, ok, { once: true })
-    target.addEventListener('error', fail, { once: true })
-  })
+async function prepare(
+  video: HTMLVideoElement,
+  canvas: HTMLCanvasElement,
+  eventTime: number,
+) {
+  await once(video, 'loadedmetadata')
+  const { start, end } = clipWindow(
+    eventTime,
+    Number.isFinite(video.duration) ? video.duration : null,
+  )
+  video.currentTime = start
+  await once(video, 'seeked')
+  canvas.width = video.videoWidth || 464
+  canvas.height = video.videoHeight || 848
+  const context = canvas.getContext('2d')
+  if (!context) throw new Error('clip: no canvas')
+  await document.fonts.ready
+  return { start, end, context }
 }
 
 export async function recordClip(
@@ -70,31 +76,26 @@ export async function recordClip(
   eventTime: number,
   label: ClipLabel,
   onProgress: (fraction: number) => void,
-  signal: AbortSignal,
 ): Promise<ClipResult> {
   const format = clipFormat()
   if (!format) throw new Error('clip: recording is not supported')
 
+  const canvas = document.createElement('canvas')
   const video = document.createElement('video')
   video.muted = true
   video.playsInline = true
   video.preload = 'auto'
   video.src = videoUrl
-  await once(video, 'loadedmetadata')
-
-  const { start, end } = clipWindow(
-    eventTime,
-    Number.isFinite(video.duration) ? video.duration : null,
+  const release = () => {
+    video.removeAttribute('src')
+    video.load()
+  }
+  const { start, end, context } = await prepare(video, canvas, eventTime).catch(
+    (error: unknown) => {
+      release()
+      throw error
+    },
   )
-  video.currentTime = start
-  await once(video, 'seeked')
-
-  const canvas = document.createElement('canvas')
-  canvas.width = video.videoWidth || 464
-  canvas.height = video.videoHeight || 848
-  const context = canvas.getContext('2d')
-  if (!context) throw new Error('clip: no canvas')
-  await document.fonts.ready
 
   const stream = canvas.captureStream(30)
   const recorder = new MediaRecorder(stream, {
@@ -116,7 +117,7 @@ export async function recordClip(
     if (stopped) return
     drawClipFrame(context, video, label, eventTime)
     onProgress(Math.min(1, (video.currentTime - start) / (end - start || 1)))
-    if (video.currentTime >= end || video.ended || signal.aborted) {
+    if (video.currentTime >= end || video.ended) {
       stopped = true
       video.pause()
       if (recorder.state !== 'inactive') recorder.stop()
@@ -152,10 +153,8 @@ export async function recordClip(
     video.removeEventListener('ended', step)
     cancelAnimationFrame(frame)
     stream.getTracks().forEach((track) => track.stop())
-    video.removeAttribute('src')
-    video.load()
+    release()
   }
 
-  if (signal.aborted) throw new DOMException('aborted', 'AbortError')
   return { blob: new Blob(chunks, { type: format.mime }), ext: format.ext }
 }

@@ -1,3 +1,4 @@
+import { batchCounts } from '@/batch/batch'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { showsViolations, type DoneJob } from '@/api/types'
 import { openedReport } from '@/batch/batch'
@@ -46,7 +47,10 @@ function MainFlow({
     return (
       <UploadScreen
         onSubmit={start}
-        onSubmitMany={batch.start}
+        onSubmitMany={(files, rejected) => {
+          reset()
+          batch.start(files, rejected)
+        }}
         focusTitle={restarted}
       />
     )
@@ -109,24 +113,24 @@ function Shell() {
   const flow = useJobFlow(jobSource, polling)
   const batch = useBatchFlow(jobSource, polling)
   const goHome = () => {
+    const busy =
+      flow.state.screen === 'processing' ||
+      batchCounts(batch.state.items).unfinished > 0
+    if (busy) return
     flow.reset()
     batch.reset()
   }
   const t = useStrings('titles')
   const page = route.page === 'demo' && !DemoPage ? 'main' : route.page
 
-  const titleKey =
-    page === 'rules' || page === 'api' || page === 'history'
-      ? page
-      : page === 'check'
-        ? 'history'
-        : mainTitleKey(flow.state, batch.state)
   const headerRoute =
     page === 'rules' || page === 'api' || page === 'history'
       ? page
       : page === 'check'
         ? 'history'
         : 'main'
+  const titleKey =
+    headerRoute === 'main' ? mainTitleKey(flow.state, batch.state) : headerRoute
   const recheck = (file: File) => {
     batch.reset()
     window.location.hash = '#/'

@@ -38,7 +38,6 @@ export function ClipButton({
         violation.timecode_sec,
         { type: typeName(violation.type), time },
         setProgress,
-        new AbortController().signal,
       )
       saveBlob(clipFileName(fileName, time, ext), blob)
     } catch {

@@ -8,13 +8,8 @@ export interface PlayerMarker {
   dimmed?: boolean
 }
 
-export interface SeekOptions {
-  lead?: number
-  pause?: boolean
-}
-
 export interface PlayerHandle {
-  seek(time: number, options?: SeekOptions): void
+  seek(time: number): void
   pause(): void
 }
 

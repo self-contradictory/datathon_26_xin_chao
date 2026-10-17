@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { messagesFor } from '@/i18n'
 import { LABEL_COUNT, labelKey, lookupLabel } from '@/api/labels'
 import { parseHash } from '@/route'
-import { findRule, ruleHref, RULES } from '@/rules'
+import { findRule } from '@/rules'
 import { checkVideoFile, fileExtension, pickVideos } from './file'
 import { clampTime } from './frames'
 import {
@@ -46,6 +46,7 @@ describe('time', () => {
     expect(formatFileSize(3032008, 'ru-RU', ru)).toBe('2,9 МБ')
     expect(formatFileSize(28718927, 'ru-RU', ru)).toBe('27,4 МБ')
     expect(formatFileSize(512, 'ru-RU', ru)).toBe('512 Б')
+    expect(formatFileSize(1024 * 1024 - 100, 'ru-RU', ru)).toBe('1,0 МБ')
     expect(formatFileSize(3032008, 'en-GB', messagesFor('units', 'en'))).toBe(
       '2.9 MB',
     )
@@ -182,13 +183,6 @@ describe('rules', () => {
     expect(findRule('Пересчет без клиента')?.id).toBe('countWithoutClient')
     expect(findRule('noId')?.id).toBe('noId')
     expect(findRule('Неизвестный тип')).toBeNull()
-  })
-})
-
-describe('ruleHref', () => {
-  test('a known type links to its rule, an unknown type does not', () => {
-    expect(ruleHref(RULES[0]!.type)).toBe(`#/rules/${RULES[0]!.id}`)
-    expect(ruleHref('Тип, которого нет в словаре')).toBeNull()
   })
 })
 

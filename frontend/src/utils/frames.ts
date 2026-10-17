@@ -12,7 +12,7 @@ export interface CaptureResult {
 
 const TIMEOUT_MS = 15_000
 
-function once(target: HTMLMediaElement, event: string): Promise<void> {
+export function once(target: HTMLMediaElement, event: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       cleanup()

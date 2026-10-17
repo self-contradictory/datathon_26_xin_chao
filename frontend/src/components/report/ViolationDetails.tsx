@@ -39,7 +39,6 @@ function AdiletLinks({ rule }: { rule: Rule }) {
         <li key={act}>
           <TextLink
             href={ACT_URLS[act]}
-            external
             label={format(rules.linkLabel, { act: acts[act] })}
           >
             {format(t.adilet, { act: acts[act] })}
@@ -83,6 +82,7 @@ function ReviewControls({
         <Button
           variant="secondary"
           icon={<CheckIcon size={20} />}
+          data-review="confirm"
           onClick={() => onDecide('confirmed')}
         >
           {t.confirm}
@@ -132,7 +132,7 @@ export function ViolationDetails({
   const t = useStrings('violationCard')
   const requires = useStrings('ruleRequires')
   const check = useStrings('ruleCheck')
-  const { typeName, description, descriptionLang } = useViolationText()
+  const { typeName } = useViolationText()
   const rule = findRule(violation.type)
 
   return (
@@ -154,7 +154,7 @@ export function ViolationDetails({
       </div>
       <dl className="flex flex-col">
         <Row label={t.description}>
-          <span lang={descriptionLang()}>{description(violation)}</span>
+          <span lang="ru">{violation.description}</span>
         </Row>
         {rule ? (
           <>

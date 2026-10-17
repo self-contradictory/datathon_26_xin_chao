@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import type { DoneJob } from '@/api/types'
 import { sha256Hex } from './hash'
 import { checkStore } from './store'
@@ -21,19 +21,21 @@ export function useCheckRecord({
 }: CheckSource) {
   const jobId = job.job_id
   const [record, setRecord] = useState<CheckRecord | null>(null)
+  const queue = useRef<Promise<void>>(Promise.resolve())
+
+  const fresh: CheckRecord = {
+    jobId,
+    fileName,
+    fileSize: fileSize ?? 0,
+    fileHash: null,
+    createdAt: checkedAt,
+    result: job,
+    review: {},
+  }
 
   const ensureRecord = useEffectEvent(
     async (saved: CheckRecord | undefined): Promise<CheckRecord> => {
       if (saved) return saved
-      const fresh: CheckRecord = {
-        jobId,
-        fileName,
-        fileSize: fileSize ?? 0,
-        fileHash: null,
-        createdAt: checkedAt,
-        result: job,
-        review: {},
-      }
       await checkStore.put(fresh)
       return fresh
     },
@@ -44,7 +46,7 @@ export function useCheckRecord({
       if (base.fileHash || !file) return null
       const fileHash = await sha256Hex(file)
       if (!fileHash) return null
-      const latest = (await checkStore.get(jobId)) ?? base
+      const { video: _video, ...latest } = (await checkStore.get(jobId)) ?? base
       const hashed = { ...latest, fileHash }
       await checkStore.put(hashed)
       return hashed
@@ -72,17 +74,24 @@ export function useCheckRecord({
     }
   }, [jobId])
 
-  async function decide(index: number, decision: ReviewDecision | null) {
-    const latest = await checkStore.get(jobId)
-    if (!latest) return
-    const review: Review = { ...latest.review }
-    if (decision) review[index] = { decision, at: Date.now() }
-    else delete review[index]
-    const { video: _video, ...rest } = latest
-    const updated = { ...rest, review }
-    await checkStore.put(updated)
-    setRecord(updated)
+  function decide(index: number, decision: ReviewDecision | null) {
+    const at = Date.now()
+    const apply = (review: Review): Review => {
+      const next = { ...review }
+      if (decision) next[index] = { decision, at }
+      else delete next[index]
+      return next
+    }
+    setRecord((prev) => (prev ? { ...prev, review: apply(prev.review) } : prev))
+    const run = queue.current.then(async () => {
+      const latest = await checkStore.get(jobId)
+      if (!latest) return
+      const { video: _video, ...rest } = latest
+      await checkStore.put({ ...rest, review: apply(rest.review) })
+    })
+    queue.current = run.catch(() => {})
+    return run
   }
 
-  return { record, review: record?.review ?? {}, decide }
+  return { record: record ?? fresh, review: record?.review ?? {}, decide }
 }

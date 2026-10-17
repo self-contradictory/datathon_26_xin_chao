@@ -122,7 +122,7 @@ player:
   marker: 'Нарушение {i} из {n}: {label}, {time}'
   markerGroup: 'Нарушение {i} из {n}: {label}, {time}, и ещё {more} рядом'
   unavailable: Видео недоступно
-  noSource: Видео недоступно
+  noSource: Видео не сохранено
   cannotPlay: Браузер не может воспроизвести это видео
 rules:
   title: 'Правила проверки'
@@ -132,7 +132,6 @@ rules:
   check: 'Что проверить'
   linkLabel: '{act} на adilet.zan.kz, откроется в новой вкладке'
   documents: 'Нормативные акты'
-  note: 'Признак на видео ещё не нарушение: каждый случай проверяет человек. Сервис может найти и другие типы, их название приходит как есть.'
 ruleNorm:
   point: 'п. {p}'
   sub: 'п. {p} пп. {s}'
@@ -140,8 +139,6 @@ ruleNorm:
   norm: '{act}: {refs}'
   subItem: '{s})'
   subJoin: ', '
-textLink:
-  newTab: (откроется в новой вкладке)
 apiDocs:
   title: API
   authTitle: Авторизация

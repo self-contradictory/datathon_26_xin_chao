@@ -28,12 +28,10 @@ export function VerdictSummary({
   violation,
   count,
   review,
-  className = '',
 }: {
   violation: boolean
   count: number
-  review?: ReviewSummary
-  className?: string
+  review: ReviewSummary
 }) {
   const t = useStrings('verdictSummary')
 
@@ -44,13 +42,13 @@ export function VerdictSummary({
         violation
           ? 'border-danger/15 bg-danger-tint'
           : 'border-success/15 bg-success-tint'
-      } ${className}`}
+      }`}
     >
-      {violation ? (
-        <Owl mood="warning" className="-my-3 w-24 shrink-0 sm:w-36" />
-      ) : (
-        <Owl mood="happy" className="-my-3 w-24 shrink-0 sm:w-36" />
-      )}
+      <Owl
+        key={violation ? 'warning' : 'happy'}
+        mood={violation ? 'warning' : 'happy'}
+        className="-my-3 w-24 shrink-0 sm:w-36"
+      />
       <div className="flex min-w-0 flex-wrap items-center gap-3">
         <p
           className={`text-verdict font-semibold ${
@@ -59,9 +57,7 @@ export function VerdictSummary({
         >
           {violation ? format(t.violation, { n: count }) : t.clean}
         </p>
-        {violation && review && review.total > 0 && (
-          <ReviewChip summary={review} />
-        )}
+        {violation && review.total > 0 && <ReviewChip summary={review} />}
       </div>
     </section>
   )

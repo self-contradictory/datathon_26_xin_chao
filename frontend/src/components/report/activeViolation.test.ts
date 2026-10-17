@@ -1,9 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import {
-  activeViolationIndex,
-  playheadIndex,
-  stepIndex,
-} from './activeViolation'
+import { activeViolationIndex, playheadIndex } from './activeViolation'
 
 const at = (...times: number[]) =>
   times.map((timecode_sec) => ({ timecode_sec }))
@@ -24,13 +20,6 @@ describe('activeViolationIndex', () => {
     expect(activeViolationIndex(at(10, 14), 11)).toBe(0)
     expect(activeViolationIndex(at(10, 14), 13)).toBe(1)
     expect(activeViolationIndex(at(14, 10), 12)).toBe(0)
-  })
-})
-
-describe('stepIndex', () => {
-  test('wraps around both ways', () => {
-    expect(stepIndex(2, 1, 3)).toBe(0)
-    expect(stepIndex(0, -1, 3)).toBe(2)
   })
 })
 

@@ -187,11 +187,6 @@ export function findRule(type: string): Rule | null {
   )
 }
 
-export function ruleHref(type: string): string | null {
-  const rule = findRule(type)
-  return rule ? `#/rules/${rule.id}` : null
-}
-
 export function ruleActs(rule: Rule): ActId[] {
   return [...new Set(rule.norms.map((norm) => norm.act))]
 }

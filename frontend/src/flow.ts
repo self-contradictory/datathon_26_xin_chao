@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { asCheckFailure, runCheck, type PollingOptions } from '@/api/check'
+import {
+  asCheckFailure,
+  uploadVideo,
+  waitForJob,
+  type PollingOptions,
+} from '@/api/check'
 import type { JobErrorKind, JobSource } from '@/api/source'
-import type { DoneJob } from '@/api/types'
+import { isDone, type DoneJob } from '@/api/types'
 import type { ProcessingPhase, ProcessingStep } from '@/screens/contracts'
 import { pickVideo, revokeVideo, withPoster, type PickedVideo } from '@/video'
-import { isDone } from '@/api/types'
 import { findSaved, saveCheck } from '@/history/save'
 
 interface ProcessingState {
@@ -32,6 +36,7 @@ export function useJobFlow(
   const controller = useRef<AbortController | null>(null)
   const videoRef = useRef<PickedVideo | null>(null)
   const starts = useRef(0)
+  const uploaded = useRef<string | null>(null)
 
   const cancelRun = useCallback(() => {
     run.current += 1
@@ -53,7 +58,7 @@ export function useJobFlow(
   )
 
   const process = useCallback(
-    async (video: PickedVideo) => {
+    async (video: PickedVideo, jobId: string | null = null) => {
       cancelRun()
       const token = run.current
       const live = () => token === run.current
@@ -63,8 +68,8 @@ export function useJobFlow(
       setState({
         screen: 'processing',
         video,
-        phase: 'uploading',
-        uploadProgress: 0,
+        phase: jobId ? 'analyzing' : 'uploading',
+        uploadProgress: jobId ? 1 : 0,
         startedAt,
         stoppedAt: null,
         error: null,
@@ -78,12 +83,20 @@ export function useJobFlow(
       }
 
       try {
-        const job = await runCheck(source, video.file, {
+        let id = jobId
+        if (!id) {
+          id = await uploadVideo(source, video.file, {
+            signal: abort.signal,
+            onUploadProgress: (uploadProgress) => update({ uploadProgress }),
+          })
+          if (!live()) return
+          uploaded.current = id
+          update({ phase: 'analyzing', uploadProgress: 1 })
+        }
+        const job = await waitForJob(source, id, {
           intervalMs,
           timeoutMs,
           signal: abort.signal,
-          onUploadProgress: (uploadProgress) => update({ uploadProgress }),
-          onUploaded: () => update({ phase: 'analyzing', uploadProgress: 1 }),
         })
         if (!live()) return
         const finished = videoRef.current ?? video
@@ -121,6 +134,7 @@ export function useJobFlow(
         }
       }
       releaseVideo()
+      uploaded.current = null
       const video = pickVideo(file)
       videoRef.current = video
       void withPoster(video)
@@ -138,10 +152,19 @@ export function useJobFlow(
   )
 
   const retry = useCallback(() => {
-    if (videoRef.current) void process(videoRef.current)
-  }, [process])
+    if (!videoRef.current) return
+    const resumable =
+      state.screen === 'processing' &&
+      state.failedStep === 'analysis' &&
+      (state.error === 'network' ||
+        state.error === 'timeout' ||
+        state.error === 'server')
+    void process(videoRef.current, resumable ? uploaded.current : null)
+  }, [process, state])
 
   const reset = useCallback(() => {
+    starts.current += 1
+    uploaded.current = null
     cancelRun()
     releaseVideo()
     setState({ screen: 'upload' })

@@ -150,7 +150,6 @@ export interface Messages {
     check: string
     linkLabel: string
     documents: string
-    note: string
   }
   ruleNorm: {
     point: string
@@ -159,9 +158,6 @@ export interface Messages {
     norm: string
     subItem: string
     subJoin: string
-  }
-  textLink: {
-    newTab: string
   }
   apiDocs: {
     title: string

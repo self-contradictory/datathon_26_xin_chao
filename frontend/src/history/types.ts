@@ -32,6 +32,15 @@ export interface CheckStore {
   clear(): Promise<void>
 }
 
-export function violationKey(jobId: string, index: number): string {
-  return `${jobId}:${index}`
+export function mergeRecord(
+  previous: CheckRecord | undefined,
+  record: CheckRecord,
+): CheckRecord {
+  return {
+    ...previous,
+    ...record,
+    fileHash: record.fileHash ?? previous?.fileHash ?? null,
+    poster: record.poster ?? previous?.poster ?? null,
+    duration: record.duration ?? previous?.duration ?? null,
+  }
 }
