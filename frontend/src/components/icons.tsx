@@ -81,6 +81,14 @@ export const CheckCircleIcon = (p: IconProps) => (
   </Stroke>
 )
 
+export const DownloadIcon = (p: IconProps) => (
+  <Stroke {...p}>
+    <path d="M12 4v11" />
+    <path d="M7.5 10.5L12 15l4.5-4.5" />
+    <path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
+  </Stroke>
+)
+
 export const CheckIcon = (p: IconProps) => (
   <Stroke {...p}>
     <path d="M5 12.5l4.5 4.5L19 7.5" />

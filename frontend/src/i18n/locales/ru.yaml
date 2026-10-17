@@ -213,5 +213,30 @@ review:
   undo: 'Отменить отметку: {decision}'
   progress: 'Проверено человеком: {done} из {total}'
   complete: Все нарушения проверены человеком
+act:
+  title: Акт проверки видеозаписи
+  number: '№ {n}'
+  object: Объект проверки
+  file: Файл
+  size: Размер
+  duration: Длительность
+  hash: Хеш SHA-256
+  job: Номер задачи
+  result: Результат
+  reviewed: 'Подтверждено {confirmed} · Ложных {rejected}'
+  pending: 'Не проверено человеком: {n}'
+  violations: Нарушения
+  colNumber: '№'
+  colTime: Время
+  colType: Тип
+  colRule: Правило
+  colDecision: Решение
+  noDecision: Не проверено
+  frame: 'Кадр {k} · {time}'
+  signature: 'Проверил: ____________________ / ФИО / дата'
+  downloadAct: Скачать акт в PDF
+  downloadJson: Скачать JSON
+  documentName: 'Акт_{file}_{date}'
+  noHash: не вычислен
 demo:
   title: Демо-состояния

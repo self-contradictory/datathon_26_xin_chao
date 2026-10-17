@@ -203,5 +203,30 @@ review:
   undo: 'Undo mark: {decision}'
   progress: 'Reviewed by a person: {done} of {total}'
   complete: All violations reviewed by a person
+act:
+  title: Video recording check report
+  number: 'No. {n}'
+  object: Checked object
+  file: File
+  size: Size
+  duration: Duration
+  hash: SHA-256 hash
+  job: Job number
+  result: Result
+  reviewed: 'Confirmed {confirmed} · False alarms {rejected}'
+  pending: 'Not reviewed by a person: {n}'
+  violations: Violations
+  colNumber: 'No.'
+  colTime: Time
+  colType: Type
+  colRule: Rule
+  colDecision: Decision
+  noDecision: Not reviewed
+  frame: 'Frame {k} · {time}'
+  signature: 'Checked by: ____________________ / Name / date'
+  downloadAct: Download PDF report
+  downloadJson: Download JSON
+  documentName: 'Report_{file}_{date}'
+  noHash: not computed
 demo:
   title: Demo states

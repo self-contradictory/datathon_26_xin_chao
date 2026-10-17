@@ -243,6 +243,32 @@ export interface Messages {
     progress: string
     complete: string
   }
+  act: {
+    title: string
+    number: string
+    object: string
+    file: string
+    size: string
+    duration: string
+    hash: string
+    job: string
+    result: string
+    reviewed: string
+    pending: string
+    violations: string
+    colNumber: string
+    colTime: string
+    colType: string
+    colRule: string
+    colDecision: string
+    noDecision: string
+    frame: string
+    signature: string
+    downloadAct: string
+    downloadJson: string
+    documentName: string
+    noHash: string
+  }
   demo: {
     title: string
   }

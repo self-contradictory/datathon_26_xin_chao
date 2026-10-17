@@ -1,7 +1,14 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { ActDocument } from '@/components/act/ActDocument'
+import { buildReportModel } from '@/components/act/model'
+import { usePrintAct } from '@/components/act/usePrintAct'
+import { IconButton } from '@/components/report/IconButton'
+import { fullJson } from '@/components/report/json'
+import { saveFile } from '@/utils/download'
 import { showsViolations } from '@/api/types'
 import { Button } from '@/components/Button'
-import { ChevronLeftIcon, PlusIcon } from '@/components/icons'
+import { ChevronLeftIcon, DownloadIcon, PlusIcon } from '@/components/icons'
 import {
   Player,
   type PlayerHandle,
@@ -61,7 +68,7 @@ export function ReportScreen({
   const activeIndex = selected !== null && selected < count ? selected : null
   const active =
     hasViolations && activeIndex !== null ? violations[activeIndex] : undefined
-  const { review, decide } = useCheckRecord({
+  const { record, review, decide } = useCheckRecord({
     job,
     fileName,
     fileSize,
@@ -141,6 +148,21 @@ export function ReportScreen({
   }, [])
 
   const verdictTitle = useStrings('verdictSummary')
+  const act = useStrings('act')
+  const printer = usePrintAct()
+
+  function download() {
+    const reviewed = hasViolations ? review : {}
+    const base = fileName.replace(/\.[^.]+$/, '')
+    if (tab === 'json') {
+      saveFile(`${base}.json`, fullJson(job, reviewed), 'application/json')
+      return
+    }
+    if (!record) return
+    const model = buildReportModel({ ...record, review: reviewed }, duration)
+    const date = new Date(checkedAt).toISOString().slice(0, 10)
+    printer.print(model, format(act.documentName, { file: base, date }))
+  }
 
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 pt-6 pb-16 sm:px-6 lg:pt-8">
@@ -158,16 +180,24 @@ export function ReportScreen({
             duration={duration}
             checkedAt={checkedAt}
           />
-          <Tabs
-            items={[
-              { key: 'report', label: t.report },
-              { key: 'json', label: t.json },
-            ]}
-            value={tab}
-            onChange={setTab}
-            idPrefix={TABS}
-            label={t.tabs}
-          />
+          <div className="flex items-center gap-2">
+            <Tabs
+              items={[
+                { key: 'report', label: t.report },
+                { key: 'json', label: t.json },
+              ]}
+              value={tab}
+              onChange={setTab}
+              idPrefix={TABS}
+              label={t.tabs}
+            />
+            <IconButton
+              label={tab === 'report' ? act.downloadAct : act.downloadJson}
+              onClick={download}
+            >
+              <DownloadIcon size={20} />
+            </IconButton>
+          </div>
         </div>
 
         <VerdictSummary
@@ -244,6 +274,13 @@ export function ReportScreen({
           </div>
         </div>
       </div>
+
+      {printer.printing &&
+        printer.root &&
+        createPortal(
+          <ActDocument model={printer.printing.model} />,
+          printer.root,
+        )}
 
       <p aria-live="polite" className="sr-only">
         {picked && active && activeIndex !== null

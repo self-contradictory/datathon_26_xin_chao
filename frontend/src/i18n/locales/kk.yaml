@@ -203,5 +203,30 @@ review:
   undo: 'Белгіні болдырмау: {decision}'
   progress: 'Адам тексерді: {done} / {total}'
   complete: Барлық бұзушылықты адам тексерді
+act:
+  title: Бейнежазбаны тексеру актісі
+  number: '№ {n}'
+  object: Тексеру нысаны
+  file: Файл
+  size: Өлшемі
+  duration: Ұзақтығы
+  hash: SHA-256 хеші
+  job: Тапсырма нөмірі
+  result: Нәтиже
+  reviewed: 'Расталды {confirmed} · Жалған {rejected}'
+  pending: 'Адам тексермеген: {n}'
+  violations: Бұзушылықтар
+  colNumber: '№'
+  colTime: Уақыты
+  colType: Түрі
+  colRule: Ереже
+  colDecision: Шешім
+  noDecision: Тексерілмеген
+  frame: 'Кадр {k} · {time}'
+  signature: 'Тексерген: ____________________ / Аты-жөні / күні'
+  downloadAct: Актіні PDF-ке жүктеу
+  downloadJson: JSON жүктеу
+  documentName: 'Акт_{file}_{date}'
+  noHash: есептелмеген
 demo:
   title: Демо күйлер

@@ -3,6 +3,8 @@ import type { BatchStage } from '@/batch/types'
 import { useStrings } from '@/i18n'
 import { jpegDataUrl } from '@/utils/frames'
 import { RULES } from '@/rules'
+import { ActDocument } from '@/components/act/ActDocument'
+import { buildReportModel } from '@/components/act/model'
 import { BatchScreen } from '@/screens/Batch'
 import { ProcessingScreen } from '@/screens/Processing'
 import { ReportScreen } from '@/screens/Report'
@@ -118,6 +120,27 @@ function report(
       file={null}
       exit={{ kind: exit, onClick: noop }}
     />
+  )
+}
+
+function act(job: DoneJob, video: SampleVideo) {
+  const model = buildReportModel(
+    {
+      jobId: job.job_id,
+      fileName: video.name,
+      fileSize: video.size,
+      fileHash:
+        '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+      createdAt: CHECKED_AT,
+      result: job,
+      review: { 0: { decision: 'confirmed', at: CHECKED_AT } },
+    },
+    video.duration,
+  )
+  return (
+    <main className="mx-auto max-w-[794px] bg-bg p-12 shadow-card">
+      <ActDocument model={model} />
+    </main>
   )
 }
 
@@ -238,6 +261,8 @@ const STATES: Record<string, () => React.ReactNode> = {
       },
     ),
   'batch-report': () => report(ONE, X17, 'backToList'),
+  'act-two': () => act(TWO, X17),
+  'act-clean': () => act(CLEAN, X3),
 }
 
 export default function DemoPage({ state }: { state: string }) {

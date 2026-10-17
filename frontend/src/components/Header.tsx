@@ -50,7 +50,7 @@ function HomeLink({ onHome }: { onHome: () => void }) {
     >
       <Owl mood="hello" className="w-11 shrink-0" />
       {USE_FIXTURES && (
-        <span className="rounded-full bg-brand-tint px-3 py-1 text-caption font-semibold text-brand">
+        <span className="rounded-full bg-brand-tint px-3 py-1 text-caption font-semibold text-brand max-sm:hidden">
           {t.demo}
         </span>
       )}

@@ -78,3 +78,38 @@ body {
     animation: none !important;
   }
 }
+
+@media screen {
+  #print-root {
+    display: none;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm 16mm;
+  }
+
+  body {
+    background: var(--color-bg);
+  }
+
+  body > :not(#print-root) {
+    display: none !important;
+  }
+
+  #print-root {
+    display: block;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  #print-root thead {
+    display: table-header-group;
+  }
+
+  #print-root .act-block {
+    break-inside: avoid;
+  }
+}
