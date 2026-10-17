@@ -8,6 +8,7 @@
     "bun": ">=1.4.3"
   },
   "scripts": {
+    "start": "bun scripts/start.ts",
     "dev": "bun --hot dev.ts",
     "dev:static": "bun index.html",
     "build": "bun run typecheck && bun run build.ts",
@@ -18,7 +19,8 @@
     "format:check": "prettier --check .",
     "i18n:types": "bun scripts/i18n-types.ts",
     "check": "bun run typecheck && bun run lint && bun run format:check && bun test",
-    "test": "bun test"
+    "test": "bun test",
+    "smoke": "bun scripts/smoke.ts"
   },
   "dependencies": {
     "react": "19.3.1",
