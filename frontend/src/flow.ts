@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { CheckFailure, runCheck } from '@/api/check'
+import { asCheckFailure, runCheck, type PollingOptions } from '@/api/check'
 import type { JobErrorKind, JobSource } from '@/api/source'
 import type { DoneJob } from '@/api/types'
 import type { ProcessingPhase, ProcessingStep } from '@/screens/contracts'
@@ -23,7 +23,7 @@ export type FlowState =
 
 export function useJobFlow(
   source: JobSource,
-  { intervalMs, timeoutMs }: { intervalMs: number; timeoutMs: number },
+  { intervalMs, timeoutMs }: PollingOptions,
 ) {
   const [state, setState] = useState<FlowState>({ screen: 'upload' })
   const run = useRef(0)
@@ -90,10 +90,7 @@ export function useJobFlow(
           checkedAt: Date.now(),
         })
       } catch (error) {
-        const failure =
-          error instanceof CheckFailure
-            ? error
-            : new CheckFailure('failed', 'analysis')
+        const failure = asCheckFailure(error)
         update({
           phase: 'failed',
           stoppedAt: Date.now(),

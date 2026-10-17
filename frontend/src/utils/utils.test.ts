@@ -98,6 +98,12 @@ describe('pickVideos', () => {
     expect(pickVideos([video('a.mp4'), video('b.txt')], 10)).toEqual({
       kind: 'none_valid',
       count: 2,
+      empty: false,
+    })
+    expect(pickVideos([video('a.mov', 0), video('b.mov', 0)], 10)).toEqual({
+      kind: 'none_valid',
+      count: 2,
+      empty: true,
     })
   })
 

@@ -3,7 +3,7 @@ import type { FileProblem } from '@/utils/file'
 
 export type RejectionReason =
   | { kind: 'file'; fileName: string; problem: FileProblem }
-  | { kind: 'none_valid'; count: number }
+  | { kind: 'none_valid'; count: number; empty: boolean }
   | { kind: 'too_many'; count: number; max: number }
 
 const VIDEO_EXTENSIONS = new Set([
@@ -55,7 +55,9 @@ export function describeRejection(
     case 'none_valid':
       return {
         title: t.noneValidTitle,
-        text: format(t.noneValidText, { count: reason.count }),
+        text: format(reason.empty ? t.noneValidEmptyText : t.noneValidText, {
+          count: reason.count,
+        }),
       }
     case 'too_many':
       return {

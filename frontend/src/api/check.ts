@@ -30,6 +30,14 @@ export interface CheckOptions extends UploadOptions, WaitOptions {
   onUploaded: () => void
 }
 
+export type PollingOptions = Omit<WaitOptions, 'signal'>
+
+export function asCheckFailure(error: unknown): CheckFailure {
+  return error instanceof CheckFailure
+    ? error
+    : new CheckFailure('failed', 'analysis')
+}
+
 function failureAt(step: ProcessingStep, error: unknown): CheckFailure {
   const kind = error instanceof JobError ? error.kind : 'failed'
   return new CheckFailure(kind, step)

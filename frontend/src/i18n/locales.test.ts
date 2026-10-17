@@ -17,12 +17,15 @@ const SAME_IN_EVERY_LANGUAGE = new Set([
   'titles.api',
   'titles.suffix',
   'report.json',
-  'jsonView.charsFew',
-  'jsonView.charsMany',
   'player.marker',
   'languages.kk',
   'languages.ru',
   'languages.en',
+])
+
+const RUSSIAN_PLURAL_FORMS = new Set([
+  'jsonView.charsFew',
+  'jsonView.charsMany',
 ])
 
 const placeholders = (text: string) =>
@@ -57,6 +60,7 @@ describe('locales', () => {
         for (const key of Object.keys(strings)) {
           const path = `${namespace}.${key}`
           if (SAME_IN_EVERY_LANGUAGE.has(path)) continue
+          if (RUSSIAN_PLURAL_FORMS.has(path)) continue
           if (messages[namespace]?.[key] === undefined) missing.push(path)
         }
       }

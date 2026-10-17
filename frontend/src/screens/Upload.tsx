@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { LockIcon } from '@/components/icons'
 import { useStrings } from '@/i18n'
 import { DropZone } from '@/components/upload/DropZone'
@@ -7,12 +8,24 @@ export function UploadScreen({
   onSubmit,
   onSubmitMany,
   preview,
+  focusTitle = false,
 }: UploadScreenProps) {
   const t = useStrings('upload')
+  const titleRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => {
+    if (focusTitle) titleRef.current?.focus()
+  }, [focusTitle])
   return (
     <main className="flex min-h-[calc(100svh-65px)] flex-col items-center justify-center gap-8 px-4 pt-12 pb-16 sm:pt-16 sm:pb-24">
       <div className="flex max-w-[640px] flex-col gap-2 text-center">
-        <h1 className="text-title font-semibold">{t.title}</h1>
+        <h1
+          ref={titleRef}
+          tabIndex={-1}
+          className="text-title font-semibold focus:outline-none"
+        >
+          {t.title}
+        </h1>
         <p className="text-text-muted">{t.subtitle}</p>
       </div>
       <DropZone

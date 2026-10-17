@@ -6,6 +6,7 @@ import type { RejectedFile } from '@/utils/file'
 export interface UploadScreenProps {
   onSubmit: (file: File) => void
   onSubmitMany: (files: File[], rejected: RejectedFile[]) => void
+  focusTitle?: boolean
   preview?:
     | { state: 'dragover'; fileName: string; fileSize: number }
     | { state: 'error'; fileName: string }
@@ -59,7 +60,7 @@ export interface BatchRowView {
 export interface BatchScreenProps {
   rows: BatchRowView[]
   rejected: RejectedFile[]
-  paused: boolean
+  pausedBy: string | null
   returnFocusId: string | null
   onOpen: (id: string) => void
   onRetry: (id: string) => void

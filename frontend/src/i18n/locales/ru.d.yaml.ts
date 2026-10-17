@@ -43,6 +43,7 @@ export interface Messages {
     tooManyText: string
     noneValidTitle: string
     noneValidText: string
+    noneValidEmptyText: string
   }
   processing: {
     title: string

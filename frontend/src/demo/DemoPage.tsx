@@ -150,7 +150,7 @@ function batch(rows: BatchRowView[], extra: Partial<BatchScreenProps> = {}) {
     <BatchScreen
       rows={rows}
       rejected={[]}
-      paused={false}
+      pausedBy={null}
       returnFocusId={null}
       onOpen={noop}
       onRetry={noop}
@@ -212,7 +212,7 @@ const STATES: Record<string, () => React.ReactNode> = {
         row('c', X17, queued, 'Х-21.mov'),
         row('d', X3, queued, 'Х-22.mov'),
       ],
-      { paused: true },
+      { pausedBy: 'b' },
     ),
   'batch-done': () =>
     batch(

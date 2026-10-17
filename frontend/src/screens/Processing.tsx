@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { localeOf, useLang, useStrings } from '@/i18n'
-import { formatFileSize, formatTime } from '@/utils/time'
+import { FileMeta } from '@/components/FileMeta'
+import { useStrings } from '@/i18n'
 import { ElapsedTimer } from '@/components/processing/ElapsedTimer'
 import { ErrorPanel } from '@/components/processing/ErrorPanel'
 import { LiveStatus } from '@/components/processing/LiveStatus'
@@ -8,7 +8,6 @@ import { StepList } from '@/components/processing/StepList'
 import { stepStates } from '@/components/processing/steps'
 import { VideoPreview } from '@/components/processing/VideoPreview'
 import type { ProcessingScreenProps } from './contracts'
-import { MONO } from '@/components/styles'
 
 export function ProcessingScreen({
   fileName,
@@ -25,8 +24,6 @@ export function ProcessingScreen({
   onNewVideo,
 }: ProcessingScreenProps) {
   const t = useStrings('processing')
-  const units = useStrings('units')
-  const { lang } = useLang()
   const failed = phase === 'failed'
   const announcement =
     phase === 'uploading'
@@ -68,17 +65,7 @@ export function ProcessingScreen({
           <h2 className="text-section font-semibold wrap-anywhere">
             {fileName}
           </h2>
-          <p className="text-secondary text-text-muted">
-            <span className={MONO}>
-              {formatFileSize(fileSize, localeOf(lang), units)}
-            </span>
-            {duration !== null && (
-              <>
-                {' · '}
-                <span className={MONO}>{formatTime(duration)}</span>
-              </>
-            )}
-          </p>
+          <FileMeta size={fileSize} duration={duration} />
         </div>
 
         <div className="col-span-2 flex min-w-0 flex-col gap-6 lg:col-span-1 lg:col-start-2">

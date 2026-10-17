@@ -24,7 +24,7 @@ export function checkVideoFile(file: {
 export type FilePick =
   | { kind: 'single'; file: File }
   | { kind: 'batch'; files: File[]; rejected: RejectedFile[] }
-  | { kind: 'none_valid'; count: number }
+  | { kind: 'none_valid'; count: number; empty: boolean }
   | { kind: 'too_many'; count: number; max: number }
 
 export function pickVideos(files: readonly File[], max: number): FilePick {
@@ -37,7 +37,10 @@ export function pickVideos(files: readonly File[], max: number): FilePick {
     if (problem) rejected.push({ fileName: file.name, problem })
     else accepted.push(file)
   }
-  if (accepted.length === 0) return { kind: 'none_valid', count: files.length }
+  if (accepted.length === 0) {
+    const empty = rejected.every(({ problem }) => problem.kind === 'empty')
+    return { kind: 'none_valid', count: files.length, empty }
+  }
   if (accepted.length > max) {
     return { kind: 'too_many', count: accepted.length, max }
   }

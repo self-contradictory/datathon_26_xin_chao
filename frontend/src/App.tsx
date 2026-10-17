@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { showsViolations, type DoneJob } from '@/api/types'
 import { openedReport } from '@/batch/batch'
 import { BatchFlow } from '@/batch/BatchFlow'
@@ -30,11 +30,24 @@ function MainFlow({
   batch: ReturnType<typeof useBatchFlow>
 }) {
   const { state, start, retry, reset } = flow
+  const [restarted, setRestarted] = useState(false)
+  const startOver = (stop: () => void) => () => {
+    setRestarted(true)
+    stop()
+  }
 
-  if (batch.state.items.length > 0) return <BatchFlow batch={batch} />
+  if (batch.state.items.length > 0) {
+    return <BatchFlow batch={batch} onStartOver={startOver(batch.reset)} />
+  }
 
   if (state.screen === 'upload') {
-    return <UploadScreen onSubmit={start} onSubmitMany={batch.start} />
+    return (
+      <UploadScreen
+        onSubmit={start}
+        onSubmitMany={batch.start}
+        focusTitle={restarted}
+      />
+    )
   }
 
   if (state.screen === 'processing') {
@@ -51,7 +64,7 @@ function MainFlow({
         error={state.error}
         failedStep={state.failedStep}
         onRetry={retry}
-        onNewVideo={reset}
+        onNewVideo={startOver(reset)}
       />
     )
   }
@@ -65,7 +78,7 @@ function MainFlow({
       videoUrl={state.video.url}
       posterUrl={state.video.posterUrl}
       checkedAt={state.checkedAt}
-      exit={{ kind: 'newVideo', onClick: reset }}
+      exit={{ kind: 'newVideo', onClick: startOver(reset) }}
     />
   )
 }

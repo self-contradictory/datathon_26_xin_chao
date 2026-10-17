@@ -1,4 +1,9 @@
-import { CheckFailure, uploadVideo, waitForJob } from '@/api/check'
+import {
+  asCheckFailure,
+  CheckFailure,
+  uploadVideo,
+  waitForJob,
+} from '@/api/check'
 import type { JobSource } from '@/api/source'
 import type { DoneJob } from '@/api/types'
 import { uploadPercent } from '@/components/processing/steps'
@@ -101,10 +106,7 @@ export function createBatchRunner({
       update({ type: 'done', id, job, checkedAt: now() })
       return 'next'
     } catch (error) {
-      const failure =
-        error instanceof CheckFailure
-          ? error
-          : new CheckFailure('failed', 'analysis')
+      const failure = asCheckFailure(error)
       update({
         type: 'failed',
         id,
@@ -168,7 +170,7 @@ export function createBatchRunner({
   function retry(id: string) {
     const before = state
     dispatch({ type: 'retry', id })
-    if (state === before || loopBatch === batch) return
+    if (state === before || state.pausedBy || loopBatch === batch) return
     void runQueue(batch, controller.signal)
   }
 

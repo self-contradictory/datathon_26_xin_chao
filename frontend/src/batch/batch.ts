@@ -11,7 +11,7 @@ import type {
 export const EMPTY_BATCH: BatchState = {
   items: [],
   rejected: [],
-  paused: false,
+  pausedBy: null,
   openId: null,
   lastOpenedId: null,
 }
@@ -45,13 +45,11 @@ export function isQueued(item: BatchItem): boolean {
   return item.stage.kind === 'queued'
 }
 
-export function isUnfinished({ stage }: Pick<BatchItem, 'stage'>): boolean {
-  const { kind } = stage
-  return kind === 'queued' || kind === 'uploading' || kind === 'analyzing'
-}
-
 export function nextQueued(items: readonly BatchItem[]): BatchItem | undefined {
-  return items.find(isQueued)
+  const waitingJob = items.find(
+    ({ stage }) => stage.kind === 'queued' && stage.jobId !== null,
+  )
+  return waitingJob ?? items.find(isQueued)
 }
 
 export function batchCounts(
@@ -66,12 +64,14 @@ export function batchCounts(
     if (showsViolations(stage.job)) violations += 1
     else clean += 1
   }
+  const finished = violations + clean + failed
   return {
     total: items.length,
-    finished: violations + clean + failed,
+    finished,
     violations,
     clean,
     failed,
+    unfinished: items.length - finished,
   }
 }
 
@@ -133,17 +133,15 @@ export function batchReducer(
         jobId: action.jobId,
       })
       if (next === state) return state
-      return {
-        ...next,
-        paused: pausesQueue(action.error) && next.items.some(isQueued),
-      }
+      const pauses = pausesQueue(action.error) && next.items.some(isQueued)
+      return { ...next, pausedBy: pauses ? action.id : null }
     }
     case 'retry': {
       const stage = findItem(state, action.id)?.stage
       if (stage?.kind !== 'failed') return state
       return {
         ...setStage(state, action.id, retryStage(stage)),
-        paused: false,
+        pausedBy: state.pausedBy === action.id ? null : state.pausedBy,
       }
     }
     case 'open':

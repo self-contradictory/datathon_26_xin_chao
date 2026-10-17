@@ -18,10 +18,12 @@ function toRow({ id, video, stage }: BatchItem): BatchRowView {
 
 export function BatchFlow({
   batch,
+  onStartOver,
 }: {
   batch: ReturnType<typeof useBatchFlow>
+  onStartOver: () => void
 }) {
-  const { state, open, close, retry, reset } = batch
+  const { state, open, close, retry } = batch
   const opened = openedReport(state)
 
   if (opened) {
@@ -45,11 +47,11 @@ export function BatchFlow({
     <BatchScreen
       rows={state.items.map(toRow)}
       rejected={state.rejected}
-      paused={state.paused}
+      pausedBy={state.pausedBy}
       returnFocusId={state.lastOpenedId}
       onOpen={open}
       onRetry={retry}
-      onStartOver={reset}
+      onStartOver={onStartOver}
     />
   )
 }

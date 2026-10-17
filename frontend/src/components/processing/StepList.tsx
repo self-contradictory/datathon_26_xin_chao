@@ -6,6 +6,7 @@ import {
   PendingIcon,
   SpinnerIcon,
 } from '@/components/icons'
+import { ProgressBar } from '@/components/ProgressBar'
 import { STEPS, uploadPercent, type StepKey, type StepState } from './steps'
 
 const ICONS: Record<StepState, ReactNode> = {
@@ -51,19 +52,7 @@ export function StepList({
                 </span>
               </div>
               {showProgress && (
-                <div
-                  role="progressbar"
-                  aria-label={t.progress}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={percent}
-                  className="h-1 overflow-hidden rounded-full bg-border"
-                >
-                  <div
-                    className="h-full rounded-full bg-brand transition-[width] duration-150 ease-out"
-                    style={{ width: `${percent}%` }}
-                  />
-                </div>
+                <ProgressBar percent={percent} label={t.progress} />
               )}
             </div>
           </li>

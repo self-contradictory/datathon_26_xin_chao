@@ -1,10 +1,9 @@
 import { useRef } from 'react'
 import { Button } from '@/components/Button'
 import { VideoFileIcon } from '@/components/icons'
-import { MONO } from '@/components/styles'
-import { format, localeOf, useLang, useStrings } from '@/i18n'
+import { FileMeta } from '@/components/FileMeta'
+import { format, useStrings } from '@/i18n'
 import type { BatchRowView } from '@/screens/contracts'
-import { formatFileSize, formatTime } from '@/utils/time'
 import { RowStatus } from './RowStatus'
 
 function Thumbnail({ posterUrl }: { posterUrl: string | null }) {
@@ -35,8 +34,6 @@ export function BatchRow({
 }) {
   const t = useStrings('batchRow')
   const errors = useStrings('errorPanel')
-  const units = useStrings('units')
-  const { lang } = useLang()
   const rowRef = useRef<HTMLLIElement>(null)
   const { id, fileName, fileSize, duration, posterUrl, stage } = row
 
@@ -55,17 +52,7 @@ export function BatchRow({
       <div className="flex min-w-0 flex-1 basis-56 flex-col gap-2">
         <div className="flex flex-col">
           <p className="font-semibold wrap-anywhere">{fileName}</p>
-          <p className="text-secondary text-text-muted">
-            <span className={MONO}>
-              {formatFileSize(fileSize, localeOf(lang), units)}
-            </span>
-            {duration !== null && (
-              <>
-                {' · '}
-                <span className={MONO}>{formatTime(duration)}</span>
-              </>
-            )}
-          </p>
+          <FileMeta size={fileSize} duration={duration} />
         </div>
         <RowStatus stage={stage} fileName={fileName} />
       </div>

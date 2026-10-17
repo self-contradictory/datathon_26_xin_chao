@@ -25,7 +25,7 @@ export interface BatchItem {
 export interface BatchState {
   items: BatchItem[]
   rejected: RejectedFile[]
-  paused: boolean
+  pausedBy: string | null
   openId: string | null
   lastOpenedId: string | null
 }
@@ -36,6 +36,7 @@ export interface BatchCounts {
   violations: number
   clean: number
   failed: number
+  unfinished: number
 }
 
 export type BatchAction =

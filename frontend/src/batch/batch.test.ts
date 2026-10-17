@@ -6,7 +6,6 @@ import {
   batchCounts,
   batchReducer,
   EMPTY_BATCH,
-  isUnfinished,
   nextQueued,
   pausesQueue,
   retryStage,
@@ -110,7 +109,7 @@ describe('batch reducer', () => {
         jobId: null,
       },
     )
-    expect(waiting.paused).toBe(true)
+    expect(waiting.pausedBy).toBe('a')
 
     const last = batchReducer(batchOf(item('a', queued)), {
       type: 'failed',
@@ -119,7 +118,7 @@ describe('batch reducer', () => {
       step: 'upload',
       jobId: null,
     })
-    expect(last.paused).toBe(false)
+    expect(last.pausedBy).toBeNull()
 
     const fileError = batchReducer(
       batchOf(item('a', queued), item('b', queued)),
@@ -131,22 +130,41 @@ describe('batch reducer', () => {
         jobId: null,
       },
     )
-    expect(fileError.paused).toBe(false)
+    expect(fileError.pausedBy).toBeNull()
   })
 
-  test('retry queues only a failed video and lifts the pause', () => {
-    let state = batchOf(item('a', queued), item('b', queued))
+  test('retry queues only a failed video', () => {
+    const state = batchOf(item('a', queued), item('b', queued))
     expect(batchReducer(state, { type: 'retry', id: 'a' })).toBe(state)
+  })
+
+  test('only a retry of the video that paused the queue lifts the pause', () => {
+    let state = batchOf(
+      item('a', {
+        kind: 'failed',
+        error: 'bad_file',
+        step: 'upload',
+        jobId: null,
+      }),
+      item('b', queued),
+      item('c', queued),
+    )
     state = batchReducer(state, {
       type: 'failed',
-      id: 'a',
+      id: 'b',
       error: 'timeout',
       step: 'analysis',
       jobId: 'j1',
     })
+    expect(state.pausedBy).toBe('b')
+
     state = batchReducer(state, { type: 'retry', id: 'a' })
-    expect(stageOf(state, 'a')).toEqual({ kind: 'queued', jobId: 'j1' })
-    expect(state.paused).toBe(false)
+    expect(stageOf(state, 'a')).toEqual(queued)
+    expect(state.pausedBy).toBe('b')
+
+    state = batchReducer(state, { type: 'retry', id: 'b' })
+    expect(stageOf(state, 'b')).toEqual({ kind: 'queued', jobId: 'j1' })
+    expect(state.pausedBy).toBeNull()
   })
 
   test('open works only for a finished video and close keeps the last one', () => {
@@ -217,7 +235,12 @@ describe('batch helpers', () => {
     expect(nextQueued([items[0]!])).toBeUndefined()
   })
 
-  test('batchCounts counts errors as finished', () => {
+  test('nextQueued finishes a job the server already has before new uploads', () => {
+    const items = [item('a', queued), item('b', { kind: 'queued', jobId: 'j' })]
+    expect(nextQueued(items)?.id).toBe('b')
+  })
+
+  test('batchCounts counts errors as finished and the rest as unfinished', () => {
     const counts = batchCounts([
       item('a', { kind: 'done', job: clean, checkedAt: 1 }),
       item('b', { kind: 'done', job: flagged, checkedAt: 1 }),
@@ -236,16 +259,7 @@ describe('batch helpers', () => {
       violations: 1,
       clean: 1,
       failed: 1,
+      unfinished: 2,
     })
-  })
-
-  test('isUnfinished is true until a result or an error', () => {
-    expect(isUnfinished(item('a', queued))).toBe(true)
-    expect(isUnfinished(item('a', { kind: 'analyzing', jobId: 'j' }))).toBe(
-      true,
-    )
-    expect(
-      isUnfinished(item('a', { kind: 'done', job: clean, checkedAt: 1 })),
-    ).toBe(false)
   })
 })

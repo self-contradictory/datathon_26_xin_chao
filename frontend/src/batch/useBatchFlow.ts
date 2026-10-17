@@ -1,11 +1,12 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import type { PollingOptions } from '@/api/check'
 import type { JobSource } from '@/api/source'
 import { pickVideo, revokeVideo, withPoster } from '@/video'
 import { createBatchRunner } from './runner'
 
 export function useBatchFlow(
   source: JobSource,
-  { intervalMs, timeoutMs }: { intervalMs: number; timeoutMs: number },
+  { intervalMs, timeoutMs }: PollingOptions,
 ) {
   const [runner] = useState(() =>
     createBatchRunner({

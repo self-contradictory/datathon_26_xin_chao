@@ -165,7 +165,7 @@ const settled = (state: BatchState) =>
     ({ stage }) =>
       stage.kind === 'done' ||
       stage.kind === 'failed' ||
-      (stage.kind === 'queued' && state.paused),
+      (stage.kind === 'queued' && state.pausedBy !== null),
   )
 
 const idOf = (runner: BatchRunner, name: string) =>
@@ -206,7 +206,7 @@ describe('batch runner', () => {
       'b.mov: bad_file',
       'c.mov: done',
     ])
-    expect(runner.getState().paused).toBe(false)
+    expect(runner.getState().pausedBy).toBeNull()
   })
 
   test('no connection pauses the queue and retry resumes it', async () => {
@@ -220,11 +220,11 @@ describe('batch runner', () => {
       'b.mov: network',
       'c.mov: queued',
     ])
-    expect(runner.getState().paused).toBe(true)
+    expect(runner.getState().pausedBy).not.toBeNull()
     expect(server.log).not.toContain('upload c.mov')
 
     runner.retry(idOf(runner, 'b.mov'))
-    await until(runner, (state) => settled(state) && !state.paused)
+    await until(runner, (state) => settled(state) && state.pausedBy === null)
     expect(stages(runner.getState())).toEqual([
       'a.mov: done',
       'b.mov: done',
@@ -260,7 +260,7 @@ describe('batch runner', () => {
 
     server.answer('job-1', done('job-1'))
     runner.retry(idOf(runner, 'a.mov'))
-    await until(runner, (state) => settled(state) && !state.paused)
+    await until(runner, (state) => settled(state) && state.pausedBy === null)
 
     expect(stages(runner.getState())).toEqual(['a.mov: done', 'b.mov: done'])
     expect(server.log).toEqual([
@@ -285,7 +285,7 @@ describe('batch runner', () => {
 
     server.answer('job-1', { job_id: 'job-1', status: 'failed' })
     runner.retry(idOf(runner, 'a.mov'))
-    await until(runner, (state) => settled(state) && !state.paused)
+    await until(runner, (state) => settled(state) && state.pausedBy === null)
 
     expect(stages(runner.getState())).toEqual(['a.mov: done', 'b.mov: done'])
     expect(server.log.filter((entry) => entry === 'upload a.mov')).toHaveLength(
@@ -293,7 +293,7 @@ describe('batch runner', () => {
     )
   })
 
-  test('stopping and starting again never runs two checks at once', async () => {
+  test('a late answer from a stopped check does not start a second queue', async () => {
     const { server, runner } = setup()
     server.honorAbort = false
     server.hold('a.mov')
@@ -340,6 +340,57 @@ describe('batch runner', () => {
 
     expect(stages(runner.getState())).toEqual(['a.mov: done', 'b.mov: done'])
     expect(server.maxActive).toBe(1)
+  })
+
+  test('stopping cancels the upload in progress', async () => {
+    const { server, runner } = setup()
+    server.hold('a.mov')
+    runner.start(files('a.mov', 'b.mov'), [])
+    await until(runner, (state) => state.items[0]?.stage.kind === 'uploading')
+
+    runner.reset()
+    await Bun.sleep(1)
+    expect(server.active).toBe(0)
+
+    runner.start(files('c.mov'), [])
+    await until(runner, settled)
+    expect(stages(runner.getState())).toEqual(['c.mov: done'])
+    expect(server.maxActive).toBe(1)
+    expect(server.log).toEqual(['upload a.mov', 'upload c.mov', 'poll job-1'])
+  })
+
+  test('while paused, a retry of another row waits for the row that paused the queue', async () => {
+    const { server, runner } = setup(0)
+    server.failUpload('a.mov', new JobError('bad_file'))
+    server.answer('job-1', processing('job-1'))
+    runner.start(files('a.mov', 'b.mov', 'c.mov'), [])
+    await until(runner, settled)
+    expect(stages(runner.getState())).toEqual([
+      'a.mov: bad_file',
+      'b.mov: timeout',
+      'c.mov: queued',
+    ])
+
+    runner.retry(idOf(runner, 'a.mov'))
+    await Bun.sleep(5)
+    expect(stages(runner.getState())[0]).toBe('a.mov: queued')
+    expect(server.log).toEqual(['upload a.mov', 'upload b.mov', 'poll job-1'])
+
+    server.answer('job-1', done('job-1'))
+    runner.retry(idOf(runner, 'b.mov'))
+    await until(runner, (state) => settled(state) && state.pausedBy === null)
+    expect(stages(runner.getState())).toEqual([
+      'a.mov: done',
+      'b.mov: done',
+      'c.mov: done',
+    ])
+    expect(server.log.slice(3)).toEqual([
+      'poll job-1',
+      'upload a.mov',
+      'poll job-2',
+      'upload c.mov',
+      'poll job-3',
+    ])
   })
 
   test('results after a stop are ignored and every video link is released', async () => {

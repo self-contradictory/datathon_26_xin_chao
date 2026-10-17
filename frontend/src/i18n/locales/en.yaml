@@ -36,6 +36,7 @@ dropZone:
   tooManyText: 'Videos selected: {count}. You can check up to {max} at a time.'
   noneValidTitle: 'Error: the files are not supported'
   noneValidText: 'None of the selected files ({count}) can be checked. The service accepts only .mov from the camera above the cash desk.'
+  noneValidEmptyText: 'All selected files ({count}) are empty. Choose other recordings from the camera above the cash desk.'
 processing:
   title: Video processing
   subtitle: The video is processed on the server and is not shared with third-party services.
@@ -181,7 +182,7 @@ batch:
   progress: '{done} of {total} done'
   counts: 'Signs of possible violations: {violations} · no violations: {clean} · errors: {failed}'
   announceDone: 'The check is finished. Signs of possible violations: {violations}, errors: {failed}'
-  paused: 'The queue is paused. Once the cause of the error is fixed, press “Try again” on the video with the error and the check will continue.'
+  paused: 'The queue is paused because of an error with {name}. Once the cause is fixed, press “Try again” on that video and the check will continue.'
   list: Videos being checked
   rejectedTitle: 'Not added: {n}'
   notMov: '{name}: not a .mov file'

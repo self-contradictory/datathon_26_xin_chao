@@ -16,6 +16,7 @@ export function StartOverControl({
   const startRef = useRef<HTMLButtonElement>(null)
   const continueRef = useRef<HTMLButtonElement>(null)
   const wasAsking = useRef(false)
+  if (asking && unfinished === 0) setAsking(false)
   const open = asking && unfinished > 0
 
   useEffect(() => {

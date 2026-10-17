@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { batchCounts, isUnfinished } from '@/batch/batch'
+import { batchCounts } from '@/batch/batch'
 import { BatchRow } from '@/components/batch/BatchRow'
 import { RejectedNotice } from '@/components/batch/RejectedNotice'
 import { StartOverControl } from '@/components/batch/StartOverControl'
@@ -11,7 +11,7 @@ import type { BatchScreenProps } from './contracts'
 export function BatchScreen({
   rows,
   rejected,
-  paused,
+  pausedBy,
   returnFocusId,
   onOpen,
   onRetry,
@@ -30,13 +30,13 @@ export function BatchScreen({
   }, [])
 
   const counts = batchCounts(rows)
-  const unfinished = rows.filter(isUnfinished).length
+  const pausedRow = rows.find((row) => row.id === pausedBy)
   const progress = format(t.progress, {
     done: counts.finished,
     total: counts.total,
   })
   const announcement =
-    unfinished === 0
+    counts.unfinished === 0
       ? format(t.announceDone, {
           violations: counts.violations,
           failed: counts.failed,
@@ -66,7 +66,7 @@ export function BatchScreen({
 
       <div className="flex max-w-[800px] flex-col gap-6">
         <div className="flex flex-col gap-1">
-          <p className="text-section font-semibold">{progress}</p>
+          <p className="text-section font-semibold tabular-nums">{progress}</p>
           <p className="text-secondary text-text-muted">
             {format(t.counts, {
               violations: counts.violations,
@@ -76,15 +76,16 @@ export function BatchScreen({
           </p>
         </div>
 
-        {paused && (
-          <div
-            role="alert"
-            className="flex gap-3 rounded-md border border-text p-4"
-          >
-            <InfoIcon className="shrink-0 text-text" />
-            <p>{t.paused}</p>
-          </div>
-        )}
+        <div aria-live="assertive">
+          {pausedRow && (
+            <div className="flex gap-3 rounded-md border border-text p-4">
+              <InfoIcon className="shrink-0 text-text" />
+              <p className="wrap-anywhere">
+                {format(t.paused, { name: pausedRow.fileName })}
+              </p>
+            </div>
+          )}
+        </div>
 
         {rejected.length > 0 && <RejectedNotice rejected={rejected} />}
 
@@ -100,7 +101,10 @@ export function BatchScreen({
           ))}
         </ol>
 
-        <StartOverControl unfinished={unfinished} onConfirm={onStartOver} />
+        <StartOverControl
+          unfinished={counts.unfinished}
+          onConfirm={onStartOver}
+        />
       </div>
     </main>
   )
