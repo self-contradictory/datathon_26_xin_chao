@@ -1,0 +1,16 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Backend for the Xin Chao Datathon 2026 project"
+authors = [
+    { name = "^^", email = "178708012+self-contradictory@users.noreply.github.com" }
+]
+requires-python = ">=3.14.8,<3.15"
+dependencies = []
+
+[project.scripts]
+backend = "backend:main"
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"
