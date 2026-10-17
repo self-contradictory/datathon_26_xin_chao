@@ -1,0 +1,177 @@
+header:
+  service: Cash desk video check
+  home: 'Forte, cash desk video check — home'
+  nav: Main menu
+  rules: Rules
+  language: Interface language
+  openMenu: Open menu
+  closeMenu: Close menu
+titles:
+  upload: Cash desk video check
+  processing: Processing the video
+  violation: Signs of violations found
+  clean: No violation found
+  rules: Detection rules
+upload:
+  title: Cash operations check by video
+  subtitle: 'Upload a recording from the camera above the cash desk. The service finds signs of possible violations and shows the timecode, frames and the regulation clause.'
+  privacy: The video is processed on the server and is not shared with third-party services
+dropZone:
+  region: Video upload
+  dropHere: Drag a .mov file here
+  or: or
+  choose: Choose file
+  chooseAnother: Choose another file
+  onlyMov: .mov only
+  release: Release the file to start the check
+  dropAgain: or drag a .mov file into this area
+  formatTitle: 'Error: format not supported'
+  otherVideo: 'The file {name} is a .{ext} video. The service accepts only .mov from the camera above the cash desk.'
+  otherFile: 'The file {name} is a .{ext} file. The service accepts only .mov from the camera above the cash desk.'
+  noExtension: 'The file {name} has no extension. The service accepts only .mov from the camera above the cash desk.'
+  emptyTitle: 'Error: the file is empty'
+  emptyText: 'The file {name} is empty. Choose another recording from the camera above the cash desk.'
+processing:
+  title: Video processing
+  subtitle: The video is processed on the server and is not shared with third-party services.
+  subtitleFailed: Processing stopped. The cause and what to do are below.
+  nowUploading: Uploading the file to the server
+  nowAnalyzing: File uploaded. Analysing the video
+videoPreview:
+  caption: First frame preview
+  alt: 'First frame of {name}'
+stepList:
+  list: Processing steps
+  progress: Uploading the file to the server
+  done: Done
+  active: In progress
+  error: Error
+  pending: Waiting
+steps:
+  upload: File upload
+  analysis: Video analysis
+elapsedTimer:
+  running: 'Elapsed {time} · usually under 3 minutes'
+  stopped: 'Stopped after {time}'
+errorPanel:
+  title: 'Error at the “{step}” step'
+  failed: The video could not be processed. Try again or upload another recording.
+  timeout: 'The analysis did not finish within {minutes} min. Try again.'
+  network: No connection to the server. Check the internet and try again.
+  unauthorized: The service rejected the access key. Tell the administrator.
+  notFound: The check was not found. Upload the video again.
+  badFile: The server did not accept the file. It needs a .mov recording from the camera above the cash desk.
+  server: The server returned an error. Try again a little later.
+  retry: Try again
+  newVideo: Upload another video
+report:
+  tabs: Report view
+  report: Report
+  newVideo: New video
+  selected: 'Violation {i} of {n}: {type}, {time}'
+  disclaimer: The result is a hint for human review. The final decision is made by the reviewing employee.
+  disclaimerClean: 'The result is a hint for human review. If no signs are found, it does not guarantee there were no violations.'
+verdictBanner:
+  label: Verdict
+  violation: 'Signs of possible violations found: {n}'
+  clean: No violation found
+  checked: 'checked {date}'
+violationList:
+  found: 'Found: {n}'
+  hint: Click a timecode to jump to that moment in the video
+  whatWeLookFor: What signs the service looks for
+  rules: Rules
+  cleanText: The service found no signs of possible cash discipline violations in this recording.
+  cleanHint: 'If a moment in the video raises doubts, review it yourself.'
+violationCard:
+  position: 'Violation {i} of {n}'
+  prev: Previous violation
+  next: Next violation
+  description: Description
+  rule: Rule
+  adilet: Open on adilet.zan.kz
+  ruleUnknown: The regulation clause is being clarified
+evidenceFrames:
+  frames: Frames
+  frame: 'frame {k}'
+  enlarge: 'Enlarge frame {k}, {time}'
+frameLightbox:
+  frameOf: 'frame {k} of {n}'
+  alt: '{type}, frame {k}, {time}'
+  close: Close
+  prev: Previous frame
+  next: Next frame
+jsonView:
+  title: API response · jury schema
+  note: Base64 images are shortened on screen only. Copy copies the full response.
+  code: API response as JSON
+  copy: Copy
+  copied: JSON copied
+  copyFailed: Could not copy
+  charsOne: '{n} character'
+  charsOther: '{n} characters'
+player:
+  player: Video player
+  play: Play
+  pause: Pause
+  seek: Playback position
+  position: '{current} of {total}'
+  speed: 'Playback speed: {rate}'
+  fullscreen: Full screen
+  exitFullscreen: Exit full screen
+  markerGroup: '{label}, {time}, and {more} more nearby'
+  unavailable: Video unavailable
+  noSource: Upload the file again to watch the recording
+  cannotPlay: This browser cannot play the video
+rules:
+  title: Detection rules
+  subtitle: 'Which signs of possible violations the service looks for in a video, and which regulations each one rests on.'
+  colType: Violation type
+  colLooks: How it looks on video
+  colNorm: Document and clause
+  colLink: Link
+  linkLabel: 'Regulation for “{type}” on adilet.zan.kz, opens in a new tab'
+  noLink: No link yet
+  note: 'The list is open: the service may find signs of other types too. We will extend the table and the clauses after reviewing the regulations. A person checks every case found.'
+ruleNorm:
+  clause: '{document}, cl. {clause}'
+  clausePending: '{document}, clause to be confirmed'
+textLink:
+  newTab: (opens in a new tab)
+apiDocs:
+  title: API
+  subtitle: Start video checks from your own system and get the report as JSON in the jury schema.
+  authTitle: Authorization
+  authText: 'Every request must include the {header} header. Base address: {base}'
+  host: '<service address>'
+  key: '<your key>'
+  headerLabel: Header
+  analyzeText: 'Uploads a .mov video and starts the analysis. Returns {jobId} at once; use it to fetch the report later. Form field: {file} (multipart/form-data, required).'
+  requestExample: Request example
+  response: Response
+  jobText: 'Returns the job status and, once the analysis is finished, the report. {status}: {processing}, {done} or {failed}. {verdict}: {violation} or {noViolation}. {type} is the violation type name in Russian. The main types are listed on the {rules} page, but the list is open: other types may come too.'
+  jobPolling: 'While the status is {processing}, {verdict} and {violations} are {null}: repeat the request in a few seconds. With {noViolation}, the {violations} list is empty.'
+  rulesLink: Detection rules
+  jobResponse: Response · jury schema
+  errorsTitle: Errors
+  e401: The X-API-Key header is missing or the key is wrong.
+  e404: No job with this job_id.
+  e415: The file is not a .mov.
+codeBlock:
+  copy: Copy
+  copied: Copied
+  copyFailed: Could not copy. Select the text and copy it manually.
+ruleLooks:
+  cashOutOfView: 'Hands holding banknotes go below the desk edge or out of the frame.'
+  outsider: 'Someone who is not the cashier stands next to an open cash drawer or safe.'
+  unattended: 'The cash drawer or safe is open and the cashier is not in the frame.'
+  countHidden: 'Counting happens with the back to the client window or under the desk.'
+  personalItems: 'Banknotes move to a pocket, a bag or personal belongings.'
+  phone: 'A mobile phone is in hand while cash is on the desk or the drawer is open.'
+units:
+  b: B
+  kb: KB
+  mb: MB
+  gb: GB
+demo:
+  title: Demo states
