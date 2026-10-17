@@ -8,10 +8,17 @@
     "bun": ">=1.4.3"
   },
   "scripts": {
-    "dev": "bun index.html",
+    "dev": "bun --hot dev.ts",
+    "dev:static": "bun index.html",
     "build": "bun run typecheck && bun run build.ts",
     "typecheck": "bun run --bun tsc --noEmit",
-    "lint": "bun run --bun oxlint"
+    "lint": "bun run --bun oxlint",
+    "lint:fix": "bun run --bun oxlint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "i18n:types": "bun scripts/i18n-types.ts",
+    "check": "bun run typecheck && bun run lint && bun run format:check && bun test",
+    "test": "bun test"
   },
   "dependencies": {
     "react": "19.3.1",
@@ -23,6 +30,8 @@
     "@types/react-dom": "^19.2.7",
     "bun-plugin-tailwind": "0.1.2",
     "oxlint": "^1.81.0",
+    "prettier": "3.9.10",
+    "prettier-plugin-tailwindcss": "0.8.1",
     "tailwindcss": "4.3.3",
     "typescript": "6.0.3"
   }

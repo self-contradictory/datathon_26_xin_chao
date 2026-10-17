@@ -10,6 +10,7 @@ const result = await Bun.build({
   target: 'browser',
   minify: true,
   define: { 'process.env.NODE_ENV': '"production"' },
+  env: 'BUN_PUBLIC_*',
   plugins: [tailwind],
 })
 

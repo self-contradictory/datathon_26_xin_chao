@@ -1,0 +1,5 @@
+dist
+node_modules
+bun.lock
+src/demo/sampleFrames.ts
+src/i18n/locales/*.d.yaml.ts
