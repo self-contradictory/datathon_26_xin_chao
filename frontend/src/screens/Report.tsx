@@ -151,7 +151,6 @@ export function ReportScreen({
           )}
           {exit.kind === 'newVideo' && (
             <Button
-              variant="secondary"
               icon={<PlusIcon size={20} />}
               onClick={exit.onClick}
               className="mt-1 w-full"

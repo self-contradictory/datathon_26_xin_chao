@@ -38,7 +38,7 @@ function LangSwitch({ compact }: { compact: boolean }) {
   )
 }
 
-function HomeLink({ withService }: { withService: boolean }) {
+function HomeLink() {
   const t = useStrings('header')
   return (
     <a
@@ -47,11 +47,6 @@ function HomeLink({ withService }: { withService: boolean }) {
       className={`mr-auto flex min-h-11 items-center gap-3 rounded-md text-brand-deep no-underline ${FOCUS}`}
     >
       <Owl mood="idle" className="w-10 shrink-0" />
-      {withService && (
-        <span className="text-section font-semibold text-brand-deep">
-          {t.service}
-        </span>
-      )}
     </a>
   )
 }
@@ -145,9 +140,9 @@ export function Header({ route }: { route: Route }) {
   const t = useStrings('header')
 
   return (
-    <header className="relative border-b border-border bg-bg">
+    <header className="relative border-b border-border bg-canvas">
       <div className="hidden min-h-16 flex-wrap items-center gap-x-6 gap-y-2 px-6 py-2 sm:flex">
-        <HomeLink withService />
+        <HomeLink />
         <nav aria-label={t.nav} className="flex flex-wrap items-center gap-2">
           <NavLinks route={route} inMenu={false} />
           <div className="ml-2">
@@ -157,7 +152,7 @@ export function Header({ route }: { route: Route }) {
       </div>
 
       <div className="flex h-16 items-center gap-2 px-4 sm:hidden">
-        <HomeLink withService={false} />
+        <HomeLink />
         <LangSwitch compact />
         <MobileMenu route={route} />
       </div>

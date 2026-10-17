@@ -154,7 +154,7 @@ export function ApiDocsPage() {
       </DocSection>
 
       <DocSection id="api-errors" divided heading={t.errorsTitle}>
-        <div className="overflow-hidden rounded-md border border-border">
+        <div className="overflow-hidden rounded-md border border-border bg-bg shadow-card">
           <table
             aria-labelledby="api-errors"
             className="w-full border-collapse"

@@ -118,7 +118,7 @@ function Shell() {
   }, [documentTitle])
 
   return (
-    <div className="min-h-svh bg-bg font-sans text-body text-text">
+    <div className="min-h-svh bg-canvas font-sans text-body text-text">
       <Header route={page === 'rules' || page === 'api' ? page : 'main'} />
       {page === 'rules' && <RulesPage />}
       {page === 'api' && <ApiDocsPage />}

@@ -58,7 +58,7 @@ export function ViolationCard({
   return (
     <section
       aria-labelledby={titleId}
-      className="flex flex-col gap-6 rounded-md border border-border p-4 sm:p-6"
+      className="flex flex-col gap-6 rounded-md border border-border bg-bg p-4 shadow-card sm:p-6"
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1">

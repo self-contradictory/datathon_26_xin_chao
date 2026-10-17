@@ -18,8 +18,10 @@ export function VerdictSummary({
   return (
     <section
       aria-label={t.label}
-      className={`flex items-center gap-4 rounded-lg p-4 sm:gap-6 sm:p-6 ${
-        violation ? 'bg-danger-tint' : 'bg-success-tint'
+      className={`flex items-center gap-4 rounded-lg border p-4 shadow-card sm:gap-6 sm:p-6 ${
+        violation
+          ? 'border-danger/15 bg-danger-tint'
+          : 'border-success/15 bg-success-tint'
       } ${className}`}
     >
       {violation ? (

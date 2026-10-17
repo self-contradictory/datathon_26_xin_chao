@@ -42,7 +42,7 @@ function RulesTable() {
   const looks = useStrings('ruleLooks')
   return (
     <div
-      className={`hidden overflow-x-auto rounded-md border border-border ${TABLE_SHOWN}`}
+      className={`hidden overflow-x-auto rounded-md border border-border bg-bg shadow-card ${TABLE_SHOWN}`}
     >
       <table className="w-full border-collapse">
         <caption className="sr-only">{t.title}</caption>
@@ -100,7 +100,10 @@ function RulesCards() {
   return (
     <ul className={`flex flex-col gap-3 ${CARDS_SHOWN}`}>
       {RULES.map((rule) => (
-        <li key={rule.type} className="rounded-md border border-border p-4">
+        <li
+          key={rule.type}
+          className="rounded-md border border-border bg-bg p-4 shadow-card"
+        >
           <h2 lang="ru" className="text-body font-semibold">
             {rule.type}
           </h2>

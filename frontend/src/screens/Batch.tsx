@@ -89,7 +89,10 @@ export function BatchScreen({
 
         {rejected.length > 0 && <RejectedNotice rejected={rejected} />}
 
-        <ol aria-label={t.list} className="rounded-md border border-border">
+        <ol
+          aria-label={t.list}
+          className="rounded-md border border-border bg-bg shadow-card"
+        >
           {rows.map((row) => (
             <BatchRow
               key={row.id}

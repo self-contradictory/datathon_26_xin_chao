@@ -48,7 +48,7 @@ export function StartOverControl({
     <div
       role="group"
       aria-labelledby={questionId}
-      className="flex flex-col gap-3 rounded-md border border-border p-4"
+      className="flex flex-col gap-3 rounded-md border border-border bg-bg p-4 shadow-card"
     >
       <p id={questionId} className="font-semibold">
         {format(t.confirmStop, { n: unfinished })}

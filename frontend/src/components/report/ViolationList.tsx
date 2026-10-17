@@ -16,7 +16,7 @@ export function ViolationList({
   const t = useStrings('violationList')
 
   return (
-    <div className="overflow-hidden rounded-md border border-border">
+    <div className="overflow-hidden rounded-md border border-border bg-bg shadow-card">
       <p className="border-b border-border p-4 text-secondary text-text-muted">
         {t.hint}
       </p>
