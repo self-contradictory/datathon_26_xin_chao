@@ -69,8 +69,6 @@ report:
   report: Report
   newVideo: New video
   selected: 'Violation {i} of {n}: {type}, {time}'
-  disclaimer: The result is a hint for human review. The final decision is made by the reviewing employee.
-  disclaimerClean: 'The result is a hint for human review. If no signs are found, it does not guarantee there were no violations.'
 verdictBanner:
   label: Verdict
   violation: 'Signs of possible violations found: {n}'

@@ -84,8 +84,6 @@ export interface Messages {
     json: string
     newVideo: string
     selected: string
-    disclaimer: string
-    disclaimerClean: string
   }
   verdictBanner: {
     label: string

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/Button'
-import { InfoIcon, PlusIcon } from '@/components/icons'
+import { PlusIcon } from '@/components/icons'
 import {
   Player,
   type PlayerHandle,
@@ -178,13 +178,6 @@ export function ReportScreen({
           hidden={tab !== 'json'}
         >
           <JsonView job={job} />
-        </div>
-
-        <div className="flex items-start gap-3 rounded-md bg-surface p-4">
-          <InfoIcon size={20} className="mt-0.5 shrink-0 text-text-muted" />
-          <p className="max-w-[72ch]">
-            {active ? t.disclaimer : t.disclaimerClean}
-          </p>
         </div>
 
         <p aria-live="polite" className="sr-only">
