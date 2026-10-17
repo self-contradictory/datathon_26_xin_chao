@@ -18,9 +18,13 @@ class Settings(BaseSettings):
     MODEL: str = "timelens4b"
     MODEL_PATH: Path | None = None
     MODEL_DEVICE: str | None = None
+    MODEL_QUANTIZATION: Literal["none", "4bit"] = "none"
     SAMPLE_FPS: float = 1.0
     IMAGE_TOKENS: int = 256
     RULE_MODE: Literal["production", "shadow"] = "shadow"
+    FOLLOWUP_MAX_CALLS: int = 8
+    FOLLOWUP_MAX_FRAMES: int = 8
+    TIMELINE_DIR: Path = BACKEND_DIR / "var" / "timelines"
 
 
 settings = Settings()

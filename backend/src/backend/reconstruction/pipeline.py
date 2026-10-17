@@ -38,13 +38,17 @@ class Reconstructor:
             answers = self.vlm.probe(video.frame_at(moment), questions, SCENE_CONTEXT, self.image_tokens)
             for probe, probability in zip(PROBES, answers, strict=True):
                 tracks[probe.key].observations.append(Observation(float(moment), probability))
-        for track in tracks.values():
-            probabilities = np.asarray([observation.probability for observation in track.observations])
-            states, posterior = decode_binary(probabilities, switch_probabilities(video.times, track.probe.dwell))
-            track.posterior = posterior.tolist()
-            for segment in segments(states, posterior):
-                first, last = segment.first, segment.last
-                start = float((video.times[first - 1] + video.times[first]) / 2) if first > 0 else 0.0
-                end = float((video.times[last] + video.times[last + 1]) / 2) if last + 1 < len(video.times) else video.duration
-                track.segments.append(replace(segment, start=start, end=end))
+        decode_tracks(video, tracks)
         return Reconstruction(video, tracks, self.vlm.name)
+
+
+def decode_tracks(video: DecodedVideo, tracks: dict[str, AttributeTrack]) -> None:
+    for track in tracks.values():
+        probabilities = np.asarray([observation.probability for observation in track.observations])
+        states, posterior = decode_binary(probabilities, switch_probabilities(video.times, track.probe.dwell))
+        track.posterior = posterior.tolist()
+        for segment in segments(states, posterior):
+            first, last = segment.first, segment.last
+            start = float((video.times[first - 1] + video.times[first]) / 2) if first > 0 else 0.0
+            end = float((video.times[last] + video.times[last + 1]) / 2) if last + 1 < len(video.times) else video.duration
+            track.segments.append(replace(segment, start=start, end=end))

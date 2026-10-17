@@ -224,6 +224,7 @@ class SemanticSupport(_STEGModel):
     observed: Identifier
     requirement: Identifier
     supports: bool | None
+    equivalent: bool = False
     reason: str
 
 

@@ -27,8 +27,13 @@ def get_database() -> SqliteDatabase:
 
 @lru_cache
 def get_analyzer() -> VideoAnalyzer:
-    model = QuestionVLM(settings.MODEL, settings.MODEL_PATH, settings.MODEL_DEVICE)
-    return QuestionAnalyzer(Reconstructor(model, settings.SAMPLE_FPS, settings.IMAGE_TOKENS), settings.RULE_MODE)
+    model = QuestionVLM(
+        settings.MODEL, settings.MODEL_PATH, settings.MODEL_DEVICE, settings.MODEL_QUANTIZATION,
+    )
+    return QuestionAnalyzer(
+        Reconstructor(model, settings.SAMPLE_FPS, settings.IMAGE_TOKENS), settings.RULE_MODE,
+        settings.FOLLOWUP_MAX_CALLS, settings.FOLLOWUP_MAX_FRAMES, settings.TIMELINE_DIR,
+    )
 
 
 @lru_cache

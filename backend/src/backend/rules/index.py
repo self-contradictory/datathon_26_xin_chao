@@ -274,10 +274,10 @@ class STEGIndex:
         self.relations: dict[str, list[RelationTrack]] = defaultdict(list)
         self.event_episodes: dict[str, set[str]] = defaultdict(set)
         self.flags: dict[str, list[QualityFlag]] = defaultdict(list)
-        self.semantic = {
-            (link.kind, link.record_id, link.observed, link.requirement)
-            for link in graph.semantic_supports if link.supports is True
-        }
+        decisions = {(link.kind, link.record_id, link.observed, link.requirement): link
+                     for link in graph.semantic_supports}
+        self.semantic = {key for key, link in decisions.items() if link.supports is True
+                         and (link.kind not in {"state", "relation"} or link.equivalent)}
         for track in graph.state_tracks:
             self.states[(track.entity_id, track.property)].append(track)
         for track in graph.relation_tracks:

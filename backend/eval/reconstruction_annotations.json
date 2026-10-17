@@ -1,0 +1,1088 @@
+{
+ "_format": "Per video: attributes maps a probe key to the [start, end] seconds when it is true; a listed attribute with [] is false throughout; unlisted attributes are not scored. ignore lists ambiguous spans excluded from scoring. Hand-annotated from 2 fps contact sheets (Х-4 at 1 fps). Hand actions in X-1, Х-3, Х-4 and Х-26 were checked on zoomed desk crops.",
+ "Х-20": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     5.3,
+     11.6
+    ]
+   ],
+   "customer_present": [],
+   "person_in_doorway": [],
+   "at_safe": [
+    [
+     0.0,
+     4.2
+    ]
+   ],
+   "safe_open": [
+    [
+     0.0,
+     11.6
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.0,
+     11.6
+    ]
+   ],
+   "eating": []
+  },
+  "ignore": {
+   "cashier_seated": [
+    [
+     4.2,
+     5.8
+    ]
+   ],
+   "at_safe": [
+    [
+     4.0,
+     5.0
+    ]
+   ],
+   "safe_open": [
+    [
+     0.0,
+     2.5
+    ]
+   ]
+  }
+ },
+ "Х-24": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     0.0,
+     5.2
+    ]
+   ],
+   "customer_present": [],
+   "person_in_doorway": [
+    [
+     9.8,
+     12.3
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.0,
+     12.5
+    ]
+   ],
+   "eating": []
+  },
+  "ignore": {
+   "cashier_seated": [
+    [
+     4.8,
+     5.8
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     9.0,
+     9.8
+    ],
+    [
+     12.3,
+     13.0
+    ]
+   ],
+   "room_occupied": [
+    [
+     12.0,
+     13.2
+    ]
+   ]
+  }
+ },
+ "Х-34": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     0.0,
+     17.7
+    ]
+   ],
+   "customer_present": [
+    [
+     6.7,
+     11.7
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     2.0,
+     4.2
+    ],
+    [
+     13.3,
+     16.0
+    ]
+   ],
+   "handover": [
+    [
+     7.0,
+     8.5
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.0,
+     17.7
+    ]
+   ],
+   "at_safe": [],
+   "eating": []
+  },
+  "ignore": {
+   "customer_present": [
+    [
+     6.0,
+     7.2
+    ],
+    [
+     11.3,
+     12.2
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     1.0,
+     2.0
+    ],
+    [
+     4.2,
+     5.5
+    ],
+    [
+     12.5,
+     13.3
+    ],
+    [
+     16.0,
+     17.0
+    ]
+   ],
+   "handover": [
+    [
+     6.5,
+     7.0
+    ],
+    [
+     8.5,
+     9.5
+    ]
+   ]
+  }
+ },
+ "X-2": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     0.0,
+     17.1
+    ]
+   ],
+   "customer_present": [
+    [
+     8.3,
+     17.1
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     3.2,
+     5.2
+    ]
+   ],
+   "handover": [
+    [
+     14.0,
+     15.6
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.0,
+     17.1
+    ]
+   ],
+   "at_safe": [],
+   "eating": []
+  },
+  "ignore": {
+   "customer_present": [
+    [
+     7.3,
+     8.8
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     2.5,
+     3.2
+    ],
+    [
+     5.2,
+     6.5
+    ]
+   ],
+   "handover": [
+    [
+     9.0,
+     11.5
+    ],
+    [
+     13.5,
+     14.0
+    ],
+    [
+     15.6,
+     16.2
+    ]
+   ]
+  }
+ },
+ "Х-30": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     8.4,
+     10.6
+    ]
+   ],
+   "customer_present": [
+    [
+     13.6,
+     18.8
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     2.3,
+     3.8
+    ],
+    [
+     12.3,
+     13.6
+    ]
+   ],
+   "room_occupied": [
+    [
+     2.5,
+     18.8
+    ]
+   ],
+   "eating": []
+  },
+  "ignore": {
+   "cashier_seated": [
+    [
+     8.0,
+     8.8
+    ],
+    [
+     10.3,
+     11.0
+    ]
+   ],
+   "customer_present": [
+    [
+     12.8,
+     14.2
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     1.0,
+     2.3
+    ],
+    [
+     3.8,
+     4.6
+    ],
+    [
+     11.8,
+     12.3
+    ],
+    [
+     13.6,
+     14.3
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.8,
+     3.3
+    ]
+   ]
+  }
+ },
+ "Х-46": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     0.0,
+     19.1
+    ]
+   ],
+   "customer_present": [],
+   "person_in_doorway": [],
+   "eating": [
+    [
+     10.3,
+     19.1
+    ]
+   ],
+   "food_on_desk": [
+    [
+     7.8,
+     19.1
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.0,
+     19.1
+    ]
+   ],
+   "at_safe": []
+  },
+  "ignore": {
+   "eating": [
+    [
+     8.5,
+     10.5
+    ]
+   ],
+   "food_on_desk": [
+    [
+     7.0,
+     8.5
+    ]
+   ]
+  }
+ },
+ "Х-26": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     0.0,
+     9.4
+    ]
+   ],
+   "customer_present": [],
+   "person_in_doorway": [
+    [
+     14.3,
+     16.8
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.0,
+     16.5
+    ]
+   ],
+   "cash_on_desk": [
+    [
+     8.6,
+     19.8
+    ]
+   ],
+   "eating": [],
+   "counting_cash": [
+    [
+     0.5,
+     8.0
+    ]
+   ]
+  },
+  "ignore": {
+   "cashier_seated": [
+    [
+     9.0,
+     10.0
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     13.5,
+     14.3
+    ],
+    [
+     16.8,
+     17.8
+    ]
+   ],
+   "room_occupied": [
+    [
+     15.8,
+     18.0
+    ]
+   ],
+   "cash_on_desk": [
+    [
+     0.0,
+     9.0
+    ]
+   ],
+   "counting_cash": [
+    [
+     0.0,
+     0.5
+    ],
+    [
+     8.0,
+     9.2
+    ]
+   ]
+  }
+ },
+ "Х-44": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     0.0,
+     20.4
+    ]
+   ],
+   "customer_present": [],
+   "person_in_doorway": [],
+   "room_occupied": [
+    [
+     0.0,
+     20.4
+    ]
+   ],
+   "at_safe": [],
+   "eating": []
+  },
+  "ignore": {
+   "at_safe": [
+    [
+     3.0,
+     5.0
+    ],
+    [
+     11.5,
+     13.0
+    ]
+   ]
+  }
+ },
+ "Х-3": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     0.0,
+     20.0
+    ]
+   ],
+   "customer_present": [
+    [
+     6.3,
+     20.0
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     2.0,
+     4.0
+    ]
+   ],
+   "handover": [
+    [
+     7.4,
+     8.2
+    ],
+    [
+     12.3,
+     13.1
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.0,
+     20.0
+    ]
+   ],
+   "at_safe": [],
+   "eating": [],
+   "counting_cash": [
+    [
+     13.4,
+     16.6
+    ]
+   ]
+  },
+  "ignore": {
+   "customer_present": [
+    [
+     5.3,
+     7.0
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     1.5,
+     2.0
+    ],
+    [
+     4.0,
+     5.0
+    ]
+   ],
+   "handover": [
+    [
+     7.0,
+     7.4
+    ],
+    [
+     8.2,
+     8.6
+    ],
+    [
+     11.5,
+     12.3
+    ],
+    [
+     13.1,
+     13.5
+    ],
+    [
+     16.8,
+     18.6
+    ]
+   ],
+   "counting_cash": [
+    [
+     8.5,
+     11.0
+    ],
+    [
+     13.0,
+     13.4
+    ],
+    [
+     16.6,
+     17.2
+    ]
+   ]
+  }
+ },
+ "Х-15": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     0.0,
+     7.0
+    ]
+   ],
+   "customer_present": [],
+   "person_in_doorway": [
+    [
+     16.0,
+     18.0
+    ]
+   ],
+   "at_safe": [
+    [
+     9.0,
+     14.2
+    ]
+   ],
+   "bag_on_desk": [
+    [
+     0.0,
+     20.9
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.0,
+     17.8
+    ]
+   ],
+   "eating": []
+  },
+  "ignore": {
+   "cashier_seated": [
+    [
+     6.5,
+     7.6
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     15.3,
+     16.0
+    ],
+    [
+     18.0,
+     19.0
+    ]
+   ],
+   "at_safe": [
+    [
+     8.0,
+     9.0
+    ],
+    [
+     14.2,
+     15.0
+    ]
+   ],
+   "bag_on_desk": [
+    [
+     0.0,
+     7.0
+    ]
+   ],
+   "room_occupied": [
+    [
+     17.0,
+     18.8
+    ]
+   ]
+  }
+ },
+ "Х-22": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     0.0,
+     7.0
+    ]
+   ],
+   "customer_present": [],
+   "person_in_doorway": [
+    [
+     15.8,
+     17.8
+    ]
+   ],
+   "at_safe": [
+    [
+     8.0,
+     14.3
+    ]
+   ],
+   "using_computer": [
+    [
+     0.0,
+     5.5
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.0,
+     17.8
+    ]
+   ],
+   "eating": []
+  },
+  "ignore": {
+   "cashier_seated": [
+    [
+     6.6,
+     7.5
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     15.0,
+     15.8
+    ],
+    [
+     17.8,
+     18.8
+    ]
+   ],
+   "at_safe": [
+    [
+     7.3,
+     8.0
+    ],
+    [
+     14.3,
+     15.0
+    ]
+   ],
+   "using_computer": [
+    [
+     5.5,
+     7.0
+    ]
+   ],
+   "room_occupied": [
+    [
+     17.0,
+     18.8
+    ]
+   ]
+  }
+ },
+ "Х-32": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     9.2,
+     12.4
+    ]
+   ],
+   "customer_present": [],
+   "person_in_doorway": [
+    [
+     3.0,
+     4.6
+    ]
+   ],
+   "room_occupied": [
+    [
+     3.5,
+     21.3
+    ]
+   ],
+   "eating": []
+  },
+  "ignore": {
+   "cashier_seated": [
+    [
+     8.6,
+     9.4
+    ],
+    [
+     12.2,
+     13.0
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     1.5,
+     3.0
+    ],
+    [
+     4.6,
+     5.5
+    ]
+   ],
+   "room_occupied": [
+    [
+     1.0,
+     4.0
+    ]
+   ]
+  }
+ },
+ "X-1": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     0.0,
+     25.9
+    ]
+   ],
+   "customer_present": [
+    [
+     5.8,
+     25.9
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     1.8,
+     3.2
+    ]
+   ],
+   "handover": [
+    [
+     6.0,
+     7.0
+    ],
+    [
+     19.6,
+     20.4
+    ],
+    [
+     22.9,
+     23.8
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.0,
+     25.9
+    ]
+   ],
+   "at_safe": [],
+   "eating": [],
+   "counting_cash": [
+    [
+     7.0,
+     9.0
+    ],
+    [
+     11.0,
+     13.6
+    ],
+    [
+     20.6,
+     22.6
+    ]
+   ]
+  },
+  "ignore": {
+   "customer_present": [
+    [
+     5.0,
+     6.5
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     0.5,
+     1.8
+    ],
+    [
+     3.2,
+     4.3
+    ]
+   ],
+   "handover": [
+    [
+     5.5,
+     6.0
+    ],
+    [
+     7.0,
+     7.5
+    ],
+    [
+     9.5,
+     10.8
+    ],
+    [
+     14.0,
+     15.2
+    ],
+    [
+     20.4,
+     20.8
+    ],
+    [
+     23.8,
+     24.6
+    ]
+   ],
+   "counting_cash": [
+    [
+     6.5,
+     7.0
+    ],
+    [
+     9.0,
+     11.0
+    ],
+    [
+     13.6,
+     14.0
+    ],
+    [
+     20.2,
+     20.6
+    ],
+    [
+     22.6,
+     23.0
+    ]
+   ]
+  }
+ },
+ "Х-11": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     0.0,
+     11.2
+    ]
+   ],
+   "customer_present": [],
+   "person_in_doorway": [
+    [
+     20.2,
+     21.5
+    ]
+   ],
+   "using_computer": [
+    [
+     0.0,
+     8.5
+    ]
+   ],
+   "screen_on": [
+    [
+     0.0,
+     25.6
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.0,
+     21.0
+    ]
+   ],
+   "eating": []
+  },
+  "ignore": {
+   "cashier_seated": [
+    [
+     10.8,
+     11.8
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     16.0,
+     20.2
+    ],
+    [
+     21.5,
+     25.6
+    ]
+   ],
+   "using_computer": [
+    [
+     8.0,
+     9.5
+    ]
+   ],
+   "room_occupied": [
+    [
+     19.5,
+     25.6
+    ]
+   ]
+  }
+ },
+ "Х-4": {
+  "attributes": {
+   "cashier_seated": [
+    [
+     0.0,
+     72.7
+    ]
+   ],
+   "customer_present": [
+    [
+     9.5,
+     50.5
+    ],
+    [
+     59.5,
+     72.7
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     5.0,
+     8.0
+    ],
+    [
+     51.0,
+     54.0
+    ],
+    [
+     55.5,
+     58.5
+    ]
+   ],
+   "room_occupied": [
+    [
+     0.0,
+     72.7
+    ]
+   ],
+   "at_safe": [],
+   "eating": [],
+   "counting_cash": [
+    [
+     13.0,
+     17.5
+    ],
+    [
+     33.0,
+     38.5
+    ]
+   ]
+  },
+  "ignore": {
+   "customer_present": [
+    [
+     8.5,
+     10.5
+    ],
+    [
+     49.5,
+     51.5
+    ],
+    [
+     58.5,
+     60.5
+    ]
+   ],
+   "person_in_doorway": [
+    [
+     4.0,
+     5.0
+    ],
+    [
+     8.0,
+     9.0
+    ],
+    [
+     50.0,
+     51.0
+    ],
+    [
+     54.0,
+     55.5
+    ],
+    [
+     58.5,
+     59.5
+    ]
+   ],
+   "counting_cash": [
+    [
+     0.0,
+     13.0
+    ],
+    [
+     17.5,
+     19.5
+    ],
+    [
+     24.5,
+     27.5
+    ],
+    [
+     31.5,
+     33.0
+    ],
+    [
+     38.5,
+     40.0
+    ],
+    [
+     50.0,
+     72.7
+    ]
+   ]
+  }
+ }
+}

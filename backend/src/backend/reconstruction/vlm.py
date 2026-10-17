@@ -1,19 +1,22 @@
 import copy
+import json
 import threading
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Literal
 
 import cv2
 import numpy as np
 import torch
 from PIL import Image
 from pydantic import BaseModel
-from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
+from transformers import AutoProcessor, BitsAndBytesConfig, Qwen3VLForConditionalGeneration
 
 
 MODEL_IDS = {
     "2b": "Qwen/Qwen3-VL-2B-Instruct",
     "4b": "Qwen/Qwen3-VL-4B-Instruct",
+    "32b": "Qwen/Qwen3-VL-32B-Instruct",
     "timelens4b": "MCG-NJU/TimeLens2-4B",
 }
 
@@ -39,18 +42,38 @@ def fit_tokens(image: np.ndarray, tokens: int) -> Image.Image:
 class QuestionVLM:
     def __init__(
         self, model: str = "timelens4b", model_path: Path | None = None, device: str | None = None,
+        quantization: Literal["none", "4bit"] = "none",
     ) -> None:
         self.name = MODEL_IDS.get(model, model)
         self.device = device or _device()
+        self.quantization = quantization
+        if quantization not in ("none", "4bit"):
+            raise ValueError(f"Unsupported quantization: {quantization}")
+        if quantization == "4bit" and (
+            not self.device.startswith("cuda") or not torch.cuda.is_available()
+        ):
+            raise ValueError("4-bit loading requires an available CUDA GPU and CUDA-enabled PyTorch")
         model_id = str(model_path) if model_path else self.name
         dtype = torch.float32 if self.device == "cpu" else torch.bfloat16
-        self._model = (
-            Qwen3VLForConditionalGeneration.from_pretrained(
-                model_id, dtype=dtype, local_files_only=True
+        load_options = {"dtype": dtype, "local_files_only": True}
+        if quantization == "4bit":
+            load_options.update(
+                device_map={"": self.device},
+                quantization_config=BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_quant_type="nf4",
+                    bnb_4bit_compute_dtype=dtype,
+                    bnb_4bit_use_double_quant=True,
+                    # probe() reads rows of the output weights directly.
+                    llm_int8_skip_modules=["lm_head"],
+                ),
             )
-            .to(self.device)
-            .eval()
+        self._model = Qwen3VLForConditionalGeneration.from_pretrained(
+            model_id, **load_options,
         )
+        if quantization == "none":
+            self._model = self._model.to(self.device)
+        self._model = self._model.eval()
         self._processor = AutoProcessor.from_pretrained(model_id, local_files_only=True)
         tokenizer = self._processor.tokenizer
         self._tokenizer = tokenizer
@@ -77,7 +100,7 @@ class QuestionVLM:
         content = [{"type": "image"} for _ in images or []]
         content.append({"type": "text", "text": (
             prompt + "\nReturn only a JSON object matching this schema:\n"
-            + str(schema.model_json_schema())
+            + json.dumps(schema.model_json_schema())
         )})
         text = self._processor.apply_chat_template(
             [{"role": "user", "content": content}], add_generation_prompt=True,
