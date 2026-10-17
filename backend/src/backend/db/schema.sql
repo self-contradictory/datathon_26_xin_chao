@@ -18,3 +18,23 @@ CREATE TABLE IF NOT EXISTS jobs (
     created_at  TEXT NOT NULL,
     finished_at TEXT
 );
+
+CREATE TABLE IF NOT EXISTS rules (
+    rule_id    TEXT NOT NULL,
+    version    TEXT NOT NULL,
+    status     TEXT NOT NULL,
+    document   TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (rule_id, version)
+);
+
+CREATE TABLE IF NOT EXISTS rule_status_changes (
+    id          INTEGER PRIMARY KEY,
+    rule_id     TEXT NOT NULL,
+    version     TEXT NOT NULL,
+    from_status TEXT,
+    to_status   TEXT NOT NULL,
+    changed_at  TEXT NOT NULL,
+    note        TEXT
+);
