@@ -544,7 +544,7 @@ rules:
     at: trigger_start
   evidence_policy: *policy
   dataset_examples: [Х-40]
-  implementation_note: The VLM is asked about a handbag, purse or wallet, not a phone, because phones without a camera are an allowed exception. A bag that appears while a customer is at the desk is treated as the customer's, so the rule needs the customer side of the desk to be seen empty.
+  implementation_note: The VLM is asked about a handbag, purse, wallet, coat or jacket, not a phone, because phones without a camera are an allowed exception. A bag that appears while a customer is at the desk is treated as the customer's, so the rule needs the customer side of the desk to be seen empty.
 
 - rule_id: CD15-EATING-WITH-CASH-EXPOSED
   version: 0.1.0

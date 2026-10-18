@@ -27,7 +27,7 @@ REGION_PROBES: dict[str, tuple[RegionProbe, ...]] = {
         RegionProbe("stamps_on_desk", "Are any small objects left on the desktop besides the telephone, "
                                       "the laptop and the counting machine?"),
         RegionProbe("food_on_desk", "Is there food or a drink on the desk?"),
-        RegionProbe("personal_items", "Is a handbag, purse or wallet lying on the desk?"),
+        RegionProbe("personal_items", "Is a handbag, purse, wallet, coat or jacket lying on the desk?"),
     ),
     "desk_hands": (
         RegionProbe("counting_cash", "Is someone counting banknotes?"),
