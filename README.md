@@ -1,6 +1,10 @@
-<h1><img src="assets/logo.png" alt="Lashyn logo" width="150" align="middle" /> Lashyn</h1>
+<p align="center">
+  <img src="assets/logo.png" alt="Lashyn logo" width="240" />
+</p>
 
-<p>Lashyn checks cash-desk surveillance videos against cash-operation rules and reports each violation with a timecode and evidence frames.</p>
+<h1 align="center">Lashyn</h1>
+
+<p align="center">Lashyn checks cash-desk surveillance videos against cash-operation rules and reports each violation with a timecode and evidence frames.</p>
 
 <p align="center">
   <img src="assets/architecture.png" alt="Lashyn architecture" />
