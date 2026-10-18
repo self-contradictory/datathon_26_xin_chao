@@ -1,4 +1,14 @@
-# datathon_26_xin_chao
+<p align="center">
+  <img src="assets/logo.png" alt="Lashyn logo" width="240" />
+</p>
+
+<h1 align="center">Lashyn</h1>
+
+<p align="center">Lashyn checks cash-desk surveillance videos against cash-operation rules and reports each violation with a timecode and evidence frames.</p>
+
+<p align="center">
+  <img src="assets/architecture.png" alt="Lashyn architecture" />
+</p>
 
 ## Repository layout
 
@@ -12,27 +22,44 @@ research/  Reference papers.
 
 ## Requirements
 
-- Backend: Python 3.14.8 and uv 0.13.1.
-- Frontend: Bun 1.4.3, React and React DOM 19.3.1, TypeScript 6.0.3, and Tailwind CSS 4.3.3.
+- Python 3.14.8
+- uv 0.13.1
+- Bun 1.4.3
+- FastAPI 0.143.3
+- PyTorch 2.14.1
+- torchvision 0.29.1
+- Transformers 5.20.1
+- OpenCV (headless) 5.0.0.93
+- NumPy 2.5.4
+- Pillow 13.0.0
+- PyYAML 6.0.3
+- MCG-NJU/TimeLens2-4B: `cd backend && uv run hf download MCG-NJU/TimeLens2-4B`
+- React 19.3.1
+- TypeScript 6.0.3
+- Tailwind CSS 4.3.3
 
 ## Run
 
-For Windows with Qwen3-VL-32B on an RTX A6000, see [WINDOWS_A6000.md](WINDOWS_A6000.md).
-Dataset rule coverage and API accuracy scoring are described in [DATASET_RULES.md](backend/eval/DATASET_RULES.md).
-To deploy the frontend on Vercel and connect it to the Windows GPU API, see [DEPLOY_VERCEL.md](frontend/DEPLOY_VERCEL.md).
-
-### Backend
+### Backend + frontend → http://127.0.0.1:3000
 
 ```sh
-cd backend
-uv sync --locked
-uv run --locked backend
+cd frontend && bun run start
 ```
 
-### Frontend
+### Backend → http://127.0.0.1:8000
 
 ```sh
-cd frontend
-bun install --frozen-lockfile
-bun run dev
+cd backend && API_KEYS='{"dev":"xc_dev"}' uv run --locked backend
 ```
+
+### Frontend → http://127.0.0.1:3000
+
+```sh
+cd frontend && bun install --frozen-lockfile && API_KEY=xc_dev bun run dev
+```
+
+## Docs
+
+- [Windows + RTX A6000](WINDOWS_A6000.md)
+- [Dataset rules and API scoring](backend/eval/DATASET_RULES.md)
+- [Vercel deploy](frontend/DEPLOY_VERCEL.md)
