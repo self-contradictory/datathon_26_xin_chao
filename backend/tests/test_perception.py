@@ -113,6 +113,23 @@ class HeldItemTests(unittest.TestCase):
         self.assertIsInstance(region_view(frames, 2, "desk", (0, 0, .5, .5))["image"], np.ndarray)
 
 
+class CountedReceiptTests(unittest.TestCase):
+    @staticmethod
+    def event(action, start, end, status="inferred_from_observations", customer="customer_1"):
+        return {"action": action, "time": {"start_sec": start, "end_sec": end}, "inference_status": status,
+                "verification_status": "first_pass", "support_observation_ids": [],
+                "participants": [{"role": "cashier", "entity_id": "person_1"}, {"role": "customer", "entity_id": customer}]}
+
+    def test_only_supported_receipts_and_counts_prove_counted_cash(self):
+        from backend.reconstruction.derived import _counted_receipts
+        visit = [("customer_1", 0.0, 20.0)]
+        receipt = self.event("cash_received", 1, 2)
+        self.assertTrue(_counted_receipts([receipt, self.event("cash_counted", 3, 6)], visit, 20.0))
+        for count in (self.event("cash_counted", 3, 6, "hypothesis"),
+                      self.event("cash_counted", 3, 6, customer="customer_2")):
+            self.assertFalse(_counted_receipts([receipt, count], visit, 20.0))
+
+
 class PersonSignalTests(unittest.TestCase):
     def test_people_behind_the_glass_are_not_in_the_room(self):
         config = FeatureConfig()

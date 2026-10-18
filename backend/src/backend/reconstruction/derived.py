@@ -162,14 +162,20 @@ def _counted_receipts(
     def start(event: dict[str, Any]) -> float:
         return event["time"]["start_sec"]
 
+    def supported(event: dict[str, Any], person: str) -> bool:
+        return (event.get("inference_status") != "hypothesis"
+                and event.get("verification_status") != "disputed"
+                and {"role": "customer", "entity_id": person} in event["participants"])
+
     tracks = []
     for person, _, last in visits:
         handed = [e for e in events if e["action"] == "cash_received"
-                  and {"role": "customer", "entity_id": person} in e["participants"]]
+                  and supported(e, person)]
         if not handed:
             continue
         receipt = min(handed, key=start)
         counts = [e for e in events if e["action"] == "cash_counted"
+                  and supported(e, person)
                   and e["time"]["end_sec"] > start(receipt) and start(e) <= last]
         if not counts:
             continue

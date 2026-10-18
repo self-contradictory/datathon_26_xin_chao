@@ -208,3 +208,13 @@ as before round 2. The thresholds were fitted on these same 10 videos, so expect
 
 Tried and rejected: 32B weights that drop pose from counting, handover and eating (no verdict change, more fake
 segments); calibrated scores for the held-item check (eating F1 0.90 → 0.72).
+
+## From the 2B timeline tuning audit (TIMELINE_TUNING_AUDIT_20261018.md)
+
+Checked on the 10-video 32B cache:
+
+| Idea | Result on 32B | Decision |
+|---|---|---|
+| Hypothetical or disputed receipts and counts, or another customer's count, cannot prove counted cash (CD17) | 10/10 kept; X-1 still found at 22.5 s (label 22 s) | Adopted |
+| Duration-aware segmental decoder | Same segments on counting and handover; on all actions 2 fewer fake segments, timeline F1 −0.1 | Not adopted: 32B scores are already near 0 or 1, the 2B gain came from noisy scores |
+| Fit calibration away from the scored video | Leave-one-out (thresholds from the other 9 videos): 10/10 | The 10/10 does not come from calibrating on the scored video |
