@@ -853,7 +853,14 @@ rules:
       cashier: $cashier
   logic:
     type: FORBIDDEN
-    when_all: []
+    # Only at the workplace: the phone answer comes from the desk-hands crop, which shows nothing else.
+    # Away from the desk it fired on a cashier walking out of the door (Х-23, clean).
+    when_all:
+    - kind: state
+      property: at_station
+      entity: $cashier
+      value: 'true'
+      knowledge: bounded_by_observations
     at: trigger_start
   evidence_policy: *policy
   dataset_examples: []

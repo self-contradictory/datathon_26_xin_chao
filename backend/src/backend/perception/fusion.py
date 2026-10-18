@@ -99,7 +99,7 @@ def fuse(grid: np.ndarray, base: dict[str, np.ndarray], regions: dict[str, np.nd
          signals: Signals | None, keys: list[str], config: FusionConfig = FusionConfig()) -> dict[str, np.ndarray]:
     """base and regions are already resampled onto grid; returns a probability series per key."""
     weights = DEFAULT_WEIGHTS | config.weights
-    regions = _left_items(regions)
+    regions, calibrated = _left_items(regions, config.region_bias)
     cv = {}
     if signals is not None:
         for key, name in CV_KEYS.items():
@@ -118,7 +118,7 @@ def fuse(grid: np.ndarray, base: dict[str, np.ndarray], regions: dict[str, np.nd
                     total += wb * (logit(base[alias]) - config.base_bias.get(alias, 0.0))
                     norm += wb
         if key in regions and wr > 0:
-            total += wr * (logit(regions[key]) - config.region_bias.get(key, 0.0))
+            total += wr * (logit(regions[key]) - (0.0 if key in calibrated else config.region_bias.get(key, 0.0)))
             norm += wr
         if key in cv and wc > 0:
             evidence = 2 * cv[key] - 1
@@ -144,15 +144,24 @@ def fuse(grid: np.ndarray, base: dict[str, np.ndarray], regions: dict[str, np.nd
 LEFT_KINDS = ("cash_on_desk", "bag_on_desk", "personal_items")
 
 
-def _left_items(regions: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+def _calibrate(values: np.ndarray, bias: float) -> np.ndarray:
+    return sigmoid(logit(values) - bias)
+
+
+def _left_items(regions: dict[str, np.ndarray], bias: dict[str, float]) -> tuple[dict[str, np.ndarray], set[str]]:
     """Something left on the desk that is not cash, a bag or a personal item is a stamp, a seal or a
-    document: 32B does not name round self-inking stamps as stamps, but it does see that they are there."""
+    document: 32B does not name round self-inking stamps as stamps, but it does see that they are there.
+    The answers are compared after calibration: on 32B the generic question scores 0.96 on a clear desk
+    (Х-23) and 1.00 with stamps on it (Х-24), and only its own threshold (p 0.97) tells them apart.
+    Returns the regions and the keys that are already calibrated."""
     if "desk_items" not in regions:
-        return regions
-    named = np.max([regions[key] for key in LEFT_KINDS if key in regions] or [np.zeros(len(regions["desk_items"]))],
+        return regions, set()
+    shifted = {key: _calibrate(regions[key], bias.get(key, 0.0)) for key in (*LEFT_KINDS, "desk_items", "stamps_on_desk")
+               if key in regions}
+    named = np.max([shifted[key] for key in LEFT_KINDS if key in shifted] or [np.zeros(len(shifted["desk_items"]))],
                    axis=0)
-    other = regions["desk_items"] * (1 - named)
-    return regions | {"stamps_on_desk": np.maximum(regions.get("stamps_on_desk", other), other)}
+    other = shifted["desk_items"] * (1 - named)
+    return regions | {"stamps_on_desk": np.maximum(shifted.get("stamps_on_desk", other), other)}, {"stamps_on_desk"}
 
 
 # A card or banknotes held up to the face look like a phone call or a drink to the VLM: on Х-3 and Х-16

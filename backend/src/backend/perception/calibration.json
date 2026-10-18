@@ -1,6 +1,6 @@
 {
  "Qwen/Qwen3-VL-32B-Instruct": {
-  "_note": "Label-free Otsu decision point per question (logit), from the 10-video 32B run of 18 Oct 2026 (eval/experiment_sweep.py --api-only). 8/10 correct vs 5/10 uncalibrated.",
+  "_note": "Label-free Otsu decision point per question (logit), from the 10-video 32B run of 18 Oct 2026 (eval/experiment_sweep.py --api-only). Customer presence leans on the full-frame answer (AUC 0.997) over pose (0.79), which missed a standing customer on Х-17. 10/10 correct with these settings.",
   "base_bias": {
    "cashier_seated": -0.29,
    "customer_present": -2.68,
@@ -40,6 +40,13 @@
    "screen_unlocked": -8.97,
    "laptop_closed": -8.98,
    "person_in_doorway": -3.48
+  },
+  "weights": {
+   "customer_present": [
+    1.0,
+    0.0,
+    0.3
+   ]
   }
  }
 }

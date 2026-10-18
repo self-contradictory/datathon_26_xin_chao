@@ -56,9 +56,16 @@ class LeftOpenTests(unittest.TestCase):
                                          "cashier_at_station": lambda t: t < 4})
         self.assertIn("VIOLATION", outcomes(graph, "CD05B"))
 
-    def test_open_safe_behind_a_seated_cashier_is_not_left_open(self):
+    def test_safe_left_open_while_the_cashier_sits_at_the_desk(self):
+        # Х-20: the cashier walks from the open safe back to her seat; 32B sees the safe open throughout.
         graph = timeline(self.present | {"safe_open": lambda t: True, "at_safe": lambda t: t < 4})
-        self.assertNotIn("VIOLATION", outcomes(graph, "CD05B"))
+        self.assertIn("VIOLATION", outcomes(graph, "CD05B"))
+
+    def test_phone_counts_only_at_the_workplace(self):
+        at_desk = timeline(self.present | {"phone": lambda t: 2 < t < 6})
+        self.assertIn("VIOLATION", outcomes(at_desk, "CD25"))
+        walking_out = timeline(self.present | {"phone": lambda t: 2 < t < 6, "cashier_at_station": lambda t: t < 1})
+        self.assertNotIn("VIOLATION", outcomes(walking_out, "CD25"))
 
     def test_safe_closed_or_in_use_is_not_left_open(self):
         for states in ({"safe_open": lambda t: False, "at_safe": lambda t: t < 4},

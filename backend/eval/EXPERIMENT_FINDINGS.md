@@ -190,3 +190,21 @@ no tuning. Writes to `var\experiments\Qwen3-VL-32B-Instruct-4bit-v3-api`. Send b
 | Х-33 | CD09 door open | door crop |
 | Х-37 | clean, customer visit | no CD12/CD13/CD25 false alarms |
 | Х-46 | CD15 eating with cash out | eating still fires when nothing is held |
+
+# Round 3: the 10-video 32B run
+
+Run 3 (`--api-only`, X-1, Х-16, Х-17, Х-20, Х-23, Х-24, Х-28, Х-33, Х-37, Х-46) scored 5/10 uncalibrated and
+8/10 with label-free calibration. Re-scored on its cache after the fixes below: **10/10, 0 false alarms, the
+labelled type on 5/7, timeline F1 72.7%, customer visits 6/6, 1 of 38 segments missed.** 2B on 42 videos: 28/42,
+as before round 2. The thresholds were fitted on these same 10 videos, so expect less on new ones.
+
+| Problem in run 3 | Fix |
+|---|---|
+| The API ran uncalibrated (5/10) | `perception/calibration.json` holds 32B's per-question thresholds; the sweep's api_default now loads it like the API |
+| Х-23 (clean): stamps alarm. The generic desk answer was merged into stamps before calibration, then the stamp question's threshold (−6.4) was applied to it | Merge after calibrating each answer. The generic question scores 0.96 on a clear desk and 1.00 with stamps; only its own threshold (p 0.97) separates them |
+| Х-23: phone alarm while the cashier walks out of the door | CD25 needs the cashier at the workplace; the phone answer comes from the desk-hands crop |
+| Х-20 missed: the cashier leaves the open safe and sits down | Reverted round 2's "cashier away from the desk" condition on CD05B. It only fixed 2B's noisy safe answers; 32B safe AUC is 1.00 |
+| Х-17: CD14 instead of CD12. A standing customer never counted as present (pose AUC 0.79) | 32B weights customer presence (1.0, 0, 0.3) in calibration.json; 2B keeps the defaults |
+
+Tried and rejected: 32B weights that drop pose from counting, handover and eating (no verdict change, more fake
+segments); calibrated scores for the held-item check (eating F1 0.90 → 0.72).
