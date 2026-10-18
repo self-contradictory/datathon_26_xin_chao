@@ -18,10 +18,13 @@ from backend.reconstruction.temporal import CashAction, CashActions, _merge_acti
 from backend.reconstruction.video import DecodedVideo
 from backend.rules.engine import evaluate
 from backend.rules.registry import load_registry
+from backend.db.sqlite import SqliteDatabase
+from backend.repositories.api_keys import SqliteApiKeyRepository
+from backend.services.api_keys import ApiKeyService
 
 BACKEND = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND / "eval"))
-from batch_api import run_video
+from batch_api import DEFAULT_API_KEY, run_video
 from score_api import load_expected, score, write_json
 
 
@@ -140,6 +143,17 @@ class RuleCoverageTests(unittest.TestCase):
 
 
 class APIBatchTests(unittest.TestCase):
+    def test_documented_batch_key_can_be_registered_and_authenticated(self):
+        with tempfile.TemporaryDirectory() as directory:
+            database = SqliteDatabase(Path(directory) / "app.db")
+            database.initialize()
+            service = ApiKeyService(SqliteApiKeyRepository(database))
+            service.sync({"mac": DEFAULT_API_KEY})
+            authenticated = service.authenticate(DEFAULT_API_KEY)
+            self.assertIsNotNone(authenticated)
+            self.assertEqual(authenticated.name, "mac")
+            self.assertIsNone(service.authenticate("local-test-key"))
+
     def test_upload_poll_resume_and_no_label_in_request(self):
         counts = {"uploads": 0, "polls": 0}
 

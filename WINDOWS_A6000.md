@@ -136,7 +136,7 @@ $env:MODEL_QUANTIZATION = "4bit"
 $env:JOB_WORKERS = "1"
 $env:RULE_MODE = "shadow"
 $env:TEMPORAL_SCAN = "true"
-$env:API_KEYS = '{"windows-test":"local-test-key"}'
+$env:API_KEYS = '{"windows-test":"xc_local-test-key"}'
 
 .\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
@@ -146,14 +146,14 @@ Wait for `Application startup complete`. The API documentation is at
 second PowerShell window and run this from the backend directory:
 
 ```powershell
-curl.exe -X POST "http://127.0.0.1:8000/api/v1/analyze" -H "X-API-Key: local-test-key" -F "file=@../data/open/videos/Х-15.mov"
+curl.exe -X POST "http://127.0.0.1:8000/api/v1/analyze" -H "X-API-Key: xc_local-test-key" -F "file=@../data/open/videos/Х-15.mov"
 ```
 
 The response contains a `job_id`. Substitute it below and repeat the GET
 until the job finishes:
 
 ```powershell
-curl.exe "http://127.0.0.1:8000/api/v1/jobs/PASTE_JOB_ID_HERE" -H "X-API-Key: local-test-key"
+curl.exe "http://127.0.0.1:8000/api/v1/jobs/PASTE_JOB_ID_HERE" -H "X-API-Key: xc_local-test-key"
 ```
 
 The key above is an example for testing on localhost.
@@ -173,7 +173,7 @@ cd "D:\projects\steg-implementation\frontend"
 bun --version
 bun install --frozen-lockfile
 $env:API_URL = "http://127.0.0.1:8000"
-$env:API_KEY = "local-test-key"
+$env:API_KEY = "xc_local-test-key"
 bun run dev
 ```
 
@@ -257,7 +257,7 @@ address. On the Mac, replace `192.168.1.50` with that address:
 ```sh
 cd /Users/paradox/P/Personal_Project_Datathon26/steg-implementation/frontend
 export API_URL="http://192.168.1.50:8000"
-export API_KEY="local-test-key"
+export API_KEY="xc_local-test-key"
 curl -i --max-time 10 -H "X-API-Key: $API_KEY" "$API_URL/api/v1/jobs/connection-check"
 bun run dev
 ```

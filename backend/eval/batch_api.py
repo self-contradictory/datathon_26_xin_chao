@@ -10,6 +10,8 @@ import httpx
 
 from score_api import DEFAULT_EXPECTED, DEFAULT_RESULTS, HERE, load_expected, score, write_json
 
+DEFAULT_API_KEY = "xc_local-test-key"
+
 
 def run_video(client: httpx.Client, video: Path, destination: Path, poll_seconds: float,
               retry_failed: bool = False) -> None:
@@ -47,7 +49,7 @@ def main() -> None:
     parser.add_argument("--videos-dir", type=Path, default=HERE.parent.parent / "data/open/videos")
     parser.add_argument("--videos", nargs="+", help="Optional video stems, for example Х-46")
     parser.add_argument("--base-url", default="http://127.0.0.1:8000/api/v1")
-    parser.add_argument("--api-key", default=os.environ.get("API_KEY", "local-test-key"))
+    parser.add_argument("--api-key", default=os.environ.get("API_KEY", DEFAULT_API_KEY))
     parser.add_argument("--expected", type=Path, default=DEFAULT_EXPECTED)
     parser.add_argument("--out", type=Path, default=DEFAULT_RESULTS)
     parser.add_argument("--poll-seconds", type=float, default=5.0)
