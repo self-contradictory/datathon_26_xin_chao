@@ -116,7 +116,8 @@ class HeldItemTests(unittest.TestCase):
 class CountedReceiptTests(unittest.TestCase):
     @staticmethod
     def event(action, start, end, status="inferred_from_observations", customer="customer_1"):
-        return {"action": action, "time": {"start_sec": start, "end_sec": end}, "inference_status": status,
+        return {"id": f"e_{action}_{start}", "action": action, "time": {"start_sec": start, "end_sec": end},
+                "inference_status": status,
                 "verification_status": "first_pass", "support_observation_ids": [],
                 "participants": [{"role": "cashier", "entity_id": "person_1"}, {"role": "customer", "entity_id": customer}]}
 
