@@ -66,6 +66,7 @@ from backend.perception.hands import HAND_PROBES, HAND_TOKENS, hand_box  # noqa:
 from backend.perception.motion import PatchMotion, patch_motion  # noqa: E402
 from backend.perception.pipeline import FRAME_PROBES, Observations, PerceptionConfig, reconstruct  # noqa: E402
 from backend.perception.pose import PoseEstimator, PoseSequence, detect_people  # noqa: E402
+from backend.perception.settings import load_config  # noqa: E402
 from backend.perception.regions import CONTEXT as REGION_CONTEXT, RATES, REGION_PROBES, TOKENS, crop, region_view  # noqa: E402
 from backend.perception.scene import Scene, locate, median_background  # noqa: E402
 from backend.reconstruction import derived as derived_module, graph as graph_module  # noqa: E402
@@ -992,7 +993,7 @@ class Lab:
                 regions = {k: v for k, v in data.views.get("regions", {}).items() if k in originals}
                 motion = PatchMotion.load(self.path("motion", data.item)) if data.motion_ready else None
                 observed = Observations(video, base, regions, data.scene, data.pose, motion, self.model_name())
-                recon = reconstruct(observed, PerceptionConfig())
+                recon = reconstruct(observed, load_config(self.model_name()))  # as the API loads it
                 fused = {key: np.asarray([o.probability for o in track.observations]) for key, track in recon.tracks.items()}
             else:
                 base, regions = self.inputs(approach, data)

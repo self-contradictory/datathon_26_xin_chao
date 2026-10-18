@@ -1,0 +1,45 @@
+{
+ "Qwen/Qwen3-VL-32B-Instruct": {
+  "_note": "Label-free Otsu decision point per question (logit), from the 10-video 32B run of 18 Oct 2026 (eval/experiment_sweep.py --api-only). 8/10 correct vs 5/10 uncalibrated.",
+  "base_bias": {
+   "cashier_seated": -0.29,
+   "customer_present": -2.68,
+   "person_in_doorway": -3.56,
+   "handover": -5.34,
+   "using_computer": -1.06,
+   "at_safe": -2.88,
+   "eating": -5.37,
+   "phone": -6.9,
+   "room_occupied": -2.59,
+   "cash_on_desk": -4.64,
+   "bag_on_desk": -2.3,
+   "id_document": -5.43,
+   "cash_from_customer": -5.1,
+   "cash_to_customer": -6.55,
+   "cashier_at_station": 3.23
+  },
+  "region_bias": {
+   "cash_on_desk": -6.03,
+   "bag_on_desk": -0.29,
+   "stamps_on_desk": -6.39,
+   "food_on_desk": -2.59,
+   "personal_items": -2.59,
+   "desk_items": 3.6,
+   "counting_cash": -4.18,
+   "handover": -4.2,
+   "cash_from_customer": -5.44,
+   "cash_to_customer": -6.48,
+   "id_document": -5.07,
+   "eating": -2.59,
+   "phone": -5.69,
+   "cash_in_hands": -3.07,
+   "safe_open": -1.73,
+   "key_in_safe": -8.06,
+   "at_safe": -4.25,
+   "screen_on": -7.2,
+   "screen_unlocked": -8.97,
+   "laptop_closed": -8.98,
+   "person_in_doorway": -3.48
+  }
+ }
+}
