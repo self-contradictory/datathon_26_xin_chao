@@ -3,7 +3,7 @@
 Run from `backend/` on the machine that will perform inference:
 
 ```sh
-.venv/bin/python -u -B eval/benchmark_semantics.py --model Qwen/Qwen3-VL-32B-Instruct --device cuda
+.venv/bin/python -u -B eval/benchmark_semantics.py --model Qwen/Qwen3-VL-32B-Instruct --device cuda --quantization 4bit
 ```
 
 Replace the model with another Qwen3-VL checkpoint or use `--model-path /path/to/checkpoint`.
@@ -21,12 +21,11 @@ filename prefixes are matched while retaining the canonical label names for scor
 Missing or ambiguous files are reported before model loading. Snapshot creation does not
 require symlinks or Windows administrator privileges.
 
-Six methods share the same initial observations and captions per video:
+Five methods share the same initial observations and captions per video:
 
 | Method | What runs |
 |---|---|
 | baseline | Fresh VLM probes, regions, pose, motion, timeline and rules |
-| structured_followups | Baseline plus the existing JSON evidence follow-ups |
 | plain_followups | Baseline plus prose evidence checks and semantic classification |
 | captions_only | Sliding-window prose, semantic facts, timeline and rules |
 | baseline_captions | Baseline with explicit caption evidence added; omissions preserve the baseline |
@@ -36,14 +35,19 @@ Descriptions use 8-second windows, a 4-second stride, up to six ordered frames a
 tokens. Semantic matching reads supported/contradicted/unclear token scores; it does not
 parse generated JSON. IDs and graph facts are assembled by application code. Unmentioned
 facts remain unknown. Follow-ups recheck uncertain findings and positive alerts. Derived
-states are recomputed after evidence changes. A missing action between samples never proves
+states are recomputed after evidence changes. Event checks inspect frames even when the rule
+omits participant mappings. Actors are resolved only from existing, unambiguous graph roles,
+episode roles or anchors. An unresolved actor keeps its raw description without inventing
+an event. Speculative descriptions are not upgraded to observed actions.
+A missing action between samples never proves
 that a required procedure was omitted.
 
-The default follow-up budget is three refinement steps per video and method. A semantic
-vocabulary check consumes one step; a visual check may need multiple frame-level calls.
-JSON generation is capped at 512 tokens. Generation has a cooperative 45-second stopping
-limit, not a hard GPU deadline. Adjust with `--followup-max-calls`, `--followup-frames`,
-`--structured-tokens` and `--call-seconds`.
+The default follow-up budget is two visual questions per video and method, with at most two
+sampled frames per question. A separate, bounded semantic alignment pass does not consume
+this budget. Visual checks may require multiple model calls. Generation has a cooperative
+20-second stopping limit, not a hard GPU deadline. Adjust with `--followup-max-calls`,
+`--followup-frames` and `--call-seconds`. Generated JSON is disabled in the plain-text model.
+Internal graphs and saved JSON reports are still validated application data.
 
 The terminal prints accuracy, precision, recall, F1, timeline F1 and follow-up error counts.
 `var/semantic_benchmark_2b/REPORT.md`, `comparison.csv` and `summary.json` contain full results.
@@ -63,5 +67,6 @@ for accuracy, and timeline abstentions count as errors. Unknowns are not rewarde
 negatives. Unique-video and common-completed-video comparisons are included in `summary.json`.
 Cached work and inference calls are reported separately; shared setup/caption work is performed
 once and is not a fair end-to-end latency comparison between methods. One-video smoke results
-establish that paths execute, not that their accuracy improves. The smoke test still showed
-JSON parse failures in the existing structured follow-ups; those errors are retained and counted.
+establish that paths execute, not that their accuracy improves. The active API caption and follow-up paths use prose and semantic matching; the old structured
+follow-up benchmark option has been removed. To disable the API caption scan, set
+`TEMPORAL_SCAN=false`; `FOLLOWUP_MAX_CALLS=0` disables visual follow-ups.

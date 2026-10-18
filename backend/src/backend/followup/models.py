@@ -76,3 +76,10 @@ class StructuredModel(Protocol):
         self, prompt: str, schema: type[T], images: list[np.ndarray] | None = None,
         image_tokens: int = 256, max_new_tokens: int = 1024,
     ) -> T: ...
+
+
+class PlainTextModel(Protocol):
+    def text(self, prompt: str, images: list[np.ndarray] | None = None,
+             image_tokens: int = 256, max_new_tokens: int = 96) -> str: ...
+
+    def entail(self, context: str, questions: list[str]) -> list[list[float]]: ...

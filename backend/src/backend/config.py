@@ -22,11 +22,12 @@ class Settings(BaseSettings):
     SAMPLE_FPS: float = 1.0
     IMAGE_TOKENS: int = 256
     RULE_MODE: Literal["production", "shadow"] = "shadow"
-    # Structured-JSON follow-ups and the cash provenance scan are off by default: with the
-    # 2B model most of these calls ran out of tokens on invalid JSON and took ~150s each.
-    FOLLOWUP_MAX_CALLS: int = 0
-    FOLLOWUP_MAX_FRAMES: int = 8
-    TEMPORAL_SCAN: bool = False
+    # Generated descriptions and follow-up answers are prose, followed by semantic matching.
+    # This budget counts visual questions; vocabulary alignment has a separate bounded pass.
+    FOLLOWUP_MAX_CALLS: int = 2
+    FOLLOWUP_MAX_FRAMES: int = 2
+    FOLLOWUP_CALL_SECONDS: float = 20.0
+    TEMPORAL_SCAN: bool = True
     # Fuse zoomed region probes, body keypoints and local patch motion into the timeline.
     PERCEPTION: bool = True
     POSE_DEVICE: str | None = None

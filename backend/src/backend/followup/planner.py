@@ -19,6 +19,11 @@ def _window(index, finding, rule, matcher, relation="at", start=None, end=None, 
     if end is None:
         end = bounds.latest_start if bounds else finding.end_sec
     bindings = dict(finding.bindings)
+    if episode is not None:
+        for role, variable in (getattr(rule.scope, "episode_roles", None) or {}).items():
+            entity, _ = index.episode_role(episode, role)
+            if entity is not None:
+                bindings.setdefault(variable, entity)
     if event:
         for role, variable in (getattr(matcher, "participants", None) or {}).items():
             holders = {p.entity_id for p in event.participants if index.supports("role", event.id, p.role, role)}

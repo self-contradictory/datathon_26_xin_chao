@@ -15,7 +15,7 @@ from backend.repositories.jobs import JobRepository, SqliteJobRepository
 from backend.perception.pipeline import PerceptionReconstructor
 from backend.perception.settings import load_config
 from backend.reconstruction.pipeline import Reconstructor
-from backend.reconstruction.vlm import QuestionVLM
+from backend.semantic.vlm import TextVLM
 from backend.services.api_keys import ApiKeyService
 from backend.services.jobs import JobService
 
@@ -29,8 +29,9 @@ def get_database() -> SqliteDatabase:
 
 @lru_cache
 def get_analyzer() -> VideoAnalyzer:
-    model = QuestionVLM(
+    model = TextVLM(
         settings.MODEL, settings.MODEL_PATH, settings.MODEL_DEVICE, settings.MODEL_QUANTIZATION,
+        cache_dir=settings.TIMELINE_DIR.parent / "model_calls", call_seconds=settings.FOLLOWUP_CALL_SECONDS,
     )
     reconstructor = (
         PerceptionReconstructor(model, load_config(model.name), settings.POSE_DEVICE) if settings.PERCEPTION

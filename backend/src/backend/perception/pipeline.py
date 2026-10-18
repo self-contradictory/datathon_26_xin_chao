@@ -6,6 +6,7 @@ reconstruct() on cached observations, so the API and the evaluation share one co
 """
 from dataclasses import dataclass, field, replace
 from pathlib import Path
+import logging
 
 import numpy as np
 
@@ -20,6 +21,8 @@ from backend.reconstruction.pipeline import AttributeTrack, Reconstruction, Reco
 from backend.reconstruction.probes import PERCEPTION_PROBES, PROBES, SCENE_CONTEXT
 from backend.reconstruction.video import DecodedVideo, decode
 from backend.reconstruction.vlm import QuestionVLM
+
+logger = logging.getLogger(__name__)
 
 type Series = dict[str, tuple[np.ndarray, np.ndarray]]
 
@@ -59,6 +62,7 @@ def _probe_series(vlm: QuestionVLM, video: DecodedVideo, fps: float, tokens: int
             continue
         due = moment + 1.0 / fps - 0.25 / video.sample_fps
         image = video.frame_at(moment)
+        logger.info("Video %s: full-frame probes at %.1f/%.1fs", video.path.stem, moment, video.duration)
         answers = vlm.probe(crop(image, box) if box else image, [p.question for p in PROBES], SCENE_CONTEXT, tokens)
         times.append(float(moment))
         for key, value in zip(keys, answers, strict=True):
@@ -77,6 +81,7 @@ def _region_series(vlm: QuestionVLM, video: DecodedVideo, scene: Scene) -> Serie
                 continue
             due[region] = moment + 1.0 / RATES[region] - 0.25 / video.sample_fps
             frame = video.frame_at(moment) if frame is None else frame
+            logger.info("Video %s: %s region probes at %.1f/%.1fs", video.path.stem, region, moment, video.duration)
             answers = vlm.probe(crop(frame, boxes[region]), [p.question for p in probes], CONTEXT, TOKENS[region])
             for probe, value in zip(probes, answers, strict=True):
                 data[probe.key][0].append(float(moment))
@@ -86,13 +91,18 @@ def _region_series(vlm: QuestionVLM, video: DecodedVideo, scene: Scene) -> Serie
 
 def observe(path: Path, vlm: QuestionVLM, estimator: PoseEstimator | None,
             config: PerceptionConfig = PerceptionConfig()) -> Observations:
+    logger.info("Video %s: decoding", path.stem)
     video = decode(path, config.grid_fps)
+    logger.info("Video %s: decoded %.1fs, %s frames; scene grounding starts", path.stem, video.duration, len(video.times))
     scene = locate(vlm, path) if config.use_regions or config.use_cv else None
     base_box = scene.regions["active"] if scene is not None and config.base_crop else None
     base = _probe_series(vlm, video, config.base_fps, config.base_tokens, base_box)
     regions = _region_series(vlm, video, scene) if config.use_regions else {}
+    logger.info("Video %s: pose estimation starts on %s", path.stem, getattr(estimator, "device", "disabled"))
     pose = detect_people(path, estimator, config.pose_fps) if config.use_cv and estimator else None
+    logger.info("Video %s: local motion starts", path.stem)
     motion = patch_motion(path, config.motion_fps) if config.use_cv else None
+    logger.info("Video %s: perception complete", path.stem)
     return Observations(video, base, regions, scene, pose, motion, vlm.name)
 
 

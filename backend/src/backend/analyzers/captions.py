@@ -4,7 +4,6 @@ from pathlib import Path
 from backend.analyzers.base import VideoAnalyzer
 from backend.followup.pipeline import refine
 from backend.reconstruction.video import decode
-from backend.rules.engine import evaluate
 from backend.rules.registry import load_registry
 from backend.rules.verdict import ReportingPolicy, reportable, to_violations
 from backend.semantic.captions import CaptionConfig, caption_graph, describe_windows
@@ -18,8 +17,8 @@ class CaptionAnalyzer(VideoAnalyzer):
     Pass a TextVLM-compatible model. An optional baseline reconstructor keeps its evidence
     when the descriptions omit a fact. This analyzer is opt-in and does not replace API defaults.
     """
-    def __init__(self, model, config=CaptionConfig(), baseline=None, max_followup_calls=3,
-                 followup_frames=4, output_dir: Path | None = None):
+    def __init__(self, model, config=CaptionConfig(), baseline=None, max_followup_calls=2,
+                 followup_frames=2, output_dir: Path | None = None):
         self.model, self.config, self.baseline = model, config, baseline
         self.max_followup_calls, self.followup_frames = max_followup_calls, followup_frames
         self.output_dir = output_dir
@@ -39,6 +38,8 @@ class CaptionAnalyzer(VideoAnalyzer):
             atomic_json(directory / "captions.json", captions)
             atomic_json(directory / "timeline.steg.json", result.graph.model_dump(mode="json"))
             atomic_json(directory / "followups.json", {"calls": result.calls,
+                        "semantic_calls": result.semantic_calls,
+                        "plain_text": result.plain_text_records,
                         "checks": [r.model_dump(mode="json") for r in result.checks], "errors": result.semantic_errors})
         def jpeg(moment):
             return result.frame_images.get(moment) or video.jpeg_at(moment)

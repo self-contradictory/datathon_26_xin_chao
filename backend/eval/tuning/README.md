@@ -7,9 +7,10 @@ without rerunning the model. All scripts run from `backend/` with `PYTHONPATH=ev
 ## Pipeline
 
 Qwen3-VL-2B still answers yes/no questions by reading the Yes/No logits; nothing generates JSON.
-The structured follow-up calls and the cash provenance scan are off by default
-(`FOLLOWUP_MAX_CALLS=0`, `TEMPORAL_SCAN=false`): with the 2B model most of them ran out of tokens
-on invalid JSON at ~150 s per call.
+Captions and follow-ups now generate ordinary prose, followed by semantic matching.
+The API defaults to a caption scan and two visual follow-up questions. Set
+`FOLLOWUP_MAX_CALLS=0` and `TEMPORAL_SCAN=false` to benchmark perception alone.
+The older generated-JSON follow-up benchmark has been removed.
 
 | Stage | What it adds | Code |
 |---|---|---|

@@ -2,12 +2,15 @@
 import copy
 import hashlib
 import json
+import logging
 import time
 from pathlib import Path
 
 import torch
 
 from backend.reconstruction.vlm import QuestionVLM, fit_tokens
+
+logger = logging.getLogger(__name__)
 
 
 def atomic_json(path: Path, value) -> None:
@@ -18,15 +21,24 @@ def atomic_json(path: Path, value) -> None:
 
 
 class TextVLM(QuestionVLM):
-    def __init__(self, *args, cache_dir: Path, call_seconds: float = 45,
-                 structured_tokens: int = 512, **kwargs):
+    def __init__(self, *args, cache_dir: Path, call_seconds: float = 20, **kwargs):
         super().__init__(*args, **kwargs)
         self.cache_dir, self.call_seconds = cache_dir, call_seconds
-        self.structured_tokens = structured_tokens
         self.calls = []
 
+    @classmethod
+    def wrap(cls, model, cache_dir: Path, call_seconds: float = 20):
+        """Add prose inference to an already loaded observer without loading weights again."""
+        if isinstance(model, cls):
+            return model
+        wrapped = cls.__new__(cls)
+        wrapped.__dict__.update(model.__dict__)
+        wrapped.cache_dir, wrapped.call_seconds, wrapped.calls = cache_dir, call_seconds, []
+        return wrapped
+
     def _cached(self, kind, payload, compute):
-        key = hashlib.sha256(json.dumps([self.name, kind, payload], sort_keys=True).encode()).hexdigest()
+        key = hashlib.sha256(json.dumps(["plain-v2", self.name, self.device, self.quantization,
+                                       kind, payload], sort_keys=True).encode()).hexdigest()
         path = self.cache_dir / f"{key}.json"
         if path.exists():
             saved = json.loads(path.read_text(encoding="utf-8"))
@@ -34,6 +46,8 @@ class TextVLM(QuestionVLM):
             return saved["answer"]
         began = time.perf_counter()
         record = {"kind": kind, "cache_key": key, "request": payload}
+        logger.info("VLM %s started: %s images, %s semantic questions", kind,
+                    len(payload.get("images_sha256", [])), len(payload.get("questions", [])))
         try:
             record["answer"] = compute()
             record["seconds"] = time.perf_counter() - began
@@ -46,6 +60,8 @@ class TextVLM(QuestionVLM):
             raise
         finally:
             self.calls.append({k: v for k, v in record.items() if k != "request"})
+            logger.info("VLM %s finished in %.1fs%s", kind, time.perf_counter() - began,
+                        " with error" if "error" in record else "")
 
     @torch.inference_mode()
     def text(self, prompt, images=None, image_tokens=256, max_new_tokens=96):
@@ -75,14 +91,8 @@ class TextVLM(QuestionVLM):
                     self._model.model.rope_deltas = None
         return self._cached("text", payload, generate)
 
-    def structured(self, prompt, schema, images=None, image_tokens=256, max_new_tokens=1024):
-        # Same schema and observer as the existing pipeline, with an explicit benchmark token budget.
-        raw = self.text(prompt + "\nReturn only a JSON object matching this schema:\n"
-                        + json.dumps(schema.model_json_schema()), images, image_tokens,
-                        min(max_new_tokens, self.structured_tokens))
-        if raw.startswith("```"):
-            raw = raw.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
-        return schema.model_validate_json(raw)
+    def structured(self, *args, **kwargs):
+        raise TypeError("Generated JSON is disabled for the plain-text pipeline; use text() and entail().")
 
     @torch.inference_mode()
     def entail(self, context: str, questions: list[str], max_batch: int = 6):
@@ -93,7 +103,7 @@ class TextVLM(QuestionVLM):
         """
         if not questions:
             return []
-        payload = {"context": context, "questions": questions, "batch": max_batch}
+        payload = {"context": context, "questions": questions, "batch": max_batch, "classifier_version": 2}
 
         def classify():
             instruction = (
@@ -102,6 +112,12 @@ class TextVLM(QuestionVLM):
                 "A means clearly yes/supported. B means explicitly no/contradicted. "
                 "C means unclear, unmentioned, or insufficient evidence. Missing mention is C, never B. "
                 "An object being held does not prove an ID was verified or cash was counted. "
+                "Opposites and explicit negation count as B, not C. Examples:\n"
+                "Observation: The safe door is closed. Question: Is the safe door open? Answer: B\n"
+                "Observation: The cashier counts banknotes. Question: Is cash being counted? Answer: A\n"
+                "Observation: The cashier sits at a desk. Question: Is a key in the safe lock? Answer: C\n"
+                "Observation: No customer is visible across from the cashier. "
+                "Question: Is a customer visible across from the cashier? Answer: B\n"
                 "Give one letter, A, B or C.\nObservation:\n" + context
             )
             messages = [{"role": "user", "content": instruction}]

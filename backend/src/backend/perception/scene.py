@@ -4,6 +4,7 @@ One short grounding generation per object on the median background frame. A box 
 parsed falls back to the typical position in this camera setup.
 """
 import re
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -12,6 +13,8 @@ import numpy as np
 import torch
 
 from backend.reconstruction.vlm import QuestionVLM, fit_tokens
+
+logger = logging.getLogger(__name__)
 
 type Box = tuple[float, float, float, float]
 
@@ -88,6 +91,10 @@ def median_background(path: Path, samples: int = 15) -> np.ndarray:
 
 @torch.inference_mode()
 def ground(model: QuestionVLM, image: np.ndarray, description: str, tokens: int = 512) -> Box | None:
+    if hasattr(model, "text"):
+        answer = model.text(f"Locate {description} in this image. Output its bbox_2d coordinates.",
+                            [image], image_tokens=tokens, max_new_tokens=48)
+        return parse_box(answer)
     content = [{"type": "image"},
                {"type": "text", "text": f"Locate {description} in this image. Output its bbox_2d coordinates."}]
     text = model._processor.apply_chat_template([{"role": "user", "content": content}], add_generation_prompt=True)
@@ -97,6 +104,10 @@ def ground(model: QuestionVLM, image: np.ndarray, description: str, tokens: int 
         output = model._model.generate(**inputs, max_new_tokens=48, do_sample=False)
         model._model.model.rope_deltas = None
     answer = model._processor.batch_decode(output[:, inputs["input_ids"].shape[1]:], skip_special_tokens=True)[0]
+    return parse_box(answer)
+
+
+def parse_box(answer: str) -> Box | None:
     match = BOX.search(answer)
     if not match:
         return None
@@ -110,7 +121,9 @@ def locate(model: QuestionVLM, path: Path) -> Scene:
     background = median_background(path)
     boxes, grounded = {}, {}
     for key, description in OBJECTS.items():
+        logger.info("Video %s: grounding %s", path.stem, key)
         box = ground(model, background, description)
         grounded[key] = box is not None
         boxes[key] = box or FALLBACK[key]
+        logger.info("Video %s: %s grounding %s", path.stem, key, "complete" if box else "used fallback")
     return Scene(boxes, grounded)

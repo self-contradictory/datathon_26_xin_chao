@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 
 from backend.followup.merge import merge_answer
-from backend.followup.models import EvidenceQuestion, TimeWindow
+from backend.followup.models import EvidenceQuestion, TimeWindow, VisualAnswer
 from backend.followup.observer import ReplayFrame
 from backend.followup.pipeline import refine
 from backend.followup.planner import plan_questions
@@ -16,11 +16,14 @@ from backend.reconstruction.graph import build_timeline
 from backend.reconstruction.probes import PERCEPTION_PROBES
 from backend.reconstruction.video import DecodedVideo
 from backend.rules.engine import evaluate
-from backend.rules.models import EntityByKind, StateMatcher
+from backend.rules.models import EntityByKind, StateMatcher, EventMatcher
 from backend.rules.registry import load_registry
 from backend.semantic.captions import CaptionConfig, caption_probabilities, reconstruct_captions, windows
-from backend.semantic.followup import TextObserver
-from backend.steg import EvidenceFrame
+from backend.semantic.followup import TextObserver, event_participants
+from backend.semantic.vlm import TextVLM
+from backend.perception.scene import ground
+from backend.analyzers.questions import QuestionAnalyzer
+from backend.steg import EvidenceFrame, Entity
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "eval"))
 from semantic_benchmark_metrics import aggregate, score_timeline
@@ -123,6 +126,89 @@ class FollowupTests(unittest.TestCase):
         self.assertTrue(all(check.error for check in result.checks))
         self.assertEqual(len({c.question.id for c in result.checks}), len(result.checks))
 
+    def test_id_without_participant_mapping_still_uses_vision_and_known_actor(self):
+        frame = ReplayFrame(EvidenceFrame(id="id_frame", timestamp_sec=1.0, source_ref="synthetic.mov"),
+                            np.zeros((32, 32, 3), np.uint8), b"jpg")
+        question = EvidenceQuestion(id="id_check", rule_id="CD12", matcher=EventMatcher(kind="event", action="physical_id_checked"),
+                    window=TimeWindow(relation="before", start_sec=1.0, end_sec=1.0), reason="Missing ID evidence")
+        class Model:
+            calls = 0
+            def text(self, *args, **kwargs):
+                self.calls += 1
+                return "The cashier examines the customer's passport photograph and compares it with the customer."
+            def entail(self, context, questions):
+                self.last_question = questions[0]
+                return [[.99, .005, .005]]
+            def structured(self, *args, **kwargs): raise AssertionError("Generated JSON must never be requested")
+        model = Model()
+        observer = TextObserver(model, video())
+        with patch("backend.semantic.followup.sample_window", return_value=[frame]):
+            answer, frames = observer.answer(question, self.graph)
+        self.assertEqual(model.calls, 1)
+        self.assertEqual(answer.actions[0].action, "physical_id_checked")
+        self.assertEqual(answer.actions[0].participants[0].entity_id, "person_1")
+        self.assertIn("examining or verifying", model.last_question)
+        merged = merge_answer(self.graph, question, answer, frames)
+        self.assertTrue(any(e.action == "physical_id_checked" for e in merged.events))
+
+    def test_ambiguous_actor_does_not_skip_description_or_invent_binding(self):
+        graph = self.graph.model_copy(deep=True)
+        graph.entities.append(Entity(id="person_2", kind="person", subtype="person", role="cashier", identity_status="provisional"))
+        question = EvidenceQuestion(id="ambiguous", rule_id="CD12", matcher=EventMatcher(kind="event", action="physical_id_checked"),
+                    window=TimeWindow(relation="during", start_sec=1.0, end_sec=2.0), reason="Check ID")
+        frame = ReplayFrame(EvidenceFrame(id="ambiguous_frame", timestamp_sec=1.0, source_ref="synthetic.mov"),
+                            np.zeros((32, 32, 3), np.uint8), b"jpg")
+        class Model:
+            def text(self, *args, **kwargs): return "One cashier is inspecting a passport."
+            def entail(self, *args): return [[.99, .005, .005]]
+        observer = TextObserver(Model(), video())
+        with patch("backend.semantic.followup.sample_window", return_value=[frame]):
+            answer, _ = observer.answer(question, graph)
+        self.assertEqual(len(observer.records[0]["observations"]), 1)
+        self.assertEqual(answer.actions, [])
+        self.assertIn("grounded uniquely", observer.records[0]["abstention_reason"])
+
+    def test_semantic_alignment_does_not_consume_visual_budget(self):
+        class Semantics:
+            calls = 0
+            def candidates(self, graph): return [{"key": "some_claim"}]
+            def run(self, graph, candidates):
+                self.calls += 1
+                return graph
+        class Observer:
+            calls = 0
+            def answer(self, *args):
+                self.calls += 1
+                return VisualAnswer(status="not_visible", explanation="Unclear"), []
+        q = EvidenceQuestion(id="q1", rule_id="CD12", matcher=EventMatcher(kind="event", action="physical_id_checked"),
+                    window=TimeWindow(relation="during", start_sec=0.0, end_sec=2.0), reason="Check ID")
+        observer, semantic = Observer(), Semantics()
+        with patch("backend.followup.pipeline.plan_questions", return_value=[q, q.model_copy(update={"id": "q2"})]):
+            result = refine(self.registry, self.graph, video(), None, max_calls=2, observer=observer, semantic_matcher=semantic)
+        self.assertEqual(result.calls, 2)
+        self.assertEqual(observer.calls, 2)
+        self.assertEqual(result.semantic_calls, 1)
+        self.assertEqual(semantic.calls, 1)
+
+    def test_plain_model_disables_generated_json(self):
+        with self.assertRaisesRegex(TypeError, "Generated JSON is disabled"):
+            TextVLM.structured(None, "prompt", None)
+
+    def test_speculative_id_description_cannot_be_upgraded_by_confident_semantic_score(self):
+        question = EvidenceQuestion(id="weak_id", rule_id="CD12", matcher=EventMatcher(kind="event", action="physical_id_checked"),
+                    window=TimeWindow(relation="during", start_sec=1.0, end_sec=2.0), reason="Check ID")
+        frame = ReplayFrame(EvidenceFrame(id="weak_frame", timestamp_sec=1.0, source_ref="synthetic.mov"),
+                            np.zeros((32, 32, 3), np.uint8), b"jpg")
+        class Model:
+            def text(self, *args, **kwargs):
+                return "The man is holding a card, suggesting a transaction or verification process is underway."
+            def entail(self, *args): return [[.999, .0005, .0005]]
+        observer = TextObserver(Model(), video())
+        with patch("backend.semantic.followup.sample_window", return_value=[frame]):
+            answer, _ = observer.answer(question, self.graph)
+        self.assertEqual(answer.actions, [])
+        self.assertIn("speculates", observer.records[0]["abstention_reason"])
+
 
 class MetricTests(unittest.TestCase):
     def test_failures_cannot_improve_accuracy_by_disappearing(self):
@@ -138,6 +224,34 @@ class MetricTests(unittest.TestCase):
         self.assertEqual(counts["tn"], 0)
         self.assertEqual(counts["unknown"], counts["samples"])
         self.assertEqual(counts["fp"], counts["samples"])
+
+
+class PlainAnalyzerTests(unittest.TestCase):
+    def test_scene_grounding_uses_plain_model_text_without_a_json_schema(self):
+        class Model:
+            def text(self, prompt, images, **kwargs): return "[100, 200, 900, 800]"
+            def structured(self, *args, **kwargs): raise AssertionError("Generated JSON is forbidden")
+        self.assertEqual(ground(Model(), np.zeros((32, 32, 3), np.uint8), "the desk"), (.1, .2, .9, .8))
+
+    def test_api_caption_path_never_requests_generated_json(self):
+        class Model:
+            name = "fake-prose"
+            text_calls = 0
+            def text(self, *args, **kwargs):
+                self.text_calls += 1
+                return "The cashier sits at the desk; other details are unclear."
+            def entail(self, context, questions): return [[.01, .01, .98] for _ in questions]
+            def structured(self, *args, **kwargs): raise AssertionError("JSON generation is forbidden")
+        class Reconstructor:
+            def __init__(self): self.vlm = Model()
+            def run(self, path):
+                return reconstruct_captions(video(), [caption(0, 8, {})], CaptionConfig(), self.vlm.name)
+        reconstructor = Reconstructor()
+        with tempfile.TemporaryDirectory() as directory:
+            analyzer = QuestionAnalyzer(reconstructor, max_followup_calls=0, temporal_scan=True, timeline_dir=Path(directory))
+            analyzer.analyze(Path("synthetic.mov"))
+            self.assertEqual(reconstructor.vlm.text_calls, 1)
+            self.assertTrue((Path(directory) / "synthetic.captions.json").exists())
 
 
 class WindowsInputTests(unittest.TestCase):

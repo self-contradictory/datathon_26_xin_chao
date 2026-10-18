@@ -1,6 +1,6 @@
-"""Compare cached/fresh 2B perception, JSON follow-ups, and plain-text video descriptions.
+"""Compare cached/fresh perception, plain-text follow-ups and sliding-window prose.
 
-Run from any directory with the backend's .venv Python. Default: every labelled video, six
+Run from any directory with the backend's .venv Python. Default: every labelled video, five
 methods, frozen source, resumable calls, live score tables and JSON/CSV/Markdown reports.
 """
 import argparse
@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 BACKEND = Path(__file__).resolve().parents[1]
-METHODS = ("baseline", "structured_followups", "plain_followups", "captions_only",
+METHODS = ("baseline", "plain_followups", "captions_only",
            "baseline_captions", "captions_followups")
 
 
@@ -89,18 +89,17 @@ def arguments():
     p.add_argument("--window-frames", type=int, default=6)
     p.add_argument("--caption-tokens", type=int, default=96)
     p.add_argument("--semantic-threshold", type=float, default=0.75)
-    p.add_argument("--followup-max-calls", type=int, default=3)
-    p.add_argument("--followup-frames", type=int, default=4)
-    p.add_argument("--structured-tokens", type=int, default=512)
-    p.add_argument("--call-seconds", type=float, default=45)
+    p.add_argument("--followup-max-calls", type=int, default=2, help="Number of visual questions; text semantic alignment is separate")
+    p.add_argument("--followup-frames", type=int, default=2)
+    p.add_argument("--call-seconds", type=float, default=20)
     p.add_argument("--score-only", action="store_true", help="Print saved results without loading models")
     args = p.parse_args()
     if args.followup_max_calls < 0 or args.followup_frames < 1 or args.call_seconds <= 0:
         p.error("Follow-up budget must be nonnegative; frames and call time must be positive")
     if not 0 < args.stride_seconds <= args.window_seconds or args.window_frames < 2 or args.caption_tokens < 1:
         p.error("Require 0 < stride <= window, at least two frames and positive caption tokens")
-    if not 0.5 < args.semantic_threshold < 1 or args.structured_tokens < 1:
-        p.error("Require 0.5 < semantic threshold < 1 and positive structured tokens")
+    if not 0.5 < args.semantic_threshold < 1:
+        p.error("Require 0.5 < semantic threshold < 1")
     for key, value in vars(args).items():
         if isinstance(value, Path):
             setattr(args, key, value.resolve())
@@ -284,10 +283,11 @@ def main():
             print("Loading model", args.model, flush=True)
             model = TextVLM(args.model, args.model_path, args.device, args.quantization,
                             cache_dir=args.out / "model_calls", call_seconds=args.call_seconds,
-                            structured_tokens=args.structured_tokens, local_files_only=args.offline)
+                            local_files_only=args.offline)
             print(f"Loaded {model.name} on {model.device}", flush=True)
         return model
     hashes = read_json(args.out / "manifest.json")["config"]["video_sha256"]
+    fresh_reconstructor = None
     for number, (name, target) in enumerate(labels.items(), 1):
         pending = [m for m in args.methods if not (args.out / Path(name).stem / m / "result.json").exists()
                    or read_json(args.out / Path(name).stem / m / "result.json")["status"] != "done"]
@@ -298,8 +298,12 @@ def main():
         baseline = video = captions = None
         setup_started = time.perf_counter()
         try:
-            baseline = (build(Experiment("baseline", "base-full", "regions+regions2", config), Path(name).stem)
-                        if args.baseline == "cached" else PerceptionReconstructor(get_model(), config).run(video_paths[name]))
+            if args.baseline == "cached":
+                baseline = build(Experiment("baseline", "base-full", "regions+regions2", config), Path(name).stem)
+            else:
+                if fresh_reconstructor is None:
+                    fresh_reconstructor = PerceptionReconstructor(get_model(), config)
+                baseline = fresh_reconstructor.run(video_paths[name])
             if baseline is None:
                 raise ValueError("Missing baseline observations")
             if baseline.observer_model != MODEL_IDS.get(args.model, args.model):
@@ -332,19 +336,19 @@ def main():
                     graph = caption_graph(video, captions, captions_config, get_model().name,
                                           baseline if method == "baseline_captions" else None)
                     graph.video.id = Path(name).stem
-                if method in {"structured_followups", "plain_followups", "captions_followups"}:
-                    observer = semantic = None
-                    if method != "structured_followups":
-                        observer = TextObserver(get_model(), video, args.followup_frames)
-                        semantic = TextSemanticMatcher(get_model(), registry.rules)
+                if method in {"plain_followups", "captions_followups"}:
+                    observer = TextObserver(get_model(), video, args.followup_frames)
+                    semantic = TextSemanticMatcher(get_model(), registry.rules)
                     result = refine(registry, graph, video, get_model(), max_calls=args.followup_max_calls,
                                     max_frames=args.followup_frames, observer=observer, semantic_matcher=semantic,
                                     verify_positive=True, post_merge=refresh_derived_states)
                     graph = result.graph
                     row["followup_errors"] = len(result.semantic_errors) + sum(r.error is not None for r in result.checks)
                     row["followup_calls"] = result.calls
+                    row["semantic_calls"] = result.semantic_calls
                     write(directory / "followups.json", {"checks": [r.model_dump(mode="json") for r in result.checks],
                           "semantic_errors": result.semantic_errors,
+                          "visual_checks": result.calls, "semantic_calls": result.semantic_calls,
                           "plain_text": observer.records if observer else []})
                 report = evaluate(registry, graph, "shadow")
                 findings = [{"rule_id": f.rule_id, "timecode_sec": f.timecode_sec,
