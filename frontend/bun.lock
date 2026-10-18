@@ -21,6 +21,9 @@
       },
     },
   },
+  "trustedDependencies": [
+    "bun",
+  ],
   "packages": {
     "@oven/bun-darwin-aarch64": ["@oven/bun-darwin-aarch64@1.4.3", "", { "os": "darwin", "cpu": "arm64" }, "sha512-u2wAM9RzqyF4baO5oFVhcFUVWO1CCMLG6yC5/aPWCYGZPfL5ULMbeHt+0/3I0h3yaPx1m+PKSANO/61jPtDZcQ=="],
 

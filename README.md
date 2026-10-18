@@ -19,6 +19,7 @@ research/  Reference papers.
 
 For Windows with Qwen3-VL-32B on an RTX A6000, see [WINDOWS_A6000.md](WINDOWS_A6000.md).
 Dataset rule coverage and API accuracy scoring are described in [DATASET_RULES.md](backend/eval/DATASET_RULES.md).
+To deploy the frontend on Vercel and connect it to the Windows GPU API, see [DEPLOY_VERCEL.md](frontend/DEPLOY_VERCEL.md).
 
 ### Backend
 

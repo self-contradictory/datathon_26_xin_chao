@@ -1,6 +1,35 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
+  "bunVersion": "1.x",
+  "installCommand": "bun install --frozen-lockfile",
   "buildCommand": "bun run build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "routes": [
+    {
+      "src": "^/api/v1/(analyze|jobs/[A-Za-z0-9_-]+)$",
+      "methods": ["GET", "POST", "OPTIONS"],
+      "dest": "${API_URL}/api/v1/$1",
+      "env": ["API_URL"],
+      "headers": { "Cache-Control": "no-store" },
+      "transforms": [
+        {
+          "type": "request.headers",
+          "op": "set",
+          "target": { "key": "x-api-key" },
+          "args": "$API_KEY",
+          "env": ["API_KEY"]
+        },
+        {
+          "type": "request.headers",
+          "op": "set",
+          "target": { "key": "ngrok-skip-browser-warning" },
+          "args": "1"
+        }
+      ]
+    },
+    { "src": "^/api(?:/.*)?$", "status": 404 },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 }
