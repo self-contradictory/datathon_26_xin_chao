@@ -9,6 +9,7 @@ import gc
 import hashlib
 import json
 import logging
+import re
 import shutil
 import sys
 import time
@@ -30,8 +31,42 @@ def sha(path):
 def write(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(".tmp")
-    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     temporary.replace(path)
+
+
+def read_json(path):
+    # Windows' locale encoding can turn UTF-8 Cyrillic Х into the two characters РҐ.
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def video_key(name):
+    stem = Path(name).stem.casefold().replace("х", "x")
+    match = re.fullmatch(r"x[-_ ]*0*(\d+)", stem)
+    return ("x", int(match[1])) if match else (stem,)
+
+
+def resolve_videos(directory, labels):
+    if not directory.is_dir():
+        raise ValueError(f"Video directory not found: {directory}. Set --videos-dir to the folder containing your videos.")
+    candidates = [p for p in directory.iterdir() if p.is_file() and p.suffix.casefold() in {".mov", ".mp4", ".m4v", ".mkv"}]
+    resolved, missing = {}, []
+    for name in labels:
+        exact = directory / name
+        if exact.is_file():
+            resolved[name] = exact
+            continue
+        matches = [p for p in candidates if video_key(p.name) == video_key(name)]
+        if len(matches) > 1:
+            raise ValueError(f"Ambiguous video {name}: {', '.join(p.name for p in matches)}. Keep one matching file or use exact label filenames.")
+        if matches:
+            resolved[name] = matches[0]
+        else:
+            missing.append(name)
+    if missing:
+        raise ValueError(f"Missing {len(missing)} labelled videos in {directory}: {', '.join(missing)}. "
+                         "Set --videos-dir to the folder containing all labelled videos. No cases were silently skipped.")
+    return resolved
 
 
 def arguments():
@@ -72,7 +107,7 @@ def arguments():
     return args
 
 
-def prepare(args, labels):
+def prepare(args, labels, video_paths):
     args.out.mkdir(parents=True, exist_ok=True)
     files = [p for p in (BACKEND / "src").rglob("*") if p.suffix in {".py", ".yaml", ".json"}]
     files += list((BACKEND / "eval/tuning").glob("*.py"))
@@ -81,11 +116,12 @@ def prepare(args, labels):
               BACKEND / "eval/violation_times.json"]
     config = {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items() if k != "score_only"}
     config["source_sha256"] = {str(p.relative_to(BACKEND)) if p.is_relative_to(BACKEND) else str(p): sha(p) for p in files}
-    config["video_sha256"] = {name: sha(args.videos_dir / name) for name in labels}
+    config["video_sha256"] = {name: sha(video_paths[name]) for name in labels}
+    config["video_paths"] = {name: str(video_paths[name]) for name in labels}
     config["tuning_sha256"] = sha(args.tuning) if args.tuning.exists() else None
     caches = []
     if args.baseline == "cached":
-        calibration_names = json.loads(args.labels.read_text())
+        calibration_names = read_json(args.labels)
         for folder, suffix in (("probes/base-full", ".json"), ("probes/regions", ".json"), ("probes/regions2", ".json"),
                                ("scene", ".json"), ("pose", ".json"), ("motion", ".npz")):
             for name in (calibration_names if folder.startswith("probes/") else labels):
@@ -96,7 +132,7 @@ def prepare(args, labels):
     config["cache_sha256"] = {str(p.relative_to(args.cache)): sha(p) for p in caches}
     manifest = args.out / "manifest.json"
     if manifest.exists():
-        saved = json.loads(manifest.read_text())
+        saved = read_json(manifest)
         if saved["config"] != config:
             raise ValueError("Source, settings, labels or inputs changed. Choose a new --out directory.")
         for relative, digest in saved["snapshot_sha256"].items():
@@ -117,10 +153,6 @@ def prepare(args, labels):
         target = snapshot / "var/tuning" / path.relative_to(args.cache)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(path, target)
-    video_link = snapshot.parent / "data/open/videos"
-    video_link.parent.mkdir(parents=True, exist_ok=True)
-    if not video_link.exists():
-        video_link.symlink_to(args.videos_dir, target_is_directory=True)
     snapshot_hashes = {str(p.relative_to(args.out)): sha(p) for p in snapshot.rglob("*") if p.is_file()}
     if (args.out / "tuning.json").exists():
         snapshot_hashes["tuning.json"] = sha(args.out / "tuning.json")
@@ -136,7 +168,7 @@ def summarize(out, labels, hashes, methods):
         for video in labels:
             path = out / Path(video).stem / method / "result.json"
             if path.exists():
-                rows[method].append(json.loads(path.read_text()))
+                rows[method].append(read_json(path))
     metrics, unique = {}, {}
     for method, values in rows.items():
         metrics[method] = aggregate(values)
@@ -153,7 +185,7 @@ def summarize(out, labels, hashes, methods):
                                 "paired_videos": sorted(common)})
     fields = ["method", "video", "expected", "predicted", "status", "correct", "seconds", "model_calls",
               "model_cache_hits", "followup_errors", "aspects_hit", "aspects_total", "time_error", "error"]
-    with (out / "comparison.csv").open("w", newline="") as stream:
+    with (out / "comparison.csv").open("w", newline="", encoding="utf-8-sig") as stream:
         writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
         writer.writeheader()
         for values in rows.values():
@@ -176,7 +208,7 @@ def summarize(out, labels, hashes, methods):
     for values in rows.values():
         for row in values:
             lines.append(f"| {row['method']} | {row['video']} | {row['expected']} | {row['predicted'] or 'ERROR'} | {row['correct']} |")
-    (out / "REPORT.md").write_text("\n".join(lines) + "\n")
+    (out / "REPORT.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\nMethod                       done  accuracy  precision recall  F1     timelineF1 errors", flush=True)
     for method, m in metrics.items():
         print(f"{method:28s} {m['completed']:2d}/{len(labels):2d} {percent(m['accuracy']):>8s} "
@@ -187,22 +219,23 @@ def summarize(out, labels, hashes, methods):
 def main():
     args = arguments()
     if args.score_only:
-        manifest = json.loads((args.out / "manifest.json").read_text())
+        manifest = read_json(args.out / "manifest.json")
         frozen = args.out / "snapshot/backend"
         sys.path[:0] = [str(frozen / "src"), str(frozen / "eval")]
         cfg = manifest["config"]
-        labels = json.loads((frozen / "eval/expected_api_verdicts.json").read_text())
+        labels = read_json(frozen / "eval/expected_api_verdicts.json")
         labels = {k:v for k,v in labels.items() if k in cfg["video_sha256"]}
         summarize(args.out, labels, cfg["video_sha256"], cfg["methods"])
         return
-    labels = json.loads(args.labels.read_text())
+    labels = read_json(args.labels)
     if not labels or any(v not in {"violation", "no_violation"} for v in labels.values()):
         raise ValueError("Expected a nonempty filename-to-verdict label mapping")
     if args.videos:
-        requested = {Path(v).stem for v in args.videos}
-        labels = {k:v for k,v in labels.items() if Path(k).stem in requested}
-        if {Path(k).stem for k in labels} != requested:
+        requested = {video_key(v) for v in args.videos}
+        labels = {k:v for k,v in labels.items() if video_key(k) in requested}
+        if {video_key(k) for k in labels} != requested:
             raise ValueError("Unknown video stem requested")
+    video_paths = resolve_videos(args.videos_dir, labels)
     args.out.mkdir(parents=True, exist_ok=True)
     run_lock = (args.out / ".run.lock").open("a+")
     if sys.platform != "win32":
@@ -211,8 +244,10 @@ def main():
             fcntl.flock(run_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as error:
             raise RuntimeError("Another benchmark is using this --out directory") from error
-    frozen = prepare(args, labels)
+    frozen = prepare(args, labels, video_paths)
     sys.path[:0] = [str(frozen / "src"), str(frozen / "eval"), str(frozen / "eval/tuning")]
+    import common
+    common.VIDEOS = args.videos_dir
     from backend.followup.pipeline import refine
     from backend.perception.pipeline import PerceptionReconstructor
     from backend.reconstruction.graph import build_timeline
@@ -231,7 +266,7 @@ def main():
     from backend.reconstruction.vlm import MODEL_IDS
     config = base_config("regions+regions2") if args.baseline == "cached" else load_config(MODEL_IDS.get(args.model, args.model))
     if args.baseline == "cached" and (args.out / "tuning.json").exists():
-        state = json.loads((args.out / "tuning.json").read_text())["state"]
+        state = read_json(args.out / "tuning.json")["state"]
         for knob in knobs():
             knob.apply(config, state.get(knob.name, knob.start))
     captions_config = CaptionConfig(args.window_seconds, args.stride_seconds, args.window_frames,
@@ -239,7 +274,7 @@ def main():
     write(args.out / "protocol.json", {"baseline_config": asdict(config), "caption_config": asdict(captions_config),
                                      "methods": args.methods, "positive_verdict_rechecks": True,
                                      "timeline_unknowns": "count as errors", "labels_used_by_analyzer": False})
-    annotations = json.loads((frozen / "eval/reconstruction_annotations.json").read_text())
+    annotations = read_json(frozen / "eval/reconstruction_annotations.json")
     from semantic_benchmark_metrics import score_timeline
     model = None
     logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -252,10 +287,10 @@ def main():
                             structured_tokens=args.structured_tokens, local_files_only=args.offline)
             print(f"Loaded {model.name} on {model.device}", flush=True)
         return model
-    hashes = json.loads((args.out / "manifest.json").read_text())["config"]["video_sha256"]
+    hashes = read_json(args.out / "manifest.json")["config"]["video_sha256"]
     for number, (name, target) in enumerate(labels.items(), 1):
         pending = [m for m in args.methods if not (args.out / Path(name).stem / m / "result.json").exists()
-                   or json.loads((args.out / Path(name).stem / m / "result.json").read_text())["status"] != "done"]
+                   or read_json(args.out / Path(name).stem / m / "result.json")["status"] != "done"]
         if not pending:
             print(f"Skip {number}/{len(labels)} {name}: all methods complete", flush=True)
             continue
@@ -264,12 +299,13 @@ def main():
         setup_started = time.perf_counter()
         try:
             baseline = (build(Experiment("baseline", "base-full", "regions+regions2", config), Path(name).stem)
-                        if args.baseline == "cached" else PerceptionReconstructor(get_model(), config).run(args.videos_dir / name))
+                        if args.baseline == "cached" else PerceptionReconstructor(get_model(), config).run(video_paths[name]))
             if baseline is None:
                 raise ValueError("Missing baseline observations")
             if baseline.observer_model != MODEL_IDS.get(args.model, args.model):
                 raise ValueError("Cached baseline uses another model. Use --baseline fresh.")
             baseline_graph = build_timeline(baseline)
+            baseline_graph.video.id = Path(name).stem
         except Exception as error:
             for method in pending:
                 directory = args.out / Path(name).stem / method
@@ -287,7 +323,7 @@ def main():
             try:
                 graph = baseline_graph.model_copy(deep=True)
                 if method != "baseline" and video is None:
-                    video = decode(args.videos_dir / name, 2)
+                    video = decode(video_paths[name], 2)
                 if method in {"captions_only", "baseline_captions", "captions_followups"}:
                     if captions is None:
                         captions = describe_windows(get_model(), video, captions_config,
@@ -295,6 +331,7 @@ def main():
                         write(args.out / Path(name).stem / "captions.json", captions)
                     graph = caption_graph(video, captions, captions_config, get_model().name,
                                           baseline if method == "baseline_captions" else None)
+                    graph.video.id = Path(name).stem
                 if method in {"structured_followups", "plain_followups", "captions_followups"}:
                     observer = semantic = None
                     if method != "structured_followups":
@@ -320,7 +357,7 @@ def main():
             except Exception as error:
                 row["error"] = f"{type(error).__name__}: {error}"
                 directory.mkdir(parents=True, exist_ok=True)
-                (directory / "error.txt").write_text(traceback.format_exc())
+                (directory / "error.txt").write_text(traceback.format_exc(), encoding="utf-8")
                 print("    ERROR", row["error"], flush=True)
             finally:
                 calls = model.calls[call_start:] if model else []

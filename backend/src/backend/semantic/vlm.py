@@ -13,7 +13,7 @@ from backend.reconstruction.vlm import QuestionVLM, fit_tokens
 def atomic_json(path: Path, value) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(".tmp")
-    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     temporary.replace(path)
 
 
@@ -29,7 +29,7 @@ class TextVLM(QuestionVLM):
         key = hashlib.sha256(json.dumps([self.name, kind, payload], sort_keys=True).encode()).hexdigest()
         path = self.cache_dir / f"{key}.json"
         if path.exists():
-            saved = json.loads(path.read_text())
+            saved = json.loads(path.read_text(encoding="utf-8"))
             self.calls.append({"kind": kind, "cache_hit": True, "seconds": 0, "cache_key": key})
             return saved["answer"]
         began = time.perf_counter()

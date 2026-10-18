@@ -1,5 +1,6 @@
 import sys
 import unittest
+import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -23,6 +24,7 @@ from backend.steg import EvidenceFrame
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "eval"))
 from semantic_benchmark_metrics import aggregate, score_timeline
+from benchmark_semantics import read_json, resolve_videos, write
 from test_perception import timeline
 
 
@@ -136,6 +138,38 @@ class MetricTests(unittest.TestCase):
         self.assertEqual(counts["tn"], 0)
         self.assertEqual(counts["unknown"], counts["samples"])
         self.assertEqual(counts["fp"], counts["samples"])
+
+
+class WindowsInputTests(unittest.TestCase):
+    def test_utf8_label_names_ignore_windows_locale_and_accept_bom(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "labels.json"
+            path.write_bytes(b'\xef\xbb\xbf' + '{"Х-3.mov": "no_violation"}'.encode("utf-8"))
+            original = Path.read_text
+            def windows_read(instance, *args, **kwargs):
+                kwargs.setdefault("encoding", "cp1251")
+                return original(instance, *args, **kwargs)
+            with patch.object(Path, "read_text", windows_read):
+                self.assertEqual(read_json(path), {"Х-3.mov": "no_violation"})
+            output = Path(directory) / "output.json"
+            write(output, {"Х-3.mov": "Сейф"})
+            self.assertIn("Сейф", output.read_bytes().decode("utf-8"))
+
+    def test_latin_prefix_and_uppercase_extension_resolve_to_canonical_labels(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "X-3.MOV"
+            path.touch()
+            self.assertEqual(resolve_videos(Path(directory), {"Х-3.mov": "no_violation"}), {"Х-3.mov": path})
+
+    def test_missing_or_ambiguous_inputs_fail_without_skipping_cases(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaisesRegex(ValueError, "Missing 1 labelled videos"):
+                resolve_videos(root, {"Х-3.mov": "no_violation"})
+            (root / "X-3.mov").touch()
+            (root / "x_03.mp4").touch()
+            with self.assertRaisesRegex(ValueError, "Ambiguous video"):
+                resolve_videos(root, {"Х-3.mov": "no_violation"})
 
 
 if __name__ == "__main__":

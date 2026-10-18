@@ -16,6 +16,10 @@ The default runs fresh perception on every video in `data/open/videos`, so it do
 the author's local inference caches or tuned 2B configuration. Video files must be present
 on the target machine. `--videos-dir /path/to/videos` selects their location. The default
 label file is `eval/expected_api_verdicts.json`. All 42 labelled files are evaluated.
+JSON labels and artifacts use UTF-8 explicitly on Windows. Latin `X` and Cyrillic `Х`
+filename prefixes are matched while retaining the canonical label names for scoring.
+Missing or ambiguous files are reported before model loading. Snapshot creation does not
+require symlinks or Windows administrator privileges.
 
 Six methods share the same initial observations and captions per video:
 

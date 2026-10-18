@@ -9,7 +9,7 @@ DEFAULT_REGISTRY = Path(__file__).with_name("cashdesk.yaml")
 
 
 def load_registry(path: Path = DEFAULT_REGISTRY) -> RuleRegistry:
-    return RuleRegistry.model_validate(yaml.safe_load(path.read_text()))
+    return RuleRegistry.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
 
 
 def version_key(version: str) -> tuple[tuple[int, int | str], ...]:
