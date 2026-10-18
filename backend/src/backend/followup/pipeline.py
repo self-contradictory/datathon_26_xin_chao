@@ -44,7 +44,7 @@ def refine(registry: RuleRegistry, graph: SparseTemporalEvidenceGraph, video: De
             logger.info("Video %s: semantic follow-up %s/%s started", video.path.stem, result.calls, max_calls)
             try:
                 result.graph = semantics.run(result.graph, candidates)
-            except ValueError as error:
+            except Exception as error:
                 result.semantic_errors.append(str(error))
                 logger.warning("Video %s: semantic follow-up failed: %s", video.path.stem, str(error).split("\n", 1)[0])
             logger.info("Video %s: semantic follow-up finished in %.1fs", video.path.stem, perf_counter() - started)
@@ -70,7 +70,7 @@ def refine(registry: RuleRegistry, graph: SparseTemporalEvidenceGraph, video: De
                 if post_merge is not None:
                     result.graph = post_merge(result.graph)
                 result.frame_images.update({frame.evidence.timestamp_sec: frame.jpeg for frame in frames})
-        except (ValueError, KeyError) as error:
+        except Exception as error:
             record.error = str(error)
             logger.warning("Video %s: visual follow-up failed: %s", video.path.stem, str(error).split("\n", 1)[0])
         logger.info("Video %s: visual follow-up finished in %.1fs", video.path.stem, perf_counter() - started)

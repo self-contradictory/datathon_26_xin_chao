@@ -27,3 +27,4 @@ class JobResponse(BaseModel):
     status: JobStatus
     verdict: Verdict | None = None
     violations: list[Violation] | None = None
+    error: str | None = None

@@ -88,7 +88,7 @@ def observe_cash_provenance(
                                       image_tokens=image_tokens, max_new_tokens=1024)
             for action in answer.actions:
                 _merge_action(result.graph, action, set(identifiers), start, end)
-        except (ValueError, KeyError) as error:
+        except Exception as error:
             detail = f"{start:.2f}-{end:.2f}s: {error}"
             result.errors.append(detail)
             logger.warning("Cash provenance scan failed: %s", detail)
