@@ -135,7 +135,7 @@ $env:MODEL_DEVICE = "cuda"
 $env:MODEL_QUANTIZATION = "4bit"
 $env:JOB_WORKERS = "1"
 $env:RULE_MODE = "shadow"
-$env:TEMPORAL_SCAN = "true"
+$env:TEMPORAL_SCAN = "false"   # the caption scan is slow on 4-bit 32B; "true" turns it on
 $env:API_KEYS = '{"windows-test":"xc_local-test-key"}'
 
 .\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
@@ -184,8 +184,9 @@ upload flow; `?demo` displays existing demo fixtures.
 
 Update this branch with `git pull --ff-only`, then restart the API using the
 backend command above. The API now includes the temporal cash-handling checks.
-Keep `RULE_MODE=shadow` to evaluate the candidate dataset rules and
-`TEMPORAL_SCAN=true` to enable those extra checks. The model stays loaded in
+Keep `RULE_MODE=shadow` to evaluate the candidate dataset rules. `TEMPORAL_SCAN=true` adds
+the plain-text caption scan; it is off by default because 4-bit 32B generates only a few tokens
+per second. Keep `JOB_WORKERS=1`: jobs share one GPU, so two workers make each job twice as slow. The model stays loaded in
 the API process; the batch client does not load another model.
 
 In a second PowerShell window, from the backend folder, test Х-46:

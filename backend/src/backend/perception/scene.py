@@ -89,22 +89,32 @@ def median_background(path: Path, samples: int = 15) -> np.ndarray:
     return np.median(np.stack(frames), axis=0).astype(np.uint8)
 
 
+# The answer starts with the opening of Qwen-VL's native box format, so the model writes the four
+# coordinates straight away. Unprompted, Qwen3-VL-32B described the scene first and ran out of tokens
+# before giving the safe, desk and door boxes (each of those fell back to FALLBACK), at ~20 s per object.
+PREFILL = '{"bbox_2d": ['
+
+
 @torch.inference_mode()
 def ground(model: QuestionVLM, image: np.ndarray, description: str, tokens: int = 512) -> Box | None:
-    if hasattr(model, "text"):
-        answer = model.text(f"Locate {description} in this image. Output its bbox_2d coordinates.",
-                            [image], image_tokens=tokens, max_new_tokens=48)
-        return parse_box(answer)
-    content = [{"type": "image"},
-               {"type": "text", "text": f"Locate {description} in this image. Output its bbox_2d coordinates."}]
+    prompt = f"Locate {description} in this image. Output its bbox_2d coordinates."
+    if not hasattr(model, "_processor"):
+        return parse_box(model.text(prompt, [image], image_tokens=tokens, max_new_tokens=48))
+    content = [{"type": "image"}, {"type": "text", "text": prompt}]
     text = model._processor.apply_chat_template([{"role": "user", "content": content}], add_generation_prompt=True)
     with model._lock:
-        inputs = model._image_inputs(fit_tokens(image, tokens), text)
+        inputs = model._image_inputs(fit_tokens(image, tokens), text + PREFILL)
         model._model.model.rope_deltas = None
-        output = model._model.generate(**inputs, max_new_tokens=48, do_sample=False)
-        model._model.model.rope_deltas = None
-    answer = model._processor.batch_decode(output[:, inputs["input_ids"].shape[1]:], skip_special_tokens=True)[0]
-    return parse_box(answer)
+        try:
+            output = model._model.generate(**inputs, max_new_tokens=24, do_sample=False)
+        finally:
+            model._model.model.rope_deltas = None
+    answer = PREFILL + model._processor.batch_decode(output[:, inputs["input_ids"].shape[1]:],
+                                                     skip_special_tokens=True)[0]
+    box = parse_box(answer)
+    if box is None:
+        logger.warning("Grounding %s failed; answer was %r", description, answer)
+    return box
 
 
 def parse_box(answer: str) -> Box | None:
@@ -112,7 +122,7 @@ def parse_box(answer: str) -> Box | None:
     if not match:
         return None
     x0, y0, x1, y1 = (min(1.0, max(0.0, float(v) / 1000)) for v in match.groups())
-    if x1 - x0 < 0.01 or y1 - y0 < 0.01:
+    if x1 - x0 < 0.005 or y1 - y0 < 0.005:  # door handles are about 0.01 of the frame
         return None
     return x0, y0, x1, y1
 

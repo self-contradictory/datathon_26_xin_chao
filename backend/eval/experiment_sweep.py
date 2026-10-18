@@ -73,7 +73,8 @@ from backend.reconstruction.decode import Observation  # noqa: E402
 from backend.reconstruction.graph import ACTION_EVENTS, build_timeline  # noqa: E402
 from backend.reconstruction.pipeline import AttributeTrack, Reconstruction, decode_tracks  # noqa: E402
 from backend.reconstruction.probes import PERCEPTION_PROBES, PROBES, SCENE_CONTEXT  # noqa: E402
-from backend.reconstruction.temporal import observe_cash_provenance  # noqa: E402
+from backend.semantic.captions import CaptionConfig, caption_graph, describe_windows  # noqa: E402
+from backend.semantic.vlm import TextVLM  # noqa: E402
 from backend.reconstruction.video import DecodedVideo, decode  # noqa: E402
 from backend.reconstruction.vlm import MODEL_IDS, QuestionVLM, fit_tokens  # noqa: E402
 from backend.rules.engine import evaluate  # noqa: E402
@@ -179,8 +180,8 @@ REGION_Q = tuple(
 )
 REGION_EXTRA_Q = tuple(
     Question(qid, text, key, sign, True, region, score_as) for region, qid, text, key, sign, score_as in (
-        ("desk", "stamps_on_desk~stamp", "Is a rubber stamp, a stamp pad or a seal lying on the desk?",
-         "stamps_on_desk", 1, None),
+        ("desk", "stamps_on_desk~any", "Are any small objects left on the desktop besides the telephone, "
+         "the laptop and the counting machine?", "stamps_on_desk", 1, None),
         ("desk", "cash_on_desk!", "Is the desk free of banknotes?", "cash_on_desk", -1, None),
         ("desk", "phone_on_desk", "Is a mobile phone lying on the desk?", None, 1, None),
         ("desk_hands", "cash_from_customer~hands", "Is the customer handing banknotes to the cashier?",
@@ -275,6 +276,9 @@ VIEWS = {view.name: view for view in (
 )}
 CPU_PHASES = ("meta", "motion")
 GPU_PHASES = ("pose", "scene", *VIEWS)
+# Skipped by default to save GPU time: on the first 32B run (Х-3, Х-15) full448 and clip_full were within
+# a few AUC points of full256 and the hand crops, and full128 was worse.
+LOW_VALUE_VIEWS = ("full448", "clip_full", "full128")
 
 
 # ------------------------------------------------------------------------------------------------ helpers
@@ -462,52 +466,6 @@ def probe_images(vlm: QuestionVLM, images: list[np.ndarray], captions: list[str]
             result.extend((yes / (yes + no)).tolist())
         vlm._model.model.rope_deltas = None
     return result
-
-
-class TimedModel:
-    """QuestionVLM.structured with a generation time and token limit, recording every call's outcome."""
-
-    def __init__(self, vlm: QuestionVLM, seconds: float, max_tokens: int) -> None:
-        self.vlm, self.seconds, self.max_tokens = vlm, seconds, max_tokens
-        self.name = vlm.name
-        self.calls: list[dict] = []
-
-    @torch.inference_mode()
-    def structured(self, prompt, schema, images=None, image_tokens=256, max_new_tokens=1024):
-        vlm = self.vlm
-        content = [{"type": "image"} for _ in images or []]
-        content.append({"type": "text", "text": prompt + "\nReturn only a JSON object matching this schema:\n"
-                        + json.dumps(schema.model_json_schema())})
-        text = vlm._processor.apply_chat_template([{"role": "user", "content": content}], add_generation_prompt=True)
-        record = {"schema": schema.__name__, "images": len(images or []), "ok": False}
-        started = perf_counter()
-        try:
-            with vlm._lock:
-                inputs = vlm._processor(
-                    text=[text], images=[fit_tokens(image, image_tokens) for image in images] if images else None,
-                    return_tensors="pt", images_kwargs={"size": {"shortest_edge": 1024, "longest_edge": 1 << 26}},
-                ).to(vlm.device)
-                vlm._model.model.rope_deltas = None
-                try:
-                    output = vlm._model.generate(**inputs, max_new_tokens=min(max_new_tokens, self.max_tokens),
-                                                 max_time=self.seconds, do_sample=False)
-                finally:
-                    vlm._model.model.rope_deltas = None
-                generated = output[:, inputs["input_ids"].shape[1]:]
-                answer = vlm._processor.batch_decode(generated, skip_special_tokens=True)[0].strip()
-            record.update(prompt_tokens=int(inputs["input_ids"].shape[1]), output_tokens=int(generated.shape[1]))
-            if answer.startswith("```"):
-                answer = answer.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
-            record["raw"] = answer[:3000]
-            result = schema.model_validate_json(answer)
-            record["ok"] = True
-            return result
-        except Exception as error:
-            record["error"] = f"{type(error).__name__}: {str(error)[:400]}"
-            raise
-        finally:
-            record["seconds"] = round(perf_counter() - started, 2)
-            self.calls.append(record)
 
 
 # ---------------------------------------------------------------------------------------------- the lab
@@ -1061,7 +1019,7 @@ class Lab:
             graph = build_timeline(recon)
         report = evaluate(REGISTRY, graph, "shadow")
         findings = finding_dicts(reportable(report, STRICT if approach.policy == "strict" else SHADOW))
-        return {"graph": graph, "fused": fused, "findings": findings}
+        return {"graph": graph, "fused": fused, "findings": findings, "recon": recon}
 
     def covers(self, approach, data: Data) -> bool:
         if any(view not in data.views for view in approach.views()):
@@ -1182,19 +1140,19 @@ def approaches() -> list[Approach]:
                  calibrate=False, exact_api=True),
         Approach("calibrated", "api_default + label-free Otsu calibration of every question", "A"),
         Approach("calib_2b_offsets", "calibrated + the fusion offsets tuned for 2B", "A", offsets=TWO_B_OFFSETS),
-        Approach("no_cv", "calibrated without pose/motion (VLM only)", "B", cv=False),
-        Approach("no_regions", "calibrated without region crops (full frame + pose/motion)", "B", region_views=()),
+        Approach("no_cv", "base without pose/motion (VLM only)", "B", cv=False),
+        Approach("no_regions", "base without region crops (full frame + pose/motion)", "B", region_views=()),
         Approach("full256_only", "full frame at 256 tokens alone", "B", region_views=(), cv=False),
         Approach("full128_only", "full frame at 128 tokens alone", "B", base_views=("full128",), region_views=(), cv=False),
         Approach("full448_only", "full frame at 448 tokens alone", "B", base_views=("full448",), region_views=(), cv=False),
         Approach("active320_only", "active-area crop alone", "B", base_views=("active320",), region_views=(), cv=False),
-        Approach("base_full448", "calibrated, full-frame source at 448 tokens", base_views=("full448",)),
-        Approach("base_active320", "calibrated, full-frame source = active-area crop", base_views=("active320",)),
-        Approach("base_ensemble", "calibrated, full-frame source = mean(full256, full448, active320)",
+        Approach("base_full448", "full-frame source at 448 tokens", base_views=("full448",)),
+        Approach("base_active320", "full-frame source = active-area crop", base_views=("active320",)),
+        Approach("base_ensemble", "full-frame source = mean(full256, full448, active320)",
                  base_views=("full256", "full448", "active320")),
-        Approach("paraphrases", "calibrated + extra full-frame questions averaged in", extras=("full256",)),
-        Approach("negations", "calibrated + negated questions averaged in", contrast=("full256", "regions")),
-        Approach("region_extras", "calibrated + extra crop questions (cash direction, typing, stamps)",
+        Approach("paraphrases", "+ extra full-frame questions averaged in", extras=("full256",)),
+        Approach("negations", "+ negated questions averaged in", contrast=("full256", "regions")),
+        Approach("region_extras", "+ extra crop questions (cash direction, typing, stamps)",
                  extras=("regions",), weights=NEW_WEIGHTS),
         Approach("clip_hands_mean", "hand actions = mean(hand crop, 3-frame hand clip)",
                  pool=pool(HAND_KEYS, ("regions", "clip_hands")), weights=NEW_WEIGHTS),
@@ -1723,10 +1681,9 @@ def timeline_file(lab: Lab, approach: Approach, data: Data, judged: dict, row: d
             lines.append(f"  Q {question['rule_id']} {question['window']['start_sec']:.1f}-{question['window']['end_sec']:.1f}s: "
                          f"{question['reason']}")
             lines.append(f"    -> {answer['status'] + ': ' + answer['explanation'] if answer else 'ERROR ' + str(check.get('error'))}")
-        for event in refined.get("temporal", {}).get("events", []):
-            lines.append(f"  cash provenance: {event['action']} {event['time']['start_sec']:.1f}-{event['time']['end_sec']:.1f}s "
-                         f"{event['inference_status']}: {event.get('note', '')}")
-        for name in ("findings_temporal", "findings_followups"):
+        for caption in refined.get("captions", []):
+            lines.append(f"  caption {json.dumps(caption, ensure_ascii=False)[:300]}")
+        for name in ("findings_captions", "findings_followups"):
             if name in refined:
                 lines.append(f"  {name}: {', '.join(sorted({f['rule_id'] for f in refined[name]})) or 'none'}")
     return "\n".join(lines) + "\n"
@@ -1766,17 +1723,20 @@ def view_costs(lab: Lab) -> dict[str, float]:
 
 
 def refine_phase(lab: Lab, approach: Approach) -> None:
+    """The API's optional GPU steps on the best approach, as analyzers.questions.QuestionAnalyzer:
+    the plain-text caption scan (TEMPORAL_SCAN) and the plain-text follow-ups (FOLLOWUP_MAX_CALLS)."""
     args = lab.args
     folder = lab.cache / "refine" / approach.name
     todo = [data for data in lab.data.values() if not (folder / f"{data.item.key}.json").exists()
             and lab.covers(approach, data)]
     if not todo:
         return
-    model = TimedModel(lab.vlm(), args.call_seconds, args.structured_tokens)
+    model = TextVLM.wrap(lab.vlm(), lab.cache / "model_calls", args.call_seconds)
+    config = CaptionConfig()
     total = sum(d.video.duration for d in todo)
     spent = done = 0.0
-    print(f"\n[refine] {approach.name}: cash provenance scan + up to {args.followup_calls} JSON follow-ups, "
-          f"{len(todo)} videos", flush=True)
+    print(f"\n[refine] {approach.name}: {'caption scan + ' if args.captions else ''}up to {args.followup_calls} "
+          f"plain-text follow-ups, {len(todo)} videos", flush=True)
     for index, data in enumerate(todo, start=1):
         if time.time() > lab.deadline:
             print("[refine] GPU time budget reached", flush=True)
@@ -1787,20 +1747,21 @@ def refine_phase(lab: Lab, approach: Approach) -> None:
             video = decode(data.item.path, GRID_FPS)
             if len(video.times) != len(data.grid):
                 raise ValueError("decoded frame times differ from the cached grid")
-            graph = lab.judge(approach, data, video)["graph"]
-            try:
-                temporal = observe_cash_provenance(graph, video, model)
-                graph = temporal.graph
-                record["temporal"] = {"calls": temporal.calls, "errors": temporal.errors,
-                                      "events": [e.model_dump(mode="json") for e in graph.events
-                                                 if e.id.startswith("cash_temporal")]}
-            except Exception as error:
-                record["temporal"] = {"failed": f"{type(error).__name__}: {error}"}
-            record["findings_temporal"] = finding_dicts(reportable(evaluate(REGISTRY, graph, "shadow"), SHADOW))
+            judged = lab.judge(approach, data, video)
+            graph = judged["graph"]
+            if args.captions:
+                try:
+                    captions = describe_windows(model, video, config)
+                    graph = caption_graph(video, captions, config, model.name, baseline=judged["recon"])
+                    record["captions"] = captions
+                    record["findings_captions"] = finding_dicts(reportable(evaluate(REGISTRY, graph, "shadow"), SHADOW))
+                except Exception as error:
+                    record["captions_failed"] = f"{type(error).__name__}: {error}"
+                    logger.error("captions %s failed\n%s", data.item.key, traceback.format_exc())
             if args.followup_calls > 0:
-                result = refine(REGISTRY, graph, video, model, "shadow", args.followup_calls, args.followup_frames,
-                                verify_positive=True)
-                record["followups"] = {"calls": result.calls, "semantic_errors": result.semantic_errors,
+                result = refine(REGISTRY, graph, video, model, "shadow", args.followup_calls, args.followup_frames)
+                record["followups"] = {"calls": result.calls, "semantic_calls": result.semantic_calls,
+                                       "semantic_errors": result.semantic_errors,
                                        "checks": [check.model_dump(mode="json") for check in result.checks]}
                 record["findings_followups"] = finding_dicts(reportable(result.report, SHADOW))
         except KeyboardInterrupt:
@@ -1815,9 +1776,10 @@ def refine_phase(lab: Lab, approach: Approach) -> None:
         write_json(folder / f"{data.item.key}.json", record)
         spent += record["seconds"]
         done += data.video.duration
-        ok = sum(c["ok"] for c in record["model_calls"])
+        errors = sum("error" in c for c in record["model_calls"])
         print(f"[refine] {index}/{len(todo)} {data.item.key:6s} {record['seconds']:6.1f}s, "
-              f"{len(record['model_calls'])} JSON calls ({ok} valid){' FAILED ' + record['failed'] if 'failed' in record else ''}"
+              f"{len(record['model_calls'])} model calls ({errors} errors)"
+              f"{' FAILED ' + record['failed'] if 'failed' in record else ''}"
               f", ETA {clock(spent / max(done, 1e-6) * (total - done))}", flush=True)
 
 
@@ -1826,7 +1788,10 @@ def refined_results(lab: Lab, approach: Approach, base_rows: dict[str, dict]) ->
     records = {data.item.key: read_json(folder / f"{data.item.key}.json") for data in lab.data.values()
                if (folder / f"{data.item.key}.json").exists()}
     results = []
-    for stage, label in (("findings_temporal", "+cash_scan"), ("findings_followups", "+cash_scan+followups")):
+    captions = any("findings_captions" in record for record in records.values())
+    stages = (("findings_captions", "+captions"),
+              ("findings_followups", "+captions+followups" if captions else "+followups"))
+    for stage, label in stages:
         rows, base = [], []
         for key, record in records.items():
             if stage in record and key in base_rows:
@@ -1838,13 +1803,17 @@ def refined_results(lab: Lab, approach: Approach, base_rows: dict[str, dict]) ->
                             "rows": rows, "metrics": verdict_metrics(rows), "baseline": verdict_metrics(base),
                             "timeline": timeline_summary([]), "kept": {}, "coverage": len(rows)})
     calls = [call for record in records.values() for call in record.get("model_calls", [])]
-    by_schema: dict[str, list] = {}
+    by_kind: dict[str, list] = {}
     for call in calls:
-        by_schema.setdefault(call["schema"], []).append(call)
-    summary = f"JSON calls: {len(calls)} total; " + "; ".join(
-        f"{name} {sum(c['ok'] for c in group)}/{len(group)} valid, {np.mean([c['seconds'] for c in group]):.1f}s avg"
-        for name, group in by_schema.items())
-    failed = [key for key, record in records.items() if "failed" in record]
+        by_kind.setdefault(call.get("kind", "?"), []).append(call)
+    summary = f"model calls: {len(calls)} total; " + "; ".join(
+        f"{name} {len(group)} calls, {sum('error' in c for c in group)} errors, "
+        f"{np.mean([c.get('seconds', 0) for c in group]):.1f}s avg" for name, group in by_kind.items())
+    seconds = [record["seconds"] for record in records.values()]
+    duration = sum(lab.data[key].video.duration for key in records)
+    if seconds and duration:
+        summary += f"; {sum(seconds) / duration:.2f} GPU s per video second"
+    failed = [key for key, record in records.items() if "failed" in record or "captions_failed" in record]
     if failed:
         summary += f"; failed videos: {', '.join(failed)}"
     return results, summary
@@ -1896,17 +1865,21 @@ def analyse(lab: Lab) -> None:
     say("cost: GPU seconds per video second of the views it uses.")
     results = []
     listed = approaches()
-    for approach in listed:
-        started = perf_counter()
-        result = lab.run(approach, keep=approach.name in ("api_default", "calibrated"))
-        result["seconds"] = perf_counter() - started
-        results.append(result)
+    for approach in listed[:3]:
+        results.append(lab.run(approach, keep=approach.name in ("api_default", "calibrated")))
+    # B and C build on whichever fusion did better in A: on the first 32B run calibration added a false alarm.
+    calibrate = results[1]["metrics"]["correct"] > results[0]["metrics"]["correct"]
+    for approach in listed[3:]:
+        approach.calibrate = calibrate
+        results.append(lab.run(approach))
     kept = {r["approach"].name: r["kept"] for r in results if r["kept"]}
     quality = probe_quality(lab, kept)
-    oracle = lab.run(best_per_key(lab, quality))
-    results.append(oracle)
-    for group, title in (("A", "A. API structure"), ("B", "B. single sources and ablations"),
-                         ("C", "C. new techniques on top of 'calibrated'")):
+    oracle = best_per_key(lab, quality)
+    oracle.calibrate = calibrate
+    results.append(lab.run(oracle))
+    base = "calibrated" if calibrate else "uncalibrated (api_default)"
+    for group, title in (("A", "A. API structure"), ("B", f"B. single sources and ablations, {base} scores"),
+                         ("C", f"C. new techniques on top of {base} fusion")):
         say(f"\n{title}")
         approach_table(say, [r for r in results if r["approach"].group == group and r["coverage"]], costs)
     skipped = [r["approach"].name for r in results if not r["coverage"]]
@@ -2072,14 +2045,18 @@ def arguments():
     parser.add_argument("--videos", nargs="*", help="only these videos, e.g. Х-15 X-1")
     parser.add_argument("--quick", action="store_true", help=f"smoke test on {', '.join(QUICK)}")
     parser.add_argument("--out", type=Path, help="output folder (default var/experiments/<model>)")
-    parser.add_argument("--skip", nargs="*", default=[], help=f"phases to skip: {', '.join(GPU_PHASES)}")
+    parser.add_argument("--skip", nargs="*", help=f"phases to skip: {', '.join(GPU_PHASES)}")
     parser.add_argument("--hours", type=float, default=10.0, help="GPU time budget; the rest is reported as missing")
     parser.add_argument("--report-only", action="store_true", help="score the caches without loading a model")
     parser.add_argument("--probe-batch", type=int, default=24, help="questions per forward pass")
-    parser.add_argument("--followup-calls", type=int, default=4, help="JSON follow-ups per video (-1: no refinement)")
-    parser.add_argument("--followup-frames", type=int, default=8)
-    parser.add_argument("--call-seconds", type=float, default=60.0, help="generation time limit per JSON call")
-    parser.add_argument("--structured-tokens", type=int, default=768, help="output token limit per JSON call")
+    parser.add_argument("--followup-calls", type=int, default=2,
+                        help="plain-text follow-ups per video, as FOLLOWUP_MAX_CALLS (-1: skip the refinement stage)")
+    parser.add_argument("--followup-frames", type=int, default=2)
+    parser.add_argument("--call-seconds", type=float, default=20.0, help="generation time limit per call")
+    parser.add_argument("--no-captions", dest="captions", action="store_false",
+                        help="skip the caption scan (TEMPORAL_SCAN) in the refinement stage")
+    parser.add_argument("--all-views", action="store_true",
+                        help=f"also run {', '.join(LOW_VALUE_VIEWS)} (skipped by default to save time)")
     parser.add_argument("--tune-minutes", type=float, default=30.0, help="CPU minutes for tuning (0 = skip)")
     parser.add_argument("--tune-rounds", type=int, default=2)
     parser.add_argument("--folds", type=int, default=7)
@@ -2099,7 +2076,10 @@ def arguments():
         tag = MODEL_IDS.get(args.model, args.model).split("/")[-1]
         if args.model_path and not re.fullmatch(r"[0-9a-f]{40}", args.model_path.name):
             tag = args.model_path.name  # a Hugging Face snapshots/<hash> folder keeps the alias name
-        args.out = BACKEND / "var" / "experiments" / re.sub(r"[^A-Za-z0-9_.-]", "_", f"{tag}-{args.quantization}")
+        # v2: scene grounding and the desk stamps question changed, so v1 crops and answers are stale.
+        args.out = BACKEND / "var" / "experiments" / re.sub(r"[^A-Za-z0-9_.-]", "_", f"{tag}-{args.quantization}-v2")
+    if args.skip is None:
+        args.skip = [] if args.all_views else list(LOW_VALUE_VIEWS)
     unknown = set(args.skip) - set(GPU_PHASES)
     if unknown:
         parser.error(f"unknown phases in --skip: {', '.join(sorted(unknown))}")

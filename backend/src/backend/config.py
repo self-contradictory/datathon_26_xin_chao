@@ -27,7 +27,10 @@ class Settings(BaseSettings):
     FOLLOWUP_MAX_CALLS: int = 2
     FOLLOWUP_MAX_FRAMES: int = 2
     FOLLOWUP_CALL_SECONDS: float = 20.0
-    TEMPORAL_SCAN: bool = True
+    # Off by default: the caption scan generates up to 96 tokens per 8 s window every 4 s, and 4-bit
+    # Qwen3-VL-32B generated only ~2-5 tokens/s on the A6000, so the scan is estimated to take about as
+    # long as all perception probes together. Its accuracy benefit is unmeasured; TEMPORAL_SCAN=true restores it.
+    TEMPORAL_SCAN: bool = False
     # Fuse zoomed region probes, body keypoints and local patch motion into the timeline.
     PERCEPTION: bool = True
     POSE_DEVICE: str | None = None

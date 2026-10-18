@@ -139,7 +139,9 @@ class QuestionVLM:
         questions: Sequence[str],
         context: str,
         tokens: int,
-        max_batch: int = 8,
+        # All of a frame's questions in one pass: every extra pass re-reads the 4-bit weights and copies
+        # the image's key/value cache. 32 questions over a 256-token image need about 3 GB on 32B.
+        max_batch: int = 32,
     ) -> list[float]:
         with self._lock:
             inputs = self._image_inputs(fit_tokens(image, tokens), self._prefix_text(context))

@@ -22,10 +22,10 @@ REGION_PROBES: dict[str, tuple[RegionProbe, ...]] = {
     "desk": (
         RegionProbe("cash_on_desk", "Are banknotes or a stack of money lying on the desk?"),
         RegionProbe("bag_on_desk", "Is there a bag or package lying on the desk?"),
-        # Asked generically: the 2B model does not recognise a stamp pad, but it does notice that
-        # something is left on the desktop. Feeds the stamps/valuables-left track.
-        RegionProbe("stamps_on_desk", "Are any small objects left on the desktop besides the telephone, "
-                                      "the laptop and the counting machine?"),
+        # Asked specifically. The generic "any small objects left on the desktop" wording suited 2B,
+        # but Qwen3-VL-32B answered yes to it on 48% of frames of the clean video Х-3 and on 99% of
+        # Х-15 (the bag), which raised false CD08 alarms; this wording stayed below 0.05 on both.
+        RegionProbe("stamps_on_desk", "Is a rubber stamp, a stamp pad or a seal lying on the desk?"),
         RegionProbe("food_on_desk", "Is there food or a drink on the desk?"),
         RegionProbe("personal_items", "Is a handbag, purse, wallet, coat or jacket lying on the desk?"),
     ),
