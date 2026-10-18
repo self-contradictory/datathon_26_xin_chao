@@ -11,6 +11,13 @@ async function proxy(req: Request) {
   const url = new URL(req.url)
   const target = new URL(url.pathname + url.search, apiUrl)
   const headers = new Headers(req.headers)
+  headers.delete('host')
+  if (
+    target.hostname.endsWith('.ngrok-free.dev') ||
+    target.hostname.endsWith('.ngrok-free.app')
+  ) {
+    headers.set('ngrok-skip-browser-warning', '1')
+  }
   if (apiKey && !headers.has('X-API-Key')) headers.set('X-API-Key', apiKey)
   try {
     return await fetch(target, {
