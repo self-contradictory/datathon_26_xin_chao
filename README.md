@@ -1,10 +1,6 @@
-<p align="center">
-  <img src="assets/logo.png" alt="Lashyn logo" width="240" />
-</p>
+<h1><img src="assets/logo.png" alt="Lashyn logo" width="150" align="middle" /> Lashyn</h1>
 
-<h1 align="center">Lashyn</h1>
-
-<p align="center">Lashyn checks cash-desk surveillance videos against cash-operation rules and reports each violation with a timecode and evidence frames.</p>
+<p>Lashyn checks cash-desk surveillance videos against cash-operation rules and reports each violation with a timecode and evidence frames.</p>
 
 <p align="center">
   <img src="assets/architecture.png" alt="Lashyn architecture" />
@@ -57,9 +53,3 @@ cd backend && API_KEYS='{"dev":"xc_dev"}' uv run --locked backend
 ```sh
 cd frontend && bun install --frozen-lockfile && API_KEY=xc_dev bun run dev
 ```
-
-## Docs
-
-- [Windows + RTX A6000](WINDOWS_A6000.md)
-- [Dataset rules and API scoring](backend/eval/DATASET_RULES.md)
-- [Vercel deploy](frontend/DEPLOY_VERCEL.md)

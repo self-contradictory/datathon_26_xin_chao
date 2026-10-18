@@ -221,3 +221,8 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 backend/var/
+
+# Local-only files
+.editorconfig
+backend/run_semantic_benchmark.sh
+tests/
