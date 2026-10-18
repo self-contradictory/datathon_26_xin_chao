@@ -29,6 +29,11 @@ ACTIONS = {
     "id_document": "someone holds an ID card or passport",
 }
 
+TEMPORAL_ACTIONS = {
+    "rejected_banknotes_recombined": "visibly machine-rejected notes are recombined with accepted notes without a visible check; unclear rejection or inspection stays unknown",
+    "different_customer_cash_mixed": "notes visibly originating from different customers or operations are combined; two piles alone do not establish different origins",
+}
+
 
 def _listing(terms: dict[str, str]) -> str:
     return "\n".join(f"- {name}: {meaning}" for name, meaning in terms.items())
@@ -40,7 +45,7 @@ def _clip(start: float, end: float) -> str:
 
 
 ACTION_INSTRUCTIONS = (
-    f"Actions:\n{_listing(ACTIONS)}\n"
+    f"Actions:\n{_listing(ACTIONS | TEMPORAL_ACTIONS)}\n"
     "List every action with its start_sec, end_sec, actor and recipient, in seconds from the start "
     "of the recording. Use a listed name when it fits; otherwise name the action with a short "
     "snake_case phrase, such as customer_signs_document."

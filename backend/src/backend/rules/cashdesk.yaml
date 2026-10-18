@@ -116,7 +116,7 @@ rules:
       knowledge: bounded_by_observations
     relation: overlaps
   evidence_policy: *policy
-  dataset_examples: [Х-4, Х-26, Х-46]
+  dataset_examples: [Х-4, Х-26]
   implementation_note: The room counts as unattended only while it is seen empty.
 
 - rule_id: CD04-BAG-ON-UNATTENDED-DESK
@@ -231,7 +231,7 @@ rules:
     relation: overlaps
   evidence_policy: *policy
   dataset_examples: [Х-22]
-  implementation_note: ''
+  implementation_note: Dataset example Х-46. Evaluate eating and exposed banknotes independently; food alone does not trigger this rule. This is a cash-security candidate, not a general legal ban on eating.
 
 - rule_id: CD07-COMPUTER-ON-UNATTENDED
   version: 0.1.0
@@ -641,3 +641,89 @@ rules:
   evidence_policy: *policy
   dataset_examples: [X-1]
   implementation_note: received_cash_counted turns true once the customer has handed banknotes in and the cashier has counted after that. Change and returned unfit banknotes look the same on video.
+
+- rule_id: CD18-REJECTED-BANKNOTES-RECOMBINED
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Machine-rejected banknotes recombined with the accepted stack without a visible check
+  category: rejected_banknotes_recombined
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 19 пп. 2); п. 57; п. 59 при подтверждении сомнительности
+    url: *url231
+    verified: false
+    note: По строке 21 листа «Наблюдения и нормы» предоставленного XLSM. Требует проверки обстоятельств. Отклонение счётной машиной не доказывает подделку; подтвердить проверку подлинности и платёжности и дальнейшее обращение с банкнотами.
+  scope:
+    kind: video
+  trigger:
+    kind: event
+    action: rejected_banknotes_recombined
+    participants:
+      cashier: $cashier
+  logic:
+    type: FORBIDDEN
+    when_all: []
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [Х-44]
+  implementation_note: Temporal VLM evidence must show machine rejection and recombination. A visible inspection makes this trigger inapplicable; ambiguous rejection, provenance, or inspection stays a hypothesis. This video-only candidate does not establish counterfeit currency or a legal conclusion.
+
+- rule_id: CD19-DIFFERENT-CUSTOMER-CASH-MIXED
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Banknotes from different customer operations mixed together
+  category: different_customer_cash_mixed
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 20; п. 19 пп. 2), 4); п. 21 при нескольких приходных документах
+    url: *url231
+    verified: false
+    note: По строке 23 листа «Наблюдения и нормы» предоставленного XLSM. Подтвердить происхождение сумм от разных клиентов или операций и момент смешения; обычное объединение пачек одного клиента не удовлетворяет правилу.
+  scope:
+    kind: video
+  trigger:
+    kind: event
+    action: different_customer_cash_mixed
+    participants:
+      cashier: $cashier
+  logic:
+    type: FORBIDDEN
+    when_all: []
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [Х-47]
+  implementation_note: A temporal check includes earlier cash-receipt evidence when available. Two piles alone do not establish different owners. If origins are occluded or unobserved, the event is a hypothesis rather than a confirmed trigger.
+
+- rule_id: CD20-CASH-OPERATION-NOT-RECORDED
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Accepted cash operation confirmed absent from the required accounting records
+  category: cash_operation_not_recorded
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 26; п. 74 при хранении после учёта
+    url: *url231
+    verified: false
+    note: По строке 6 листа «Наблюдения и нормы» предоставленного XLSM. Проверить чек, операционный журнал и применимый срок. Отсутствие набора текста на ноутбуке не доказывает отсутствие учёта.
+  scope:
+    kind: video
+  trigger:
+    kind: event
+    action: cash_operation_not_recorded
+    participants:
+      cashier: $cashier
+  logic:
+    type: FORBIDDEN
+    when_all: []
+    at: trigger_start
+  evidence_policy:
+    <<: *policy
+    required_verification: human_confirmed
+  dataset_examples: [Х-13]
+  implementation_note: External-evidence-only rule. The video observer must never infer this event from missing laptop use. An accounting-system or human-confirmed record is needed. The separately observable missing-count component remains CD13.

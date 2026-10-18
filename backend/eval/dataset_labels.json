@@ -1,0 +1,1091 @@
+{
+  "schema_version": "dataset-labels/1.0.0",
+  "purpose": "Scoring only; never supplied to the analyzer",
+  "sources": [
+    {
+      "file": "open_labels.xlsx",
+      "sha256": "eef7e410cf6a3ea613e56242343737f00942e3a41d24c4a9e2ef85fb0b73c650"
+    },
+    {
+      "file": "Нарушения_кассовых_операций_НПА_РК_2026_расширено.xlsm",
+      "sha256": "a28eb85186fe02028d57fb1686d147c889fef5ce8e98edf0c8d88886253f4a52"
+    }
+  ],
+  "counts": {
+    "videos": 42,
+    "violation": 22,
+    "no_violation": 20,
+    "dataset_observations": 22,
+    "background_npa_rows": 65
+  },
+  "notes": [
+    "These are the supplied dataset labels, not independently confirmed legal findings.",
+    "The XLSM expands 22 dataset observations; its other 65 NPA summaries include background requirements not observable in these videos.",
+    "For Х-44 the raw label says fake notes; the XLSM describes machine-rejected notes. Machine rejection is not proof of counterfeit currency.",
+    "The accounting component of Х-13 needs operational records; missing laptop use is not proof.",
+    "Expected labels, timestamps and dataset filenames are never used to choose observer windows or produce verdicts."
+  ],
+  "videos": [
+    {
+      "video": "X-1.mov",
+      "expected": "violation",
+      "timestamp_sec": 22,
+      "timestamp_text": "22 секунда",
+      "label_text": "работница отдала часть пересчитанных денег клиенту обратно",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 2,
+        "range": "A2:F2"
+      },
+      "aspects": [
+        {
+          "name": "counted_cash_returned",
+          "any_of_rules": [
+            "CD17-COUNTED-CASH-HANDED-BACK"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 2,
+        "observation": "работница отдала часть пересчитанных денег клиенту обратно",
+        "candidate_name": "Необоснованный возврат части наличных денег клиенту при проведении приходной кассовой операции",
+        "clause": "№ 231: п. 19 пп. 2), 4); п. 20",
+        "requirement": "При приёме кассир пересчитывает банкноты и сверяет фактически принятую сумму с приходным документом; пересчёт — при клиенте.",
+        "assessment": "Требует проверки обстоятельств",
+        "confirmation_needed": "Кассир обязан пересчитать принимаемые наличные деньги и сверить фактически принятую сумму с приходным кассовым документом.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "X-2.mov",
+      "expected": "violation",
+      "timestamp_sec": 10,
+      "timestamp_text": "10 секунда",
+      "label_text": "клиент не предоставил удостак",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 3,
+        "range": "A3:F3"
+      },
+      "aspects": [
+        {
+          "name": "identification",
+          "any_of_rules": [
+            "CD12-IDENTIFICATION-BEFORE-CASH-HANDLING"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 3,
+        "observation": "клиент не предоставил удостак",
+        "candidate_name": "Возможная идентификация клиента без документа или допустимых цифровых данных при кассовой операции",
+        "clause": "№ 231: п. 19 пп. 1) (приём); п. 31 пп. 1) (выдача); п. 7; Закон ПОД/ФТ: ст. 5 п. 1",
+        "requirement": "Кассир проводит визуальную идентификацию по удостоверяющему личность документу ИЛИ по данным сервиса цифровых документов.",
+        "assessment": "Условная применимость",
+        "confirmation_needed": "Отсутствие физического удостоверения само по себе не нарушение: проверить цифровой документ/способ идентификации и факт завершения операции.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-3.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 4,
+        "range": "A4:F4"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-4.mov",
+      "expected": "violation",
+      "timestamp_sec": 57,
+      "timestamp_text": "57 секунда",
+      "label_text": "деньги не убрали в сейф",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 5,
+        "range": "A5:F5"
+      },
+      "aspects": [
+        {
+          "name": "cash_storage",
+          "any_of_rules": [
+            "CD02-CASH-ON-DESK-AT-CUSTOMER-ARRIVAL",
+            "CD03-CASH-ON-UNATTENDED-DESK"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 4,
+        "observation": "деньги не убрали в сейф",
+        "candidate_name": "Хранение ранее принятых наличных на открытом рабочем месте, а не в запираемом устройстве",
+        "clause": "№ 231: п. 20 (рабочая касса); п. 74 (хранение в кладовой/сейфовой комнате)",
+        "requirement": "На столе допускаются деньги ТЕКУЩЕГО клиента; ранее принятые суммы хранятся в закрывающемся на ключ устройстве. Для хранения в кладовой/сейфовой комнате действует п. 74.",
+        "assessment": "Прямое требование при подтверждении",
+        "confirmation_needed": "Проверить: деньги уже приняты от предыдущего клиента или ещё пересчитывались? Закон допускает запираемый ящик/тележку, не только сейф.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-5.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 6,
+        "range": "A6:F6"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-8.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 7,
+        "range": "A7:F7"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-10.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 8,
+        "range": "A8:F8"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-11.mov",
+      "expected": "violation",
+      "timestamp_sec": 18,
+      "timestamp_text": "18 секунда",
+      "label_text": "компьютер оставлен включенный когда работник ушел",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 9,
+        "range": "A9:F9"
+      },
+      "aspects": [
+        {
+          "name": "unattended_computer",
+          "any_of_rules": [
+            "CD07-COMPUTER-ON-UNATTENDED"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 5,
+        "observation": "компьютер оставлен включенный когда работник ушел",
+        "candidate_name": "Возможное оставление незаблокированного пользовательского сеанса на рабочем месте",
+        "clause": "АРРФР № 53: п. 71 пп. 9); пп. 53, 106, 108",
+        "requirement": "При неактивности свыше 30 минут ИС автоматически завершает сеанс или блокирует рабочую станцию; конкретный порядок немедленной блокировки задают внутренние правила банка.",
+        "assessment": "Требует проверки обстоятельств",
+        "confirmation_needed": "Включённый компьютер ≠ нарушение. Проверить, был ли сеанс разблокирован, сколько отсутствовал работник, что предписано политикой ИБ.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V2600038336",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-12.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 10,
+        "range": "A10:F10"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-13.mov",
+      "expected": "violation",
+      "timestamp_sec": 47,
+      "timestamp_text": "47 секунда",
+      "label_text": "не сделала пересчет денег и не внесла в систему",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 11,
+        "range": "A11:F11"
+      },
+      "aspects": [
+        {
+          "name": "cash_count",
+          "any_of_rules": [
+            "CD13-COUNT-DURING-VISIT"
+          ],
+          "observability": "visual_candidate"
+        },
+        {
+          "name": "accounting_record",
+          "any_of_rules": [
+            "CD20-CASH-OPERATION-NOT-RECORDED"
+          ],
+          "observability": "external_only"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 6,
+        "observation": "не сделала пересчет денег и не внесла в систему",
+        "candidate_name": "Приём наличных без обязательного пересчёта/сверки и возможное отсутствие их учёта",
+        "clause": "№ 231: п. 19 пп. 2), 4); п. 20; п. 26; п. 74 (при хранении)",
+        "requirement": "При приёме требуется пересчёт, проверка и сверка с приходным документом; принятые в рабочий день деньги зачисляются на счёт в тот же день. Хранение в сейфовой комнате — после учёта в цифровой системе.",
+        "assessment": "Прямое требование при подтверждении",
+        "confirmation_needed": "Разделить два факта: (1) пересчёт не выполнен; (2) операция не отражена/не зачислена. Проверить чек, операционный журнал и срок.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-14.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 12,
+        "range": "A12:F12"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-15.mov",
+      "expected": "violation",
+      "timestamp_sec": 15,
+      "timestamp_text": "15 секунда",
+      "label_text": "оставила пакет с деньгами на столе",
+      "label_note": "это сумка (прям термин)",
+      "label_source": {
+        "sheet": "labels",
+        "row": 13,
+        "range": "A13:F13"
+      },
+      "aspects": [
+        {
+          "name": "bag_storage",
+          "any_of_rules": [
+            "CD04-BAG-ON-UNATTENDED-DESK"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 7,
+        "observation": "оставила пакет с деньгами на столе",
+        "candidate_name": "Незащищённое оставление пакета с ранее принятыми наличными на рабочем месте",
+        "clause": "№ 231: п. 20; при уходе в ходе обслуживания — п. 22",
+        "requirement": "На столе могут быть только наличные обслуживаемого сейчас клиента; ранее принятые деньги размещаются в запираемом устройстве.",
+        "assessment": "Прямое требование при подтверждении",
+        "confirmation_needed": "Проверить принадлежность и статус денег: от предыдущего клиента — применим п. 20; текущий пакет на этапе пересчёта — не обязательно нарушение.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-16.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 14,
+        "range": "A14:F14"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-17.mov",
+      "expected": "violation",
+      "timestamp_sec": 7,
+      "timestamp_text": "7 секунда",
+      "label_text": "не предоставил уд",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 15,
+        "range": "A15:F15"
+      },
+      "aspects": [
+        {
+          "name": "identification",
+          "any_of_rules": [
+            "CD12-IDENTIFICATION-BEFORE-CASH-HANDLING"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 8,
+        "observation": "не предоставил уд",
+        "candidate_name": "Возможное обслуживание кассового клиента без надлежащей идентификации",
+        "clause": "№ 231: п. 19 пп. 1); п. 31 пп. 1); п. 7",
+        "requirement": "Перед приёмом/выдачей кассир идентифицирует клиента по удостоверению личности либо сведениям из сервиса цифровых документов.",
+        "assessment": "Условная применимость",
+        "confirmation_needed": "Проверить: прошла ли операция и была ли идентификация электронным способом. Просто отсутствие пластиковой карточки не подтверждает нарушение.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-18.mov",
+      "expected": "violation",
+      "timestamp_sec": 20,
+      "timestamp_text": "20 секунда",
+      "label_text": "первый чел не принес уд, паралелльно деньги на столе и еще и новый чел пришел",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 16,
+        "range": "A16:F16"
+      },
+      "aspects": [
+        {
+          "name": "identification",
+          "any_of_rules": [
+            "CD12-IDENTIFICATION-BEFORE-CASH-HANDLING"
+          ],
+          "observability": "visual_candidate"
+        },
+        {
+          "name": "cash_storage",
+          "any_of_rules": [
+            "CD02-CASH-ON-DESK-AT-CUSTOMER-ARRIVAL"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 9,
+        "observation": "первый чел не принес уд, паралелльно деньги на столе и еще и новый чел пришел",
+        "candidate_name": "Возможное обслуживание без идентификации и одновременное открытое размещение наличных при смене клиентов",
+        "clause": "№ 231: п. 19 пп. 1); п. 20; п. 31 пп. 1) — для выдачи",
+        "requirement": "Идентификация клиента обязательна в предусмотренной форме; ранее принятые суммы должны быть убраны из открытого рабочего пространства в запираемое устройство.",
+        "assessment": "Прямое/условное — два отдельных факта",
+        "confirmation_needed": "По первому клиенту проверить цифровое удостоверение; по деньгам — чьи они и завершён ли приём. Сам приход нового клиента не является нарушением.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-19.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 17,
+        "range": "A17:F17"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-20.mov",
+      "expected": "violation",
+      "timestamp_sec": 5,
+      "timestamp_text": "5 секунда",
+      "label_text": "сейф открыт остался когда работница ушла",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 18,
+        "range": "A18:F18"
+      },
+      "aspects": [
+        {
+          "name": "unattended_safe",
+          "any_of_rules": [
+            "CD05-SAFE-OPEN-UNATTENDED"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 10,
+        "observation": "сейф открыт остался когда работница ушла",
+        "candidate_name": "Оставление открытого устройства хранения наличных без обеспечения сохранности",
+        "clause": "№ 231: п. 20; п. 80; для кладовой/сейфовой комнаты — пп. 75–78",
+        "requirement": "Ранее принятые наличные на рабочем месте хранятся в устройствах, закрываемых на ключ; правила обращения с ключами и их использования устанавливает банк.",
+        "assessment": "Прямое требование при наличии денег",
+        "confirmation_needed": "Критично выяснить: были ли в открытом сейфе деньги, что это за сейф, была ли касса без присмотра. П. 20 не предписывает закрывать пустой сейф в каждый момент.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-21.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 19,
+        "range": "A19:F19"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-22.mov",
+      "expected": "violation",
+      "timestamp_sec": 14,
+      "timestamp_text": "14 секунда",
+      "label_text": "ключ остался в сейфе когда работница ушла",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 20,
+        "range": "A20:F20"
+      },
+      "aspects": [
+        {
+          "name": "safe_key",
+          "any_of_rules": [
+            "CD06-KEY-IN-SAFE-UNATTENDED"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 11,
+        "observation": "ключ остался в сейфе когда работница ушла",
+        "candidate_name": "Возможное ненадлежащее хранение ключа от сейфа / риск несанкционированного доступа",
+        "clause": "№ 231: п. 76 (ключи кладовой/сейфовой комнаты); п. 80 (ключи рабочего сейфа)",
+        "requirement": "Ключи от кладовой/сейфовой комнаты находятся у ответственных лиц; порядок использования и хранения ключей рабочего сейфа устанавливается внутренними документами банка.",
+        "assessment": "Внутренний регламент / условная",
+        "confirmation_needed": "Уточнить тип сейфа и доступность ключа посторонним. Для обычного рабочего сейфа формулировка «не оставлять ключ в замке» должна быть найдена во внутренней инструкции.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-23.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 21,
+        "range": "A21:F21"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-24.mov",
+      "expected": "violation",
+      "timestamp_sec": 8,
+      "timestamp_text": "8 секунда",
+      "label_text": "печати и тд на столе остались и не убраны в сейф",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 22,
+        "range": "A22:F22"
+      },
+      "aspects": [
+        {
+          "name": "stamps_storage",
+          "any_of_rules": [
+            "CD08-STAMPS-ON-UNATTENDED-DESK"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 12,
+        "observation": "печати и тд на столе остались и не убраны в сейф",
+        "candidate_name": "Оставление именных штампов, печатей и иных средств удостоверения без защиты от несанкционированного использования",
+        "clause": "№ 231: п. 80",
+        "requirement": "Порядок хранения, выдачи и передачи печатей, штампов, пломбираторов, ключей и кодов определяется внутренними документами банка с исключением несанкционированного использования.",
+        "assessment": "Внутренний регламент / условная",
+        "confirmation_needed": "Прямой общей нормы «печатям обязательно лежать в сейфе» в п. 80 нет; проверить регламент банка и был ли посторонний доступ.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-25.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 23,
+        "range": "A23:F23"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-26.mov",
+      "expected": "violation",
+      "timestamp_sec": 9,
+      "timestamp_text": "9 секунда",
+      "label_text": "деньги в сейф не убраны",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 24,
+        "range": "A24:F24"
+      },
+      "aspects": [
+        {
+          "name": "cash_storage",
+          "any_of_rules": [
+            "CD02-CASH-ON-DESK-AT-CUSTOMER-ARRIVAL",
+            "CD03-CASH-ON-UNATTENDED-DESK"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 13,
+        "observation": "деньги в сейф не убраны",
+        "candidate_name": "Несоблюдение порядка хранения ранее принятых наличных в защищённом месте",
+        "clause": "№ 231: п. 20; п. 74 — для хранения в кассовом узле",
+        "requirement": "Ранее принятые деньги должны находиться в запираемом устройстве на рабочем месте; длительное хранение в кладовой/сейфовой комнате после учёта ведётся по правилам банка.",
+        "assessment": "Прямое требование при подтверждении",
+        "confirmation_needed": "Не всякая наличность во время работы сразу помещается в сейф: деньги текущего клиента можно держать на столе для пересчёта.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-27.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 25,
+        "range": "A25:F25"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-28.mov",
+      "expected": "violation",
+      "timestamp_sec": 7,
+      "timestamp_text": "7 секунда",
+      "label_text": "комп включен когда работница ушла",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 26,
+        "range": "A26:F26"
+      },
+      "aspects": [
+        {
+          "name": "unattended_computer",
+          "any_of_rules": [
+            "CD07-COMPUTER-ON-UNATTENDED"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 14,
+        "observation": "комп включен когда работница ушла",
+        "candidate_name": "Возможное оставление активной пользовательской сессии при отсутствии кассира",
+        "clause": "АРРФР № 53: п. 71 пп. 9); пп. 53, 106",
+        "requirement": "Система должна блокировать сеанс/рабочую станцию при отсутствии активности более 30 минут; работник должен следовать утверждённой политике ИБ.",
+        "assessment": "Требует проверки обстоятельств",
+        "confirmation_needed": "Отличать просто включённый ПК от разблокированной сессии с доступом к счетам. Проверить внутреннюю инструкцию о блокировке при уходе.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V2600038336",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-29.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 27,
+        "range": "A27:F27"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-30.mov",
+      "expected": "violation",
+      "timestamp_sec": 13,
+      "timestamp_text": "13 секунда",
+      "label_text": "впустила чела до настройки/включения устройств ",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 28,
+        "range": "A28:F28"
+      },
+      "aspects": [
+        {
+          "name": "equipment_ready",
+          "any_of_rules": [
+            "CD11-SERVICE-BEFORE-EQUIPMENT-READY"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 15,
+        "observation": "впустила чела до настройки/включения устройств",
+        "candidate_name": "Начало обслуживания до готовности необходимых средств контроля кассовых операций или безопасности",
+        "clause": "№ 231: п. 9; № 14: п. 16 пп. 6), п. 3",
+        "requirement": "При кассовых операциях должны быть средства проверки платежности/подлинности; кассовое помещение оборудуется видеонаблюдением и охраняется.",
+        "assessment": "Условная применимость",
+        "confirmation_needed": "Один лишь допуск клиента до настройки техники прямо не запрещён указанными нормами. Проверить, какие устройства, проводилась ли уже операция, были ли меры защиты доступны.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-31.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 29,
+        "range": "A29:F29"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-32.mov",
+      "expected": "violation",
+      "timestamp_sec": 5,
+      "timestamp_text": "5 секунда",
+      "label_text": "дверь открыта?",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 30,
+        "range": "A30:F30"
+      },
+      "aspects": [
+        {
+          "name": "open_door",
+          "any_of_rules": [
+            "CD09-DOOR-OPEN-UNATTENDED",
+            "CD10-DOOR-OPEN-CASH-EXPOSED"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 16,
+        "observation": "дверь открыта?",
+        "candidate_name": "Ненадлежащее обеспечение ограничения доступа в кассовое помещение — оставление служебной двери открытой.",
+        "clause": "№ 14: п. 16 пп. 1); п. 8 (кассовый узел)",
+        "requirement": "Касса имеет отдельный вход с дверью, закрывающейся на замок; кассовый узел изолирован закрывающимся служебным входом.",
+        "assessment": "Требует проверки обстоятельств",
+        "confirmation_needed": "Наличие открытой двери на кадре не доказывает нарушение. Установить: служебная ли дверь, был ли несанкционированный доступ, закрывается ли дверь на замок.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V2000020075",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-33.mov",
+      "expected": "violation",
+      "timestamp_sec": 6,
+      "timestamp_text": "6 секунда",
+      "label_text": "дверь открыта?",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 31,
+        "range": "A31:F31"
+      },
+      "aspects": [
+        {
+          "name": "open_door",
+          "any_of_rules": [
+            "CD09-DOOR-OPEN-UNATTENDED",
+            "CD10-DOOR-OPEN-CASH-EXPOSED"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 17,
+        "observation": "дверь открыта?",
+        "candidate_name": "Оставление служебной двери кассового помещения открытой, создающее риск несанкционированного доступа к банковским ценностям и оборудованию",
+        "clause": "№ 14: п. 16 пп. 1); п. 8",
+        "requirement": "Предусмотрены отдельная запираемая дверь кассы и изоляция кассового узла посредством закрывающегося служебного входа.",
+        "assessment": "Требует проверки обстоятельств",
+        "confirmation_needed": "Это отдельное исходное наблюдение. Проверить место, продолжительность открытия, проход клиентов/третьих лиц и локальные правила допуска.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V2000020075",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-34.mov",
+      "expected": "violation",
+      "timestamp_sec": 13,
+      "timestamp_text": "13 секунда",
+      "label_text": "чел ушел во время подсчета денег",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 32,
+        "range": "A32:F32"
+      },
+      "aspects": [
+        {
+          "name": "customer_present_during_count",
+          "any_of_rules": [
+            "CD01-CUSTOMER-ABSENT-DURING-COUNT"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 18,
+        "observation": "чел ушел во время подсчета денег",
+        "candidate_name": "Продолжение пересчёта принимаемых денег в отсутствие клиента",
+        "clause": "№ 231: п. 20; для выдачи клиенту — п. 31 пп. 4), п. 35",
+        "requirement": "Принимаемые наличные пересчитываются в присутствии клиента; при выдаче кассир пересчитывает подготовленную сумму в присутствии клиента.",
+        "assessment": "Прямое требование при подтверждении",
+        "confirmation_needed": "Если кассир остановил пересчёт до возвращения клиента, нарушения нет. Уточнить тип операции и продолжался ли пересчёт в его отсутствие.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-35.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 33,
+        "range": "A33:F33"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-37.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 34,
+        "range": "A34:F34"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-38.mov",
+      "expected": "violation",
+      "timestamp_sec": 33,
+      "timestamp_text": "33 секунда",
+      "label_text": "деньги не убирала оба раза, чел выходил во время подсчета ",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 35,
+        "range": "A35:F35"
+      },
+      "aspects": [
+        {
+          "name": "cash_storage",
+          "any_of_rules": [
+            "CD02-CASH-ON-DESK-AT-CUSTOMER-ARRIVAL",
+            "CD03-CASH-ON-UNATTENDED-DESK"
+          ],
+          "observability": "visual_candidate"
+        },
+        {
+          "name": "customer_present_during_count",
+          "any_of_rules": [
+            "CD01-CUSTOMER-ABSENT-DURING-COUNT"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 19,
+        "observation": "деньги не убирала оба раза, чел выходил во время подсчета",
+        "candidate_name": "Необеспечение хранения ранее принятых денег и возможный пересчёт без присутствия клиента (два эпизода)",
+        "clause": "№ 231: п. 20 (обе части)",
+        "requirement": "Ранее принятые деньги должны храниться в закрывающемся устройстве; приём и пересчёт банкнот проводятся при клиенте.",
+        "assessment": "Прямое/условное — два отдельных факта",
+        "confirmation_needed": "Проверить происхождение наличных; видео обоих эпизодов; кто выходил (клиент или кассир); прекращался ли пересчёт.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-39.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 36,
+        "range": "A36:F36"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-40.mov",
+      "expected": "violation",
+      "timestamp_sec": 17,
+      "timestamp_text": "17 секунда",
+      "label_text": "личные вещи?",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 37,
+        "range": "A37:F37"
+      },
+      "aspects": [
+        {
+          "name": "personal_items",
+          "any_of_rules": [
+            "CD14-PERSONAL-ITEMS-IN-CASH-ROOM"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 20,
+        "observation": "личные вещи?",
+        "candidate_name": "Возможное хранение личных вещей работника внутри кассового узла",
+        "clause": "№ 231: п. 12",
+        "requirement": "Личные вещи, личные наличные и ценности персонала хранятся ВНЕ кассового узла; предусмотрены исключения для лекарств, медизделий и средств связи без фото/видеосъёмки.",
+        "assessment": "Прямое требование при подтверждении",
+        "confirmation_needed": "Уточнить, были ли вещи именно в кассовом узле и относятся ли они к разрешённым исключениям.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-43.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 38,
+        "range": "A38:F38"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-44.mov",
+      "expected": "violation",
+      "timestamp_sec": 16,
+      "timestamp_text": "16 секунда",
+      "label_text": "смешала фейк деньги и настоящие",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 39,
+        "range": "A39:F39"
+      },
+      "aspects": [
+        {
+          "name": "rejected_banknotes",
+          "any_of_rules": [
+            "CD18-REJECTED-BANKNOTES-RECOMBINED"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 21,
+        "observation": "смешала непринятые деньги и настоящие",
+        "candidate_name": "Несоблюдение порядка проверки подлинности и платёжности банкнот, отклонённых счётно-сортировальным оборудованием.",
+        "clause": "НБРК № 231 от 29.11.2019, п. 19, пп. 2); п. 57. Дополнительно п. 59 — если банкноты признаны сомнительными.",
+        "requirement": "При приёме наличных денег кассир обязан обеспечить проверку их подлинности и платёжности. При выявлении сомнительных банкнот применяется специальная процедура оформления и направления на экспертизу.",
+        "assessment": "Требует проверки обстоятельств",
+        "confirmation_needed": "Потенциальное нарушение. Подтверждается, если отклонённые банкноты не прошли необходимую проверку.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-45.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 40,
+        "range": "A40:F40"
+      },
+      "aspects": []
+    },
+    {
+      "video": "Х-46.mov",
+      "expected": "violation",
+      "timestamp_sec": 11,
+      "timestamp_text": "11 секунда",
+      "label_text": "еда когда деньиг не убраны",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 41,
+        "range": "A41:F41"
+      },
+      "aspects": [
+        {
+          "name": "cash_exposed_during_food_break",
+          "any_of_rules": [
+            "CD15-EATING-WITH-CASH-EXPOSED"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 22,
+        "observation": "еда когда деньиг не убраны",
+        "candidate_name": "Нарушение порядка обеспечения сохранности наличных денег при прерывании кассовой операции.",
+        "clause": "№ 231: п. 20; п. 12 — только личные вещи",
+        "requirement": "Ранее принятые деньги хранятся в запираемом устройстве. Запрет приёма пищи именно на рабочем месте кассира по этой норме не установлен.",
+        "assessment": "Прямое — по деньгам; по еде — локальные правила",
+        "confirmation_needed": "Зафиксировать отдельно факт оставления денег и факт еды; проверить внутренний порядок организации рабочего места/охраны труда.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-47.mov",
+      "expected": "violation",
+      "timestamp_sec": 68,
+      "timestamp_text": "1минута 8 секунда",
+      "label_text": "леньги не убраны когда пришел первый + смешала неск денег",
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 42,
+        "range": "A42:F42"
+      },
+      "aspects": [
+        {
+          "name": "cash_storage",
+          "any_of_rules": [
+            "CD02-CASH-ON-DESK-AT-CUSTOMER-ARRIVAL"
+          ],
+          "observability": "visual_candidate"
+        },
+        {
+          "name": "different_customer_cash_mixed",
+          "any_of_rules": [
+            "CD19-DIFFERENT-CUSTOMER-CASH-MIXED"
+          ],
+          "observability": "visual_candidate"
+        }
+      ],
+      "normative_reference": {
+        "sheet": "Наблюдения и нормы",
+        "row": 23,
+        "observation": "леньги не убраны когда пришел первый + смешала неск денег от разных людей",
+        "candidate_name": "Смешение сумм разных клиентов и незащищённое хранение ранее принятых наличных",
+        "clause": "№ 231: п. 20; п. 19 пп. 2), 4); п. 21 — при нескольких приходных документах",
+        "requirement": "На рабочем месте — наличные только обслуживаемого клиента; суммы сверяются с отдельными документами; по нескольким приходным документам деньги принимаются раздельно.",
+        "assessment": "Прямое требование при подтверждении",
+        "confirmation_needed": "Определить, были ли это разные клиенты/операции/приходные документы и завершён ли приём каждой суммы. Проверить документы и видеозапись.",
+        "official_url": "https://adilet.zan.kz/rus/docs/V1900019680",
+        "verified": false
+      }
+    },
+    {
+      "video": "Х-48.mov",
+      "expected": "no_violation",
+      "timestamp_sec": null,
+      "timestamp_text": null,
+      "label_text": null,
+      "label_note": null,
+      "label_source": {
+        "sheet": "labels",
+        "row": 43,
+        "range": "A43:F43"
+      },
+      "aspects": []
+    }
+  ]
+}

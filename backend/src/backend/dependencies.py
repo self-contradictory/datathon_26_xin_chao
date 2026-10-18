@@ -33,6 +33,7 @@ def get_analyzer() -> VideoAnalyzer:
     return QuestionAnalyzer(
         Reconstructor(model, settings.SAMPLE_FPS, settings.IMAGE_TOKENS), settings.RULE_MODE,
         settings.FOLLOWUP_MAX_CALLS, settings.FOLLOWUP_MAX_FRAMES, settings.TIMELINE_DIR,
+        settings.TEMPORAL_SCAN,
     )
 
 

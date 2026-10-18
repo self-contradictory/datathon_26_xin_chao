@@ -18,6 +18,7 @@ research/  Reference papers.
 ## Run
 
 For Windows with Qwen3-VL-32B on an RTX A6000, see [WINDOWS_A6000.md](WINDOWS_A6000.md).
+Dataset rule coverage and API accuracy scoring are described in [DATASET_RULES.md](backend/eval/DATASET_RULES.md).
 
 ### Backend
 

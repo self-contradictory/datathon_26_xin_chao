@@ -41,6 +41,8 @@ class RuleMatcher:
         self.policy = rule.evidence_policy
 
     def weakness(self, event: Event) -> str | None:
+        if self.policy.required_verification and event.verification_status != self.policy.required_verification:
+            return f"event {event.id} requires {self.policy.required_verification} evidence"
         if event.inference_status == "hypothesis" and not self.policy.allow_hypotheses:
             return f"event {event.id} ({event.action}) is only a hypothesis"
         if event.verification_status == "disputed" and not self.policy.allow_disputed:

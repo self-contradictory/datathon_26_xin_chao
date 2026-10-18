@@ -134,6 +134,8 @@ $env:MODEL_PATH = "D:\models\Qwen3-VL-32B-Instruct"
 $env:MODEL_DEVICE = "cuda"
 $env:MODEL_QUANTIZATION = "4bit"
 $env:JOB_WORKERS = "1"
+$env:RULE_MODE = "shadow"
+$env:TEMPORAL_SCAN = "true"
 $env:API_KEYS = '{"windows-test":"local-test-key"}'
 
 .\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
@@ -178,7 +180,97 @@ bun run dev
 Open <http://127.0.0.1:3000> and upload a short video. Use the normal live
 upload flow; `?demo` displays existing demo fixtures.
 
-## Code changes included
+## Evaluate every dataset video through the API
+
+Update this branch with `git pull --ff-only`, then restart the API using the
+backend command above. The API now includes the temporal cash-handling checks.
+Keep `RULE_MODE=shadow` to evaluate the candidate dataset rules and
+`TEMPORAL_SCAN=true` to enable those extra checks. The model stays loaded in
+the API process; the batch client does not load another model.
+
+In a second PowerShell window, from the backend folder, test Х-46:
+
+```powershell
+$env:PYTHONUTF8 = "1"
+.\.venv\Scripts\python.exe -B eval\batch_api.py --videos "Х-46"
+```
+
+Then run all 42 labelled dataset videos, reusing the finished Х-46 job:
+
+```powershell
+.\.venv\Scripts\python.exe -B eval\batch_api.py
+.\.venv\Scripts\python.exe -B eval\score_api.py
+```
+
+`var/dataset-verdicts/verdicts.csv` contains expected and predicted verdicts,
+match status, reported rules, and job IDs. `summary.json` contains accuracy,
+precision, recall, F1, the confusion matrix, failures, remaining cases, and
+mismatches. Each video also has its complete API result JSON, including
+timestamps and evidence frames. These are dataset-agreement metrics, not
+independent legal findings or held-out generalization accuracy.
+
+Interrupted jobs resume using their saved IDs. To resubmit API jobs that
+finished with `failed`, add `--retry-failed`. For a different model or a code
+update, use a fresh folder, for example `--out var\dataset-verdicts-next`.
+Score that folder with `eval\score_api.py var\dataset-verdicts-next`.
+
+To score the JSON files produced by the earlier PowerShell loop without
+running inference again:
+
+```powershell
+.\.venv\Scripts\python.exe -B eval\score_api.py var\api-verdicts
+```
+
+See `backend/eval/DATASET_RULES.md` for all 42 video-to-rule mappings and
+`backend/eval/dataset_labels.json` for the source spreadsheet rows. Expected
+labels are read only by the batch scorer, never passed to the API analyzer.
+
+## Connect the Mac frontend to the Windows GPU API
+
+When both machines are on the same LAN, keep the frontend on the Mac and bind
+the Windows API to the network. No frontend source changes are needed.
+
+Find the Mac's active LAN IPv4 address:
+
+```sh
+ipconfig getifaddr "$(route -n get default | awk '/interface:/{print $2}')"
+```
+
+In an administrator PowerShell window on Windows, run this once and paste
+that Mac IP at the prompt:
+
+```powershell
+$macIP = Read-Host "Mac LAN IPv4 address"
+New-NetFirewallRule -DisplayName "Datathon API from Mac" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 8000 -RemoteAddress $macIP
+```
+
+From the Windows backend folder, with the model and API key environment
+variables set as above, start:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
+```
+
+Use `ipconfig` in another Windows terminal to find its Wi-Fi/Ethernet IPv4
+address. On the Mac, replace `192.168.1.50` with that address:
+
+```sh
+cd /Users/paradox/P/Personal_Project_Datathon26/steg-implementation/frontend
+export API_URL="http://192.168.1.50:8000"
+export API_KEY="local-test-key"
+curl -i --max-time 10 -H "X-API-Key: $API_KEY" "$API_URL/api/v1/jobs/connection-check"
+bun run dev
+```
+
+For the curl check, HTTP 404 with a job-not-found message is expected and
+confirms authenticated connectivity; HTTP 401 means the key does not match.
+Open <http://localhost:3000> on the Mac. The frontend server proxies uploads
+and job polling to the Windows API. Inference runs in that Windows process.
+Use `bun run dev` for this setup; `bun run start` launches a local backend.
+
+Firewall reference: [Microsoft New-NetFirewallRule](https://learn.microsoft.com/en-us/powershell/module/netsecurity/new-netfirewallrule).
+
+## Model loading
 
 - `backend/src/backend/reconstruction/vlm.py` adds the `32b` alias and optional
   NF4 loading with bitsandbytes. It places the quantized model directly on the

@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     RULE_MODE: Literal["production", "shadow"] = "shadow"
     FOLLOWUP_MAX_CALLS: int = 8
     FOLLOWUP_MAX_FRAMES: int = 8
+    TEMPORAL_SCAN: bool = True
     TIMELINE_DIR: Path = BACKEND_DIR / "var" / "timelines"
 
 

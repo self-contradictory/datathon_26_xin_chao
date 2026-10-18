@@ -121,6 +121,7 @@ class EvidencePolicy(_RuleModel):
     on_ambiguous_role: Literal["UNKNOWN"]
     on_incomplete_episode: Literal["UNKNOWN"]
     max_evidence_frames: Annotated[int, Field(ge=1, le=3)]
+    required_verification: Literal["human_confirmed"] | None = None
 
 
 class ForbiddenLogic(_RuleModel):
