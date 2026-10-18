@@ -3,6 +3,7 @@ import shutil
 from concurrent.futures import Executor
 from datetime import UTC, datetime
 from pathlib import Path
+from time import perf_counter
 from typing import BinaryIO
 from uuid import uuid4
 
@@ -41,6 +42,7 @@ class JobService:
         job = self._repository.add(
             job_id=job_id, video_path=video_path, created_at=datetime.now(UTC)
         )
+        logger.info("Job %s queued (%s bytes)", job.id, video_path.stat().st_size)
         self._executor.submit(self._run, job)
         return job
 
@@ -56,9 +58,18 @@ class JobService:
         )
 
     def _run(self, job: Job) -> None:
+        started = perf_counter()
+        logger.info(
+            "Job %s started after %.1fs in queue", job.id,
+            (datetime.now(UTC) - job.created_at).total_seconds(),
+        )
         try:
             violations = self._analyzer.analyze(job.video_path)
             self._repository.complete(job.id, violations, datetime.now(UTC))
+            logger.info(
+                "Job %s completed in %.1fs (%s findings)",
+                job.id, perf_counter() - started, len(violations),
+            )
         except Exception as error:
             logger.exception("Job %s failed", job.id)
             self._repository.fail(job.id, str(error), datetime.now(UTC))

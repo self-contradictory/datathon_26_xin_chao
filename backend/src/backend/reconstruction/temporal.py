@@ -1,6 +1,7 @@
 """Observe cash provenance across frames, without dataset labels or video names."""
 import logging
 from dataclasses import dataclass, field
+from time import perf_counter
 from typing import Literal
 
 import numpy as np
@@ -76,6 +77,11 @@ def observe_cash_provenance(
             + "\n".join(f"{frame.id}: {frame.timestamp_sec:.2f}s" for frame in frames)
         )
         result.calls += 1
+        call_started = perf_counter()
+        logger.info(
+            "Video %s: temporal scan %s, %.2f-%.2fs (%s frames) started",
+            video.path.stem, result.calls, start, end, len(frames),
+        )
         try:
             answer = model.structured(prompt, CashActions,
                                       images=[video.frame_at(frame.timestamp_sec) for frame in frames],
@@ -86,6 +92,10 @@ def observe_cash_provenance(
             detail = f"{start:.2f}-{end:.2f}s: {error}"
             result.errors.append(detail)
             logger.warning("Cash provenance scan failed: %s", detail)
+        logger.info(
+            "Video %s: temporal scan %s finished in %.1fs",
+            video.path.stem, result.calls, perf_counter() - call_started,
+        )
         if end == video.duration:
             break
         start += stride_sec

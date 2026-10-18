@@ -1,4 +1,6 @@
+import logging
 from dataclasses import dataclass, field
+from time import perf_counter
 
 from backend.followup.merge import merge_answer
 from backend.followup.models import FollowupRecord, StructuredModel
@@ -10,6 +12,8 @@ from backend.rules.engine import evaluate, select_rules
 from backend.rules.findings import EvaluationReport, Mode
 from backend.rules.models import RuleRegistry
 from backend.steg import SparseTemporalEvidenceGraph
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(slots=True)
@@ -29,15 +33,20 @@ def refine(registry: RuleRegistry, graph: SparseTemporalEvidenceGraph, video: De
     semantics = SemanticMatcher(model, rules)
     observer = observer or FocusedObserver(model, video, max_frames)
     result = RefinementResult(graph, evaluate(registry, graph, mode), 0)
+    logger.info("Video %s: evaluating rules; follow-up budget=%s", video.path.stem, max_calls)
     seen = set()
     while result.calls < max_calls:
         candidates = semantics.candidates(result.graph)
         if candidates:
             result.calls += 1
+            started = perf_counter()
+            logger.info("Video %s: semantic follow-up %s/%s started", video.path.stem, result.calls, max_calls)
             try:
                 result.graph = semantics.run(result.graph, candidates)
             except ValueError as error:
                 result.semantic_errors.append(str(error))
+                logger.warning("Video %s: semantic follow-up failed: %s", video.path.stem, str(error).split("\n", 1)[0])
+            logger.info("Video %s: semantic follow-up finished in %.1fs", video.path.stem, perf_counter() - started)
             result.report = evaluate(registry, result.graph, mode)
         questions = [question for question in plan_questions(rules, result.graph, result.report)
                      if question.id not in seen]
@@ -51,6 +60,8 @@ def refine(registry: RuleRegistry, graph: SparseTemporalEvidenceGraph, video: De
         seen.add(question.id)
         result.calls += 1
         record = FollowupRecord(question=question)
+        started = perf_counter()
+        logger.info("Video %s: visual follow-up %s/%s started", video.path.stem, result.calls, max_calls)
         try:
             record.answer, frames = observer.answer(question, result.graph)
             if record.answer.status != "not_visible":
@@ -58,6 +69,9 @@ def refine(registry: RuleRegistry, graph: SparseTemporalEvidenceGraph, video: De
                 result.frame_images.update({frame.evidence.timestamp_sec: frame.jpeg for frame in frames})
         except (ValueError, KeyError) as error:
             record.error = str(error)
+            logger.warning("Video %s: visual follow-up failed: %s", video.path.stem, str(error).split("\n", 1)[0])
+        logger.info("Video %s: visual follow-up finished in %.1fs", video.path.stem, perf_counter() - started)
         result.checks.append(record)
         result.report = evaluate(registry, result.graph, mode)
+    logger.info("Video %s: rule evaluation complete (%s follow-up calls)", video.path.stem, result.calls)
     return result

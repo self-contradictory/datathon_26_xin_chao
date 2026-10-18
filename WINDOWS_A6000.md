@@ -270,6 +270,49 @@ Use `bun run dev` for this setup; `bun run start` launches a local backend.
 
 Firewall reference: [Microsoft New-NetFirewallRule](https://learn.microsoft.com/en-us/powershell/module/netsecurity/new-netfirewallrule).
 
+## Diagnose a job that stays processing
+
+HTTP 200 on `GET /api/v1/jobs/...` means the status request succeeded. Read
+the JSON `status` to see whether inference finished. A queued job also has
+`status: processing`; it may be waiting for the one GPU worker.
+
+The backend logs the job being queued and started, the sampled frame count,
+every completed frame with elapsed time, each temporal scan and follow-up,
+and the final job duration. These messages distinguish queueing, frame
+inference and structured generation. GPU utilization alone does not prove
+that a particular job is progressing.
+
+For a shorter first inference test, stop the backend, then use these settings
+in the original backend PowerShell, keeping its model and API key variables:
+
+```powershell
+git pull --ff-only
+$env:SAMPLE_FPS = "0.25"
+$env:IMAGE_TOKENS = "128"
+$env:TEMPORAL_SCAN = "false"
+$env:FOLLOWUP_MAX_CALLS = "0"
+$env:JOB_WORKERS = "1"
+.\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --no-access-log
+```
+
+This samples one frame every four seconds and skips structured temporal and
+semantic follow-ups. It is a smoke test, not a full accuracy evaluation:
+short actions and cash provenance findings may be missed. Restart with
+`SAMPLE_FPS=1.0`, `IMAGE_TOKENS=256`, `TEMPORAL_SCAN=true` and
+`FOLLOWUP_MAX_CALLS=8` for the complete dataset checks. Keep the ngrok
+process running while restarting the backend; its URL can stay the same.
+
+If Ctrl+C cannot stop an active inference, use another PowerShell to stop
+only the API process. This interrupts its current job; the next startup
+marks unfinished jobs failed, and the frontend can retry them:
+
+```powershell
+$backendPid = (Get-NetTCPConnection -LocalPort 8000 -State Listen | Select-Object -First 1).OwningProcess
+Stop-Process -Id $backendPid -Force
+```
+
+Do not run `uv sync` to restart this CUDA environment.
+
 ## Model loading
 
 - `backend/src/backend/reconstruction/vlm.py` adds the `32b` alias and optional

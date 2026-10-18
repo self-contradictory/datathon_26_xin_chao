@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -20,13 +21,24 @@ from backend.dependencies import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+    logging.basicConfig(format="%(levelname)s %(name)s: %(message)s")
+    logging.getLogger("backend").setLevel(logging.INFO)
+    logger = logging.getLogger(__name__)
     database = get_database()
     database.initialize()
     get_api_key_service(get_api_key_repository(database)).sync(settings.API_KEYS)
     executor = get_job_executor()
+    logger.info(
+        "Loading model=%s device=%s quantization=%s; sample_fps=%s image_tokens=%s "
+        "temporal_scan=%s followup_max_calls=%s workers=%s",
+        settings.MODEL, settings.MODEL_DEVICE or "auto", settings.MODEL_QUANTIZATION,
+        settings.SAMPLE_FPS, settings.IMAGE_TOKENS, settings.TEMPORAL_SCAN,
+        settings.FOLLOWUP_MAX_CALLS, settings.JOB_WORKERS,
+    )
     get_job_service(
         get_job_repository(database), get_analyzer(), executor
     ).fail_unfinished()
+    logger.info("Model loaded; ready to analyze videos")
     yield
     executor.shutdown(wait=False, cancel_futures=True)
 
