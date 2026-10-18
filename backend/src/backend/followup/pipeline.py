@@ -48,7 +48,7 @@ def refine(registry: RuleRegistry, graph: SparseTemporalEvidenceGraph, video: De
         logger.info("Video %s: text semantic alignment started", video.path.stem)
         try:
             result.graph = semantics.run(result.graph, candidates)
-        except (ValueError, KeyError) as error:
+        except Exception as error:
             result.semantic_errors.append(str(error))
             logger.warning("Video %s: text semantic alignment failed: %s", video.path.stem, str(error).split("\n", 1)[0])
         logger.info("Video %s: text semantic alignment finished in %.1fs", video.path.stem, perf_counter() - started)
@@ -78,7 +78,7 @@ def refine(registry: RuleRegistry, graph: SparseTemporalEvidenceGraph, video: De
                     if (event.note or "").startswith("Plain-text follow-up") and event.inference_status == "directly_observed":
                         event.inference_status = "inferred_from_observations"
                 result.frame_images.update({frame.evidence.timestamp_sec: frame.jpeg for frame in frames})
-        except (ValueError, KeyError) as error:
+        except Exception as error:
             record.error = str(error)
             logger.warning("Video %s: visual follow-up failed: %s", video.path.stem, str(error).split("\n", 1)[0])
         logger.info("Video %s: visual follow-up finished in %.1fs", video.path.stem, perf_counter() - started)

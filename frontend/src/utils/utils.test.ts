@@ -181,6 +181,13 @@ describe('rules', () => {
       'noId',
     )
     expect(findRule('Пересчет без клиента')?.id).toBe('countWithoutClient')
+    expect(
+      findRule('Кассир покинул рабочее место до окончания обслуживания клиента')
+        ?.id,
+    ).toBe('leftDuringService')
+    expect(findRule('Мобильный телефон в кассовом узле')?.id).toBe(
+      'mobilePhone',
+    )
     expect(findRule('noId')?.id).toBe('noId')
     expect(findRule('Неизвестный тип')).toBeNull()
   })

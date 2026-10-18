@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 
 from backend.dependencies import get_job_service, require_api_key
 from backend.schemas import AnalyzeResponse, JobResponse
-from backend.services.jobs import JobNotFoundError, JobService
+from backend.services.jobs import InvalidVideoError, JobNotFoundError, JobService
 
 router = APIRouter(prefix="/api/v1", dependencies=[Depends(require_api_key)])
 
@@ -14,7 +14,12 @@ def analyze(
     file: UploadFile,
     service: Annotated[JobService, Depends(get_job_service)],
 ) -> AnalyzeResponse:
-    job = service.submit(file.file)
+    try:
+        job = service.submit(file.file)
+    except InvalidVideoError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)
+        ) from error
     return AnalyzeResponse(job_id=job.id)
 
 
@@ -34,4 +39,5 @@ def get_job(
         status=job.status,
         verdict=job.verdict,
         violations=job.violations,
+        error=job.error,
     )

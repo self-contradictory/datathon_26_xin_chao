@@ -7,6 +7,8 @@ from time import perf_counter
 from typing import BinaryIO
 from uuid import uuid4
 
+import cv2
+
 from backend.analyzers.base import VideoAnalyzer
 from backend.models import Job
 from backend.repositories.jobs import JobRepository
@@ -18,6 +20,19 @@ class JobNotFoundError(LookupError):
     def __init__(self, job_id: str) -> None:
         super().__init__(f"Job {job_id} not found")
         self.job_id = job_id
+
+
+class InvalidVideoError(ValueError):
+    pass
+
+
+def readable_video(path: Path) -> bool:
+    capture = cv2.VideoCapture(str(path))
+    try:
+        ok, _ = capture.read()
+        return ok
+    finally:
+        capture.release()
 
 
 class JobService:
@@ -39,6 +54,10 @@ class JobService:
         self._upload_dir.mkdir(parents=True, exist_ok=True)
         with video_path.open("wb") as file:
             shutil.copyfileobj(video, file)
+        if not readable_video(video_path):
+            empty = video_path.stat().st_size == 0
+            video_path.unlink(missing_ok=True)
+            raise InvalidVideoError("The uploaded file is empty" if empty else "The uploaded file is not a readable video")
         job = self._repository.add(
             job_id=job_id, video_path=video_path, created_at=datetime.now(UTC)
         )

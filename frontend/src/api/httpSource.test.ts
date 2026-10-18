@@ -119,6 +119,7 @@ describe('upload', () => {
       [401, 'unauthorized'],
       [403, 'unauthorized'],
       [404, 'not_found'],
+      [400, 'bad_file'],
       [413, 'bad_file'],
       [415, 'bad_file'],
       [422, 'bad_file'],

@@ -18,6 +18,7 @@ from backend.reconstruction.video import DecodedVideo
 from backend.rules.engine import evaluate
 from backend.rules.models import EntityByKind, StateMatcher, EventMatcher
 from backend.rules.registry import load_registry
+from backend.rules.verdict import reportable
 from backend.semantic.captions import CaptionConfig, caption_probabilities, reconstruct_captions, windows
 from backend.semantic.followup import TextObserver, event_participants
 from backend.semantic.vlm import TextVLM
@@ -227,6 +228,31 @@ class MetricTests(unittest.TestCase):
 
 
 class PlainAnalyzerTests(unittest.TestCase):
+    def test_optional_plain_text_failures_preserve_baseline_findings(self):
+        class Model:
+            name = "fake-prose"
+            def entail(self, context, questions): return [[.01, .01, .98] for _ in questions]
+        class Reconstructor:
+            vlm = Model()
+            def run(self, path):
+                return reconstruct_captions(video(), [caption(0, 8, {})], CaptionConfig(), self.vlm.name)
+        graph = timeline({"room_occupied": lambda t: True, "cashier_at_station": lambda t: True,
+                          "safe_open": lambda t: True, "at_safe": lambda t: t < 4})
+        reconstructor = Reconstructor()
+        baseline = refine(load_registry(), graph, video(), reconstructor.vlm, max_calls=0)
+        with tempfile.TemporaryDirectory() as directory, \
+             patch("backend.analyzers.questions.build_timeline", return_value=graph), \
+             patch("backend.analyzers.questions.describe_windows", side_effect=RuntimeError("Caption failed")), \
+             patch("backend.analyzers.questions.refine", side_effect=[RuntimeError("Follow-up failed"), baseline]) as refinement, \
+             patch("backend.analyzers.questions.atomic_json", side_effect=OSError("Disk full")), \
+             self.assertLogs("backend.analyzers.questions", level="ERROR"):
+            analyzer = QuestionAnalyzer(reconstructor, timeline_dir=Path(directory))
+            findings = analyzer.analyze(Path("synthetic.mov"))
+        self.assertTrue(findings)
+        self.assertEqual(len(findings), len(reportable(baseline.report, analyzer.policy)))
+        self.assertEqual(refinement.call_args_list[0].args[-2], 2)
+        self.assertEqual(refinement.call_args_list[1].args[-2], 0)
+
     def test_scene_grounding_uses_plain_model_text_without_a_json_schema(self):
         class Model:
             def text(self, prompt, images, **kwargs): return "[100, 200, 900, 800]"

@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from backend.analyzers.base import VideoAnalyzer
@@ -10,6 +11,8 @@ from backend.rules.findings import Mode
 from backend.rules.registry import load_registry
 from backend.rules.verdict import ReportingPolicy, reportable, to_violations
 from backend.schemas import Violation
+
+logger = logging.getLogger(__name__)
 
 
 class QuestionAnalyzer(VideoAnalyzer):
@@ -33,12 +36,33 @@ class QuestionAnalyzer(VideoAnalyzer):
         timeline = build_timeline(reconstruction)
         captions = []
         if self.temporal_scan:
-            config = CaptionConfig()
-            captions = describe_windows(self.reconstructor.vlm, reconstruction.video, config)
-            timeline = caption_graph(reconstruction.video, captions, config,
-                                     self.reconstructor.vlm.name, baseline=reconstruction)
-        result = refine(self.registry, timeline, reconstruction.video, self.reconstructor.vlm,
-                        self.mode, self.max_followup_calls, self.followup_frames)
+            try:
+                config = CaptionConfig()
+                captions = describe_windows(self.reconstructor.vlm, reconstruction.video, config)
+                timeline = caption_graph(reconstruction.video, captions, config,
+                                         self.reconstructor.vlm.name, baseline=reconstruction)
+            except Exception:
+                logger.exception("Video %s: caption scan failed; using per-frame answers", video_path.stem)
+        try:
+            result = refine(self.registry, timeline, reconstruction.video, self.reconstructor.vlm,
+                            self.mode, self.max_followup_calls, self.followup_frames)
+        except Exception:
+            logger.exception("Video %s: follow-ups failed; evaluating rules without them", video_path.stem)
+            result = refine(self.registry, timeline, reconstruction.video, self.reconstructor.vlm,
+                            self.mode, 0, self.followup_frames)
+        try:
+            self._write_timeline(timeline, result, captions)
+        except OSError:
+            logger.exception("Video %s: could not write the timeline", video_path.stem)
+
+        def frame_jpeg(moment: float) -> bytes:
+            if moment in result.frame_images:
+                return result.frame_images[moment]
+            return reconstruction.video.jpeg_at(moment)
+
+        return to_violations(reportable(result.report, self.policy), frame_jpeg)
+
+    def _write_timeline(self, timeline, result, captions) -> None:
         if self.timeline_dir is not None:
             self.timeline_dir.mkdir(parents=True, exist_ok=True)
             atomic_json(self.timeline_dir / f"{timeline.video.id}.steg.json", result.graph.model_dump(mode="json"))
@@ -51,10 +75,3 @@ class QuestionAnalyzer(VideoAnalyzer):
                 "semantic_errors": result.semantic_errors,
                 "plain_text": result.plain_text_records,
             })
-
-        def frame_jpeg(moment: float) -> bytes:
-            if moment in result.frame_images:
-                return result.frame_images[moment]
-            return reconstruction.video.jpeg_at(moment)
-
-        return to_violations(reportable(result.report, self.policy), frame_jpeg)

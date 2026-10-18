@@ -38,7 +38,7 @@ PROBES: tuple[Probe, ...] = (
     Probe('id_document', 'Is someone holding an ID card or passport?', 'action', 3.0),
     Probe('cash_from_customer', 'Is the customer handing banknotes to the cashier?', 'action', 3.0),
     Probe('cash_to_customer', 'Is the cashier handing banknotes to the customer?', 'action', 3.0),
-    Probe('personal_items', 'Is a handbag, purse or wallet lying on the desk?', 'state', 20.0),
+    Probe('personal_items', 'Is a handbag, purse, wallet, coat or jacket lying on the desk?', 'state', 20.0),
     Probe('cashier_at_station', 'Is the cashier at the workstation, seated or standing?', 'state', 6.0),
 )
 

@@ -172,6 +172,18 @@ export const RULES: readonly Rule[] = [
     ],
     applicability: 'conditional',
   },
+  {
+    id: 'leftDuringService',
+    type: 'Кассир покинул рабочее место до окончания обслуживания клиента',
+    norms: [{ act: 'nbrk231', refs: [{ point: '22' }] }],
+    applicability: 'direct',
+  },
+  {
+    id: 'mobilePhone',
+    type: 'Мобильный телефон в кассовом узле',
+    norms: [{ act: 'nbrk231', refs: [{ point: '12' }] }],
+    applicability: 'direct',
+  },
 ]
 
 function normalize(type: string): string {

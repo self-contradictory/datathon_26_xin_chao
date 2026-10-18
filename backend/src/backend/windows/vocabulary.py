@@ -12,7 +12,7 @@ STATES = {
     "bag_on_desk": "a bag or package lies on the desk",
     "food_on_desk": "food or a drink is on the desk",
     "stamps_on_desk": "stamps or seals lie on the desk",
-    "personal_items": "a handbag, purse or wallet lies on the desk",
+    "personal_items": "a handbag, purse, wallet, coat or jacket lies on the desk",
     "door_open": "the door is open",
 }
 
