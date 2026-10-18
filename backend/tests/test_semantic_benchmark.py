@@ -81,7 +81,7 @@ class CaptionTests(unittest.TestCase):
 class FollowupTests(unittest.TestCase):
     def setUp(self):
         self.graph = timeline({"room_occupied": lambda _: True, "cashier_seated": lambda _: True,
-                               "cashier_at_station": lambda _: True, "safe_open": lambda _: True,
+                               "cashier_at_station": lambda t: t < 4, "safe_open": lambda _: True,
                                "at_safe": lambda t: t < 4})
         self.registry = load_registry()
 
@@ -236,7 +236,7 @@ class PlainAnalyzerTests(unittest.TestCase):
             vlm = Model()
             def run(self, path):
                 return reconstruct_captions(video(), [caption(0, 8, {})], CaptionConfig(), self.vlm.name)
-        graph = timeline({"room_occupied": lambda t: True, "cashier_at_station": lambda t: True,
+        graph = timeline({"room_occupied": lambda t: True, "cashier_at_station": lambda t: t < 4,
                           "safe_open": lambda t: True, "at_safe": lambda t: t < 4})
         reconstructor = Reconstructor()
         baseline = refine(load_registry(), graph, video(), reconstructor.vlm, max_calls=0)

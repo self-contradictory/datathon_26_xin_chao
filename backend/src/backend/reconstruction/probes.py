@@ -10,10 +10,13 @@ class Probe:
     dwell: float
 
 
+# Roles by what people do, not where they sit: with a customer in the room the cashier usually sits with
+# their back to the camera, and "the cashier works behind the desk" pointed the model at the customer.
 SCENE_CONTEXT = (
-    "This is a ceiling security camera view of a bank cash desk. The cashier works behind "
-    "the desk with a laptop, a cash counting machine and a safe; customers enter through "
-    "the glass door and sit across the desk."
+    "This is a ceiling security camera view of a bank cash room. The cashier is the bank employee who works "
+    "at the laptop and the banknote counting machine, next to the safe, and may sit with their back to the "
+    "camera. A customer is a visitor who comes in through the glass door and sits or stands on the other "
+    "side of the desk from the cashier."
 )
 
 PROBES: tuple[Probe, ...] = (

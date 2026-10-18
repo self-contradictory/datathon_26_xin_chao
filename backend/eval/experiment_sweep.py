@@ -64,9 +64,9 @@ from backend.perception.features import FeatureConfig, Signals, compute_signals 
 from backend.perception.fusion import CV_ABSENCE, DEFAULT_WEIGHTS, FusionConfig, fuse, logit, sigmoid  # noqa: E402
 from backend.perception.hands import HAND_PROBES, HAND_TOKENS, hand_box  # noqa: E402
 from backend.perception.motion import PatchMotion, patch_motion  # noqa: E402
-from backend.perception.pipeline import Observations, PerceptionConfig, reconstruct  # noqa: E402
+from backend.perception.pipeline import FRAME_PROBES, Observations, PerceptionConfig, reconstruct  # noqa: E402
 from backend.perception.pose import PoseEstimator, PoseSequence, detect_people  # noqa: E402
-from backend.perception.regions import CONTEXT as REGION_CONTEXT, RATES, REGION_PROBES, TOKENS, crop  # noqa: E402
+from backend.perception.regions import CONTEXT as REGION_CONTEXT, RATES, REGION_PROBES, TOKENS, crop, region_view  # noqa: E402
 from backend.perception.scene import Scene, locate, median_background  # noqa: E402
 from backend.reconstruction import derived as derived_module, graph as graph_module  # noqa: E402
 from backend.reconstruction.decode import Observation  # noqa: E402
@@ -139,7 +139,7 @@ def _extras(rows, region=None) -> tuple[Question, ...]:
     return tuple(Question(qid, text, key, sign, True, region, score_as) for qid, text, key, sign, score_as in rows)
 
 
-BASE_Q = tuple(Question(p.key, p.question, p.key) for p in PROBES)
+BASE_Q = tuple(Question(p.key, p.question, p.key) for p in FRAME_PROBES)
 BASE_EXTRA_Q = _extras((
     ("counting_cash~hand", "Is the cashier counting money by hand right now?", "counting_cash", 1, None),
     ("machine_counting", "Is the banknote counting machine being loaded or emptied?", None, 1, "counting_cash"),
@@ -172,7 +172,8 @@ BASE_EXTRA_Q = _extras((
     ("two_customers", "Are two or more customers in the room at the same time?", None, 1, None),
 ))
 
-_AUXILIARY = {"cash_in_hands": ("counting_cash", 1), "laptop_closed": ("screen_on", -1)}
+_AUXILIARY = {"cash_in_hands": ("counting_cash", 1), "laptop_closed": ("screen_on", -1),
+              "desk_items": ("stamps_on_desk", 1)}
 REGION_Q = tuple(
     Question(p.key, p.question, p.key if p.key in FUSED_KEYS else None,
              _AUXILIARY.get(p.key, (None, 1))[1], region=region, score_as=_AUXILIARY.get(p.key, (None, 1))[0])
@@ -180,17 +181,12 @@ REGION_Q = tuple(
 )
 REGION_EXTRA_Q = tuple(
     Question(qid, text, key, sign, True, region, score_as) for region, qid, text, key, sign, score_as in (
-        ("desk", "stamps_on_desk~any", "Are any small objects left on the desktop besides the telephone, "
-         "the laptop and the counting machine?", "stamps_on_desk", 1, None),
         ("desk", "cash_on_desk!", "Is the desk free of banknotes?", "cash_on_desk", -1, None),
         ("desk", "phone_on_desk", "Is a mobile phone lying on the desk?", None, 1, None),
-        ("desk_hands", "cash_from_customer~hands", "Is the customer handing banknotes to the cashier?",
-         "cash_from_customer", 1, None),
-        ("desk_hands", "cash_to_customer~hands", "Is the cashier handing banknotes to the customer?",
-         "cash_to_customer", 1, None),
-        ("desk_hands", "machine_counting~hands", "Are banknotes being put into or taken out of the counting machine?",
-         None, 1, "counting_cash"),
-        ("desk_hands", "using_computer~hands", "Is someone typing on the laptop?", "using_computer", 1, None),
+        ("desk_hands", "machine_counting~hands", "Across these frames, are banknotes put into or taken out of the "
+         "counting machine?", None, 1, "counting_cash"),
+        ("desk_hands", "id_document~exam", "Across these frames, is someone holding up a small card and looking at "
+         "it?", "id_document", 1, None),
         ("safe", "safe_open!", "Is the safe door closed?", "safe_open", -1, None),
         ("laptop", "using_computer~laptop", "Are a person's hands on the laptop keyboard?", "using_computer", 1, None),
         ("laptop", "screen_on!", "Is the laptop screen dark or switched off?", "screen_on", -1, None),
@@ -418,12 +414,13 @@ class Printer:
 
 # -------------------------------------------------------------------------------------------- VLM calls
 
-def probe(vlm: QuestionVLM, image: np.ndarray, questions: list[str], context: str, tokens: int, batch: int) -> list[float]:
+def probe(vlm: QuestionVLM, image, questions: list[str], context: str, tokens: int, batch: int,
+          captions=()) -> list[float]:
     try:
-        return vlm.probe(image, questions, context, tokens, max_batch=batch)
+        return vlm.probe(image, questions, context, tokens, max_batch=batch, captions=captions)
     except torch.OutOfMemoryError:
         torch.cuda.empty_cache()
-        return vlm.probe(image, questions, context, tokens, max_batch=4)
+        return vlm.probe(image, questions, context, tokens, max_batch=4, captions=captions)
 
 
 @torch.inference_mode()
@@ -779,16 +776,17 @@ class Lab:
         by_region = {region: [q for q in view.questions if q.region == region] for region in REGION_PROBES}
         series = {q.qid: {"t": [], "p": []} for q in view.questions}
         calls, due = 0, dict.fromkeys(by_region, 0.0)
-        for moment in video.times:
+        for index, moment in enumerate(video.times):
             frame = None
             for region, questions in by_region.items():
                 if moment + 1e-6 < due[region]:
                     continue
-                # Same frame choice as perception.pipeline._region_series.
+                # Same frame choice and crops (a clip for desk_hands) as perception.pipeline._region_series.
                 due[region] = moment + 1.0 / RATES[region] - 0.25 / video.sample_fps
                 frame = video.frame_at(moment) if frame is None else frame
-                answers = probe(vlm, crop(frame, boxes[region]), [q.text for q in questions], REGION_CONTEXT,
-                                TOKENS[region], batch)
+                view_args = region_view(video, index, region, boxes[region], frame)
+                answers = probe(vlm, view_args.pop("image"), [q.text for q in questions], view_args.pop("context"),
+                                TOKENS[region], batch, **view_args)
                 calls += 1
                 for q, value in zip(questions, answers, strict=True):
                     series[q.qid]["t"].append(round(float(moment), 4))
@@ -989,7 +987,7 @@ class Lab:
         video = video or data.video
         with settings(approach):
             if approach.exact_api:
-                base = {k: v for k, v in data.views["full256"].items() if k in {p.key for p in PROBES}}
+                base = {k: v for k, v in data.views["full256"].items() if k in {p.key for p in FRAME_PROBES}}
                 originals = {q.qid for q in REGION_Q}
                 regions = {k: v for k, v in data.views.get("regions", {}).items() if k in originals}
                 motion = PatchMotion.load(self.path("motion", data.item)) if data.motion_ready else None
@@ -2055,6 +2053,9 @@ def arguments():
     parser.add_argument("--call-seconds", type=float, default=20.0, help="generation time limit per call")
     parser.add_argument("--no-captions", dest="captions", action="store_false",
                         help="skip the caption scan (TEMPORAL_SCAN) in the refinement stage")
+    parser.add_argument("--api-only", action="store_true",
+                        help="only the views the API uses (full frame, region crops, pose), without extra questions: "
+                             "the fast way to score every video")
     parser.add_argument("--all-views", action="store_true",
                         help=f"also run {', '.join(LOW_VALUE_VIEWS)} (skipped by default to save time)")
     parser.add_argument("--tune-minutes", type=float, default=30.0, help="CPU minutes for tuning (0 = skip)")
@@ -2076,8 +2077,15 @@ def arguments():
         tag = MODEL_IDS.get(args.model, args.model).split("/")[-1]
         if args.model_path and not re.fullmatch(r"[0-9a-f]{40}", args.model_path.name):
             tag = args.model_path.name  # a Hugging Face snapshots/<hash> folder keeps the alias name
-        # v2: scene grounding and the desk stamps question changed, so v1 crops and answers are stale.
-        args.out = BACKEND / "var" / "experiments" / re.sub(r"[^A-Za-z0-9_.-]", "_", f"{tag}-{args.quantization}-v2")
+        # v3: the prompt context, the desk_hands clip and the full-frame question list changed, so v2 answers are stale.
+        suffix = "-api" if args.api_only else ""
+        args.out = BACKEND / "var" / "experiments" / re.sub(r"[^A-Za-z0-9_.-]", "_",
+                                                            f"{tag}-{args.quantization}-v3{suffix}")
+    if args.api_only:
+        args.skip = [view for view in VIEWS if view not in ("full256", "regions")]
+        for name in ("full256", "regions"):
+            VIEWS[name] = replace(VIEWS[name], questions=tuple(q for q in VIEWS[name].questions if not q.extra))
+        args.followup_calls, args.tune_minutes = -1, 0.0  # perception and rules only
     if args.skip is None:
         args.skip = [] if args.all_views else list(LOW_VALUE_VIEWS)
     unknown = set(args.skip) - set(GPU_PHASES)

@@ -28,14 +28,24 @@ REGION_PROBES: dict[str, tuple[RegionProbe, ...]] = {
         RegionProbe("stamps_on_desk", "Is a rubber stamp, a stamp pad or a seal lying on the desk?"),
         RegionProbe("food_on_desk", "Is there food or a drink on the desk?"),
         RegionProbe("personal_items", "Is a handbag, purse, wallet, coat or jacket lying on the desk?"),
+        # Anything left out at all. 32B never answered yes to the stamp question on Х-24, where two
+        # round self-inking stamps stand on the desk (it took them for cups), but answered yes to this one
+        # on every frame. fusion.left_items turns what is not cash, a bag or a personal item into stamps.
+        RegionProbe("desk_items", "Are any small objects left on the desktop besides the telephone, the laptop "
+                                  "and the counting machine?"),
     ),
+    # Three frames 0.5 s apart: counting and handing over are movements, and one still frame of a hand
+    # holding banknotes looks the same as counting them (32B counting AUC 0.94 on the clip, 0.77 on one crop).
     "desk_hands": (
-        RegionProbe("counting_cash", "Is someone counting banknotes?"),
-        RegionProbe("handover", "Is money or a document being passed from one person's hand to another person's hand?"),
-        RegionProbe("id_document", "Is someone holding or showing an ID card or passport?"),
-        RegionProbe("eating", "Is someone eating or drinking?"),
-        RegionProbe("phone", "Is someone using a mobile phone?"),
-        RegionProbe("cash_in_hands", "Is someone holding banknotes in their hands?"),
+        RegionProbe("counting_cash", "Across these frames, is someone counting banknotes by hand?"),
+        RegionProbe("handover", "Across these frames, is money or a document passed from one person's hand to "
+                                "another person's hand?"),
+        RegionProbe("cash_from_customer", "Across these frames, is the customer handing banknotes to the cashier?"),
+        RegionProbe("cash_to_customer", "Across these frames, is the cashier handing banknotes to the customer?"),
+        RegionProbe("id_document", "Across these frames, is someone showing or holding an identity card or passport?"),
+        RegionProbe("eating", "Across these frames, is someone eating or drinking?"),
+        RegionProbe("phone", "Across these frames, is someone using a mobile phone?"),
+        RegionProbe("cash_in_hands", "Across these frames, is someone holding banknotes?"),
     ),
     "safe": (
         RegionProbe("safe_open", "Is the safe door open?"),
@@ -53,9 +63,16 @@ REGION_PROBES: dict[str, tuple[RegionProbe, ...]] = {
     ),
 }
 
-TOKENS = {"desk": 256, "desk_hands": 256, "safe": 160, "laptop": 128, "door": 160}
-# Samples per second: hand actions are short, object states change slowly.
-RATES = {"desk": 1.0, "desk_hands": 1.0, "safe": 0.5, "laptop": 0.5, "door": 0.5}
+# Image tokens per crop (per frame for a clip).
+TOKENS = {"desk": 256, "desk_hands": 160, "safe": 160, "laptop": 128, "door": 160}
+# Samples per second: hand actions are short, object states change slowly (the timeline HMM holds a desk
+# object for 15-20 s, so one look every 2 s loses nothing and halves the desk cost).
+RATES = {"desk": 0.5, "desk_hands": 1.0, "safe": 0.5, "laptop": 0.5, "door": 0.5}
+# Regions asked about a short clip instead of one frame: offsets in analysis-grid steps (0.5 s at 2 fps).
+CLIPS = {"desk_hands": (-1, 0, 1)}
+CLIP_CONTEXT = ("These are {n} consecutive zoomed crops, 0.5 seconds apart, from a ceiling security camera above a "
+                "bank cash desk. The cashier is the employee on the laptop side of the desk; the customer is on the "
+                "other side.")
 
 
 def crop(image: np.ndarray, box: Box) -> np.ndarray:
@@ -63,3 +80,15 @@ def crop(image: np.ndarray, box: Box) -> np.ndarray:
     x0, y0, x1, y1 = box
     return image[round(y0 * h):max(round(y0 * h) + 2, round(y1 * h)),
                  round(x0 * w):max(round(x0 * w) + 2, round(x1 * w))]
+
+
+def region_view(video, index: int, region: str, box: Box, frame: np.ndarray | None = None) -> dict:
+    """probe() arguments for one region at grid sample `index`: one crop, or a clip of crops with captions."""
+    offsets = CLIPS.get(region)
+    if offsets is None:
+        image = frame if frame is not None else video.frame_at(video.times[index])
+        return {"image": crop(image, box), "context": CONTEXT}
+    picks = [min(len(video.times) - 1, max(0, index + offset)) for offset in offsets]
+    return {"image": [crop(video.frame_at(video.times[pick]), box) for pick in picks],
+            "context": CLIP_CONTEXT.format(n=len(picks)),
+            "captions": [f"Frame {n} ({video.times[pick]:.1f}s):" for n, pick in enumerate(picks, start=1)]}

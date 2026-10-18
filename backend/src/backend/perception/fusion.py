@@ -65,7 +65,10 @@ CV_ABSENCE = {"at_safe": 0.25, "using_computer": 0.25, "eating": 0.0, "counting_
 
 DEFAULT_WEIGHTS: dict[str, tuple[float, float, float]] = {
     "room_occupied": (0.3, 0.0, 1.0),
-    "customer_present": (0.0, 0.0, 1.0),
+    # The full-frame question separates a customer at the desk on 32B (AUC 1.000 on 5 videos) where pose
+    # (AUC 0.83) hovers near 0.5 and split one Х-16 visit in two. Weighted below pose, it decides only
+    # when pose is unsure, which keeps the 2B results (42 videos) unchanged.
+    "customer_present": (0.5, 0.0, 1.0),
     "cashier_at_station": (1.0, 0.0, 0.5),
     "person_in_doorway": (0.3, 0.5, 1.0),
     "at_safe": (0.2, 0.5, 1.0),
@@ -78,8 +81,12 @@ DEFAULT_WEIGHTS: dict[str, tuple[float, float, float]] = {
     "food_on_desk": (0.3, 1.0, 0.0),
     "stamps_on_desk": (0.2, 1.0, 0.0),
     "personal_items": (0.2, 1.0, 0.0),
-    "counting_cash": (1.0, 0.5, 0.2),
-    "handover": (1.0, 0.5, 0.2),
+    # Hand actions: the zoomed hands crop sees the banknotes, the full frame mostly does not
+    # (32B counting AUC: full frame 0.54, hands crop 0.77, 3-frame hands clip 0.94).
+    "counting_cash": (0.2, 1.0, 0.2),
+    "handover": (0.5, 1.0, 0.2),
+    "cash_from_customer": (0.5, 1.0, 0.0),
+    "cash_to_customer": (0.5, 1.0, 0.0),
     "id_document": (0.3, 1.0, 0.0),
     "eating": (0.5, 1.0, 0.2),
     "phone": (0.5, 1.0, 0.0),
@@ -92,6 +99,7 @@ def fuse(grid: np.ndarray, base: dict[str, np.ndarray], regions: dict[str, np.nd
          signals: Signals | None, keys: list[str], config: FusionConfig = FusionConfig()) -> dict[str, np.ndarray]:
     """base and regions are already resampled onto grid; returns a probability series per key."""
     weights = DEFAULT_WEIGHTS | config.weights
+    regions = _left_items(regions)
     cv = {}
     if signals is not None:
         for key, name in CV_KEYS.items():
@@ -129,4 +137,36 @@ def fuse(grid: np.ndarray, base: dict[str, np.ndarray], regions: dict[str, np.nd
         if signals is not None and key in UNSEEN_IN_DARK:
             # With the lights off only a lit screen is visible; other object states are unknown.
             fused[key] = np.where(lit >= 0.5, fused[key], 0.5)
+    _explain_away(fused, regions)
     return fused
+
+
+LEFT_KINDS = ("cash_on_desk", "bag_on_desk", "personal_items")
+
+
+def _left_items(regions: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+    """Something left on the desk that is not cash, a bag or a personal item is a stamp, a seal or a
+    document: 32B does not name round self-inking stamps as stamps, but it does see that they are there."""
+    if "desk_items" not in regions:
+        return regions
+    named = np.max([regions[key] for key in LEFT_KINDS if key in regions] or [np.zeros(len(regions["desk_items"]))],
+                   axis=0)
+    other = regions["desk_items"] * (1 - named)
+    return regions | {"stamps_on_desk": np.maximum(regions.get("stamps_on_desk", other), other)}
+
+
+# A card or banknotes held up to the face look like a phone call or a drink to the VLM: on Х-3 and Х-16
+# the cashier checks the customer's ID card and every view answered yes to the phone question, which raised
+# CD25 on clean videos. A phone or food counts only while the hands are not holding an ID card or money.
+HELD_ITEMS = ("id_document", "cash_in_hands")
+EXPLAINED = ("phone", "eating")
+
+
+def _explain_away(fused: dict[str, np.ndarray], regions: dict[str, np.ndarray]) -> None:
+    held = [source[key] for key in HELD_ITEMS for source in (fused, regions) if key in source]
+    if not held:
+        return
+    holding = np.max(held, axis=0)
+    for key in EXPLAINED:
+        if key in fused:
+            fused[key] = fused[key] * (1 - holding)

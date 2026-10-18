@@ -117,6 +117,39 @@ def ground(model: QuestionVLM, image: np.ndarray, description: str, tokens: int 
     return box
 
 
+@torch.inference_mode()
+def ground_all(model: QuestionVLM, image: np.ndarray, descriptions: dict[str, str],
+               tokens: int = 512) -> dict[str, Box | None]:
+    """ground() for every object in one batched generation. Decoding 24 tokens costs about the same for
+    five prompts as for one, so this takes one object's time (~5 s on 4-bit 32B instead of ~23 s)."""
+    if not hasattr(model, "_processor"):
+        return {key: ground(model, image, description, tokens) for key, description in descriptions.items()}
+    texts = [model._processor.apply_chat_template([{"role": "user", "content": [
+        {"type": "image"}, {"type": "text", "text": f"Locate {description} in this image. Output its bbox_2d coordinates."},
+    ]}], add_generation_prompt=True) + PREFILL for description in descriptions.values()]
+    picture = fit_tokens(image, tokens)
+    tokenizer = model._processor.tokenizer
+    side, tokenizer.padding_side = tokenizer.padding_side, "left"
+    with model._lock:
+        try:
+            inputs = model._processor(
+                text=texts, images=[picture] * len(texts), padding=True, return_tensors="pt",
+                images_kwargs={"size": {"shortest_edge": 1024, "longest_edge": 1 << 26}},
+            ).to(model.device)
+            model._model.model.rope_deltas = None
+            output = model._model.generate(**inputs, max_new_tokens=24, do_sample=False)
+        finally:
+            tokenizer.padding_side = side
+            model._model.model.rope_deltas = None
+    answers = model._processor.batch_decode(output[:, inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+    boxes = {}
+    for (key, description), answer in zip(descriptions.items(), answers, strict=True):
+        boxes[key] = parse_box(PREFILL + answer)
+        if boxes[key] is None:
+            logger.warning("Grounding %s failed; answer was %r", description, PREFILL + answer)
+    return boxes
+
+
 def parse_box(answer: str) -> Box | None:
     match = BOX.search(answer)
     if not match:
@@ -129,11 +162,14 @@ def parse_box(answer: str) -> Box | None:
 
 def locate(model: QuestionVLM, path: Path) -> Scene:
     background = median_background(path)
-    boxes, grounded = {}, {}
-    for key, description in OBJECTS.items():
-        logger.info("Video %s: grounding %s", path.stem, key)
-        box = ground(model, background, description)
-        grounded[key] = box is not None
-        boxes[key] = box or FALLBACK[key]
-        logger.info("Video %s: %s grounding %s", path.stem, key, "complete" if box else "used fallback")
+    logger.info("Video %s: grounding %s", path.stem, ", ".join(OBJECTS))
+    try:
+        found = ground_all(model, background, OBJECTS)
+    except Exception:
+        logger.exception("Video %s: batched grounding failed; grounding one object at a time", path.stem)
+        found = {key: ground(model, background, description) for key, description in OBJECTS.items()}
+    boxes = {key: found[key] or FALLBACK[key] for key in OBJECTS}
+    grounded = {key: found[key] is not None for key in OBJECTS}
+    logger.info("Video %s: grounding complete; fallback boxes for %s", path.stem,
+                ", ".join(key for key, ok in grounded.items() if not ok) or "none")
     return Scene(boxes, grounded)

@@ -52,8 +52,13 @@ class LeftOpenTests(unittest.TestCase):
                "cashier_at_station": lambda t: True}
 
     def test_safe_open_after_the_cashier_walks_away(self):
-        graph = timeline(self.present | {"safe_open": lambda t: True, "at_safe": lambda t: t < 4})
+        graph = timeline(self.present | {"safe_open": lambda t: True, "at_safe": lambda t: t < 4,
+                                         "cashier_at_station": lambda t: t < 4})
         self.assertIn("VIOLATION", outcomes(graph, "CD05B"))
+
+    def test_open_safe_behind_a_seated_cashier_is_not_left_open(self):
+        graph = timeline(self.present | {"safe_open": lambda t: True, "at_safe": lambda t: t < 4})
+        self.assertNotIn("VIOLATION", outcomes(graph, "CD05B"))
 
     def test_safe_closed_or_in_use_is_not_left_open(self):
         for states in ({"safe_open": lambda t: False, "at_safe": lambda t: t < 4},
@@ -71,6 +76,34 @@ class LeftOpenTests(unittest.TestCase):
         away = {"room_occupied": lambda t: t < 4, "cashier_at_station": lambda t: t < 4, "screen_on": lambda t: True}
         self.assertNotIn("VIOLATION", outcomes(timeline(away), "CD07"))
         self.assertIn("VIOLATION", outcomes(timeline(away | {"screen_unlocked": lambda t: True}), "CD07"))
+
+
+class HeldItemTests(unittest.TestCase):
+    grid = np.arange(4.0)
+
+    def test_card_held_up_to_the_face_is_not_a_phone(self):
+        fused = fuse(self.grid, {"phone": np.full(4, .99), "eating": np.full(4, .99)},
+                     {"id_document": np.full(4, .99)}, None, ["phone", "eating", "id_document"])
+        self.assertLess(fused["phone"].max(), .1)
+        self.assertLess(fused["eating"].max(), .1)
+        alone = fuse(self.grid, {"phone": np.full(4, .99)}, {"id_document": np.full(4, .01)}, None, ["phone"])
+        self.assertGreater(alone["phone"].min(), .9)
+
+    def test_unnamed_desk_items_count_as_stamps(self):
+        regions = {"desk_items": np.full(4, .99), "stamps_on_desk": np.full(4, .01), "cash_on_desk": np.full(4, .01),
+                   "bag_on_desk": np.full(4, .01)}
+        self.assertGreater(fuse(self.grid, {}, regions, None, ["stamps_on_desk"])["stamps_on_desk"].min(), .9)
+        bag = regions | {"bag_on_desk": np.full(4, .99)}
+        self.assertLess(fuse(self.grid, {}, bag, None, ["stamps_on_desk"])["stamps_on_desk"].max(), .1)
+
+    def test_hands_region_is_a_three_frame_clip(self):
+        from types import SimpleNamespace
+        from backend.perception.regions import region_view
+        frames = SimpleNamespace(times=np.arange(0, 3, .5), frame_at=lambda t: np.full((40, 40, 3), int(t * 10), np.uint8))
+        clip = region_view(frames, 0, "desk_hands", (0, 0, .5, .5))
+        self.assertEqual(len(clip["image"]), 3)
+        self.assertEqual(clip["captions"], ["Frame 1 (0.0s):", "Frame 2 (0.0s):", "Frame 3 (0.5s):"])
+        self.assertIsInstance(region_view(frames, 2, "desk", (0, 0, .5, .5))["image"], np.ndarray)
 
 
 class PersonSignalTests(unittest.TestCase):

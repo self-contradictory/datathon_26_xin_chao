@@ -24,7 +24,9 @@ class Settings(BaseSettings):
     RULE_MODE: Literal["production", "shadow"] = "shadow"
     # Generated descriptions and follow-up answers are prose, followed by semantic matching.
     # This budget counts visual questions; vocabulary alignment has a separate bounded pass.
-    FOLLOWUP_MAX_CALLS: int = 2
+    # Off by default: on 4-bit 32B each visual follow-up is a ~18 s prose generation plus ~7 s of semantic
+    # matching, about 45 s per video for two, and no run has shown that they change a verdict.
+    FOLLOWUP_MAX_CALLS: int = 0
     FOLLOWUP_MAX_FRAMES: int = 2
     FOLLOWUP_CALL_SECONDS: float = 20.0
     # Off by default: the caption scan generates up to 96 tokens per 8 s window every 4 s, and 4-bit

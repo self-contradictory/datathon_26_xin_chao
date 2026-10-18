@@ -117,21 +117,26 @@ def _derived_states(
 
         derived.append(_derived_track("st_room_unattended", "room_1", "unattended",
                                       _combine(duration, [room, station], unattended)))
-    for key, attended_key, entity in (("safe_open", "at_safe", "safe_1"), ("door_open", "person_in_doorway", "door_1")):
+    # The safe counts as left open only once the cashier has also left the desk: an open safe behind a
+    # seated cashier is normal work, and flagging it raised CD05B on four clean videos (Х-8, Х-14, Х-19, Х-25).
+    for key, attended_key, entity, away_key in (("safe_open", "at_safe", "safe_1", "cashier_at_station"),
+                                                ("door_open", "person_in_doorway", "door_1", None)):
         if (opened := state_tracks.get(key)) is None or (attended := state_tracks.get(attended_key)) is None:
             continue
+        sources = [opened, attended] + ([state_tracks[away_key]] if away_key in state_tracks else [])
 
         def left_open(start: float, end: float, states: list[_Interval | None]) -> _Decision:
-            state, someone = states
-            if _decisive(state, "true") and _decisive(someone, "false"):
+            state, someone, *station = states
+            staffed = bool(station) and _decisive(station[0], "true")
+            if _decisive(state, "true") and _decisive(someone, "false") and not staffed:
                 return "true", [*state["support_observation_ids"], *someone["support_observation_ids"]]
             if _decisive(state, "false"):
                 return "false", state["support_observation_ids"]
-            if _decisive(someone, "true"):
-                return "false", someone["support_observation_ids"]
+            if _decisive(someone, "true") or (station and _decisive(station[0], "true")):
+                return "false", (someone or station[0])["support_observation_ids"]
             return None, []
 
-        intervals = _at_least(_combine(duration, [opened, attended], left_open), LEFT_OPEN_SEC)
+        intervals = _at_least(_combine(duration, sources, left_open), LEFT_OPEN_SEC)
         derived.append(_derived_track(f"st_{entity}_left_open", entity, "left_open", intervals))
     return [track for track in derived if track is not None]
 

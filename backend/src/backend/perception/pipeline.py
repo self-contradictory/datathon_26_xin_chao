@@ -14,7 +14,7 @@ from backend.perception.features import FeatureConfig, Signals, compute_signals
 from backend.perception.fusion import FusionConfig, fuse, resample_probe
 from backend.perception.motion import PatchMotion, patch_motion
 from backend.perception.pose import PoseEstimator, PoseSequence, detect_people
-from backend.perception.regions import CONTEXT, RATES, REGION_PROBES, TOKENS, crop
+from backend.perception.regions import RATES, REGION_PROBES, TOKENS, crop, region_view
 from backend.perception.scene import Scene, locate
 from backend.reconstruction.decode import Observation
 from backend.reconstruction.pipeline import AttributeTrack, Reconstruction, Reconstructor, decode_tracks
@@ -25,6 +25,12 @@ from backend.reconstruction.vlm import QuestionVLM
 logger = logging.getLogger(__name__)
 
 type Series = dict[str, tuple[np.ndarray, np.ndarray]]
+
+# States a zoomed crop answers with 3-5x the full frame's fusion weight. Asking the full frame as well cost
+# about a third of its tokens; dropping them kept every 32B verdict and raised timeline F1 (58.0% to 59.7%).
+CROP_KEYS = {"key_in_safe", "stamps_on_desk", "personal_items", "food_on_desk", "screen_on", "safe_open",
+             "counting_cash", "door_open"}
+FRAME_PROBES = tuple(probe for probe in PROBES if probe.key not in CROP_KEYS)
 
 
 @dataclass(slots=True)
@@ -53,8 +59,9 @@ class Observations:
     observer_model: str = ""
 
 
-def _probe_series(vlm: QuestionVLM, video: DecodedVideo, fps: float, tokens: int, box) -> Series:
-    keys = [probe.key for probe in PROBES]
+def _probe_series(vlm: QuestionVLM, video: DecodedVideo, fps: float, tokens: int, box,
+                  probes: tuple = PROBES) -> Series:
+    keys = [probe.key for probe in probes]
     times, values = [], {key: [] for key in keys}
     due = 0.0
     for moment in video.times:
@@ -63,7 +70,7 @@ def _probe_series(vlm: QuestionVLM, video: DecodedVideo, fps: float, tokens: int
         due = moment + 1.0 / fps - 0.25 / video.sample_fps
         image = video.frame_at(moment)
         logger.info("Video %s: full-frame probes at %.1f/%.1fs", video.path.stem, moment, video.duration)
-        answers = vlm.probe(crop(image, box) if box else image, [p.question for p in PROBES], SCENE_CONTEXT, tokens)
+        answers = vlm.probe(crop(image, box) if box else image, [p.question for p in probes], SCENE_CONTEXT, tokens)
         times.append(float(moment))
         for key, value in zip(keys, answers, strict=True):
             values[key].append(value)
@@ -74,7 +81,7 @@ def _region_series(vlm: QuestionVLM, video: DecodedVideo, scene: Scene) -> Serie
     boxes = scene.regions
     data = {probe.key: ([], []) for probes in REGION_PROBES.values() for probe in probes}
     due = dict.fromkeys(REGION_PROBES, 0.0)
-    for moment in video.times:
+    for index, moment in enumerate(video.times):
         frame = None
         for region, probes in REGION_PROBES.items():
             if moment + 1e-6 < due[region]:
@@ -82,7 +89,8 @@ def _region_series(vlm: QuestionVLM, video: DecodedVideo, scene: Scene) -> Serie
             due[region] = moment + 1.0 / RATES[region] - 0.25 / video.sample_fps
             frame = video.frame_at(moment) if frame is None else frame
             logger.info("Video %s: %s region probes at %.1f/%.1fs", video.path.stem, region, moment, video.duration)
-            answers = vlm.probe(crop(frame, boxes[region]), [p.question for p in probes], CONTEXT, TOKENS[region])
+            view = region_view(video, index, region, boxes[region], frame)
+            answers = vlm.probe(view.pop("image"), [p.question for p in probes], tokens=TOKENS[region], **view)
             for probe, value in zip(probes, answers, strict=True):
                 data[probe.key][0].append(float(moment))
                 data[probe.key][1].append(value)
@@ -96,7 +104,8 @@ def observe(path: Path, vlm: QuestionVLM, estimator: PoseEstimator | None,
     logger.info("Video %s: decoded %.1fs, %s frames; scene grounding starts", path.stem, video.duration, len(video.times))
     scene = locate(vlm, path) if config.use_regions or config.use_cv else None
     base_box = scene.regions["active"] if scene is not None and config.base_crop else None
-    base = _probe_series(vlm, video, config.base_fps, config.base_tokens, base_box)
+    base = _probe_series(vlm, video, config.base_fps, config.base_tokens, base_box,
+                         FRAME_PROBES if config.use_regions else PROBES)
     regions = _region_series(vlm, video, scene) if config.use_regions else {}
     logger.info("Video %s: pose estimation starts on %s", path.stem, getattr(estimator, "device", "disabled"))
     pose = detect_people(path, estimator, config.pose_fps) if config.use_cv and estimator else None

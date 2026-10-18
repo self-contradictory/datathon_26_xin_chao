@@ -122,29 +122,37 @@ class QuestionVLM:
             answer = answer.split("\n", 1)[1].rsplit("```", 1)[0].strip()
         return schema.model_validate_json(answer)
 
-    def _prefix_text(self, context: str) -> str:
-        messages = [
-            {
-                "role": "user",
-                "content": [{"type": "image"}, {"type": "text", "text": context + "\n"}],
-            }
-        ]
-        text = self._processor.apply_chat_template(messages, add_generation_prompt=False)
+    def _prefix_text(self, context: str, captions: Sequence[str] = ()) -> str:
+        if captions:
+            content = [part for caption in captions for part in ({"type": "text", "text": caption}, {"type": "image"})]
+            content.append({"type": "text", "text": "\n" + context + "\n"})
+        else:
+            content = [{"type": "image"}, {"type": "text", "text": context + "\n"}]
+        text = self._processor.apply_chat_template([{"role": "user", "content": content}], add_generation_prompt=False)
         return text[: text.rindex("<|im_end|>")]
 
     @torch.inference_mode()
     def probe(
         self,
-        image: np.ndarray,
+        image: np.ndarray | Sequence[np.ndarray],
         questions: Sequence[str],
         context: str,
         tokens: int,
         # All of a frame's questions in one pass: every extra pass re-reads the 4-bit weights and copies
         # the image's key/value cache. 32 questions over a 256-token image need about 3 GB on 32B.
         max_batch: int = 32,
+        captions: Sequence[str] = (),
     ) -> list[float]:
+        """Yes-probability per question. A list of images with one caption each is a short clip in one
+        prompt: the images are encoded once and every question reads its answer from the cached keys."""
+        images = [image] if isinstance(image, np.ndarray) else list(image)
+        if len(images) != max(1, len(captions)):
+            raise ValueError("A clip needs one caption per image")
         with self._lock:
-            inputs = self._image_inputs(fit_tokens(image, tokens), self._prefix_text(context))
+            inputs = self._processor(
+                text=[self._prefix_text(context, captions)], images=[fit_tokens(item, tokens) for item in images],
+                return_tensors="pt", images_kwargs={"size": {"shortest_edge": 1024, "longest_edge": 1 << 26}},
+            ).to(self.device)
             self._model.model.rope_deltas = None
             prefix = self._model.model(**inputs, use_cache=True).past_key_values
             weights = self._model.lm_head.weight[self._answer_ids]
@@ -174,4 +182,5 @@ class QuestionVLM:
                 yes = probabilities[:, : self._yes_count].sum(-1)
                 no = probabilities[:, self._yes_count :].sum(-1)
                 result.extend((yes / (yes + no)).tolist())
+            self._model.model.rope_deltas = None
             return result

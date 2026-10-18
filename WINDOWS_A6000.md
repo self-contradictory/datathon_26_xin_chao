@@ -298,9 +298,10 @@ $env:JOB_WORKERS = "1"
 
 This samples one frame every four seconds and skips structured temporal and
 semantic follow-ups. It is a smoke test, not a full accuracy evaluation:
-short actions and cash provenance findings may be missed. Restart with
-`SAMPLE_FPS=1.0`, `IMAGE_TOKENS=256`, `TEMPORAL_SCAN=true` and
-`FOLLOWUP_MAX_CALLS=8` for the complete dataset checks. Keep the ngrok
+short actions and cash provenance findings may be missed. Restart without
+these variables for the complete dataset checks: the defaults leave the caption
+scan and follow-ups off, since on 4-bit 32B they cost about 45 s per video and
+no run has shown them changing a verdict. Keep the ngrok
 process running while restarting the backend; its URL can stay the same.
 
 If Ctrl+C cannot stop an active inference, use another PowerShell to stop
