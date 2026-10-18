@@ -830,3 +830,31 @@ rules:
   evidence_policy: *policy
   dataset_examples: [Х-30]
   implementation_note: Standing at the arrival is a proxy for equipment set-up still in progress; a cashier returning from the safe also reads as not ready.
+
+- rule_id: CD25-MOBILE-PHONE-IN-CASH-ROOM
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Cashier uses a mobile phone in the cash room
+  category: mobile_phone_in_cash_room
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 12
+    url: *url231
+    verified: false
+    note: «Хранение личных вещей, наличных денег и ценностей работников банка осуществляется вне кассового узла в порядке, установленном внутренними документами банка. Допускается внос работниками банка в кассовый узел лекарственных средств, медицинских изделий и средств связи, не имеющих функции фото и видео фиксации.» Смартфон имеет камеру, поэтому под исключение не подпадает.
+  scope:
+    kind: video
+  trigger:
+    kind: event
+    action: cashier_uses_phone
+    participants:
+      cashier: $cashier
+  logic:
+    type: FORBIDDEN
+    when_all: []
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: []
+  implementation_note: General rule with no dataset example. Uses the existing phone probe, so it adds no model calls. The probe asks about a mobile phone, not the desk telephone; a camera cannot be confirmed on video, so the finding assumes a smartphone.
