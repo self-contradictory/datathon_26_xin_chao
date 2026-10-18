@@ -199,6 +199,7 @@ violationTypes:
   doorOpen: 'Cash room service door open'
   notReady: 'Serving before equipment is on'
   leftDuringService: 'Cashier left the workplace before finishing with the client'
+  mobilePhone: 'Mobile phone in the cash unit'
 review:
   confirm: Confirm
   reject: False alarm
@@ -265,6 +266,7 @@ ruleRequires:
   doorOpen: 'The cash desk has its own entrance with a door that locks. The cash unit is isolated by a closing service entrance.'
   notReady: 'Tools that check cash authenticity and validity work during cash operations. The cash room has video surveillance and is guarded.'
   leftDuringService: 'The cashier does not leave the workplace until the client has been fully served.'
+  mobilePhone: 'Only communication devices without photo or video capture may be brought into the cash unit. Staff personal items are kept outside it.'
 ruleCheck:
   cashLeftOut: "Whose cash it is: the current client's cash may stay on the desk for counting. A locking drawer or trolley counts instead of a safe."
   countWithoutClient: 'Whether counting went on without the client. If the cashier stopped until the client returned, there is no violation.'
@@ -281,6 +283,7 @@ ruleCheck:
   doorOpen: 'An open door on video is not yet a violation. Whether it is the service door and whether anyone entered without authorisation. Para. 16 of Resolution No. 14 is suspended until 01.01.2027.'
   notReady: 'Letting a client in before the equipment is set up is not directly banned. Which devices were off and whether an operation took place.'
   leftDuringService: 'Whether the client was at the desk when the cashier left and whether the operation was finished. If the client had already gone, this type does not apply.'
+  mobilePhone: 'Whether it was a mobile phone with a camera, not the desk telephone. A phone without photo or video capture is allowed.'
 acts:
   nbrk231: 'NBK Resolution No. 231'
   nbrk14: 'NBK Resolution No. 14'

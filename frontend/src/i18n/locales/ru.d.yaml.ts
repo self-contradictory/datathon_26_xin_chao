@@ -235,6 +235,7 @@ export interface Messages {
     doorOpen: string
     notReady: string
     leftDuringService: string
+    mobilePhone: string
   }
   review: {
     confirm: string
@@ -307,6 +308,7 @@ export interface Messages {
     doorOpen: string
     notReady: string
     leftDuringService: string
+    mobilePhone: string
   }
   ruleCheck: {
     cashLeftOut: string
@@ -324,6 +326,7 @@ export interface Messages {
     doorOpen: string
     notReady: string
     leftDuringService: string
+    mobilePhone: string
   }
   acts: {
     nbrk231: string
