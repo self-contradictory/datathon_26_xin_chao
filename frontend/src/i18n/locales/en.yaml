@@ -149,6 +149,7 @@ apiDocs:
   typesTitle: Violation types
   typesText: 'The type field is one of these strings. The site uses it to find the regulation and show a translated name. Other strings are accepted too and shown as received.'
   errorsTitle: Errors
+  e400: The file is empty or not a video.
   e401: The X-API-Key header is missing or the key is wrong.
   e404: No job with this job_id.
   e422: The request has no file field with the video.
@@ -197,6 +198,7 @@ violationTypes:
   sessionUnlocked: 'Computer left unlocked'
   doorOpen: 'Cash room service door open'
   notReady: 'Serving before equipment is on'
+  leftDuringService: 'Cashier left the workplace before finishing with the client'
 review:
   confirm: Confirm
   reject: False alarm
@@ -262,6 +264,7 @@ ruleRequires:
   sessionUnlocked: "After more than 30 minutes of inactivity, the system ends the session or locks the workstation. The bank's security policy sets when to lock it immediately."
   doorOpen: 'The cash desk has its own entrance with a door that locks. The cash unit is isolated by a closing service entrance.'
   notReady: 'Tools that check cash authenticity and validity work during cash operations. The cash room has video surveillance and is guarded.'
+  leftDuringService: 'The cashier does not leave the workplace until the client has been fully served.'
 ruleCheck:
   cashLeftOut: "Whose cash it is: the current client's cash may stay on the desk for counting. A locking drawer or trolley counts instead of a safe."
   countWithoutClient: 'Whether counting went on without the client. If the cashier stopped until the client returned, there is no violation.'
@@ -277,6 +280,7 @@ ruleCheck:
   sessionUnlocked: 'A computer that is on is not yet a violation. Whether the session was unlocked and how long the employee was away.'
   doorOpen: 'An open door on video is not yet a violation. Whether it is the service door and whether anyone entered without authorisation. Para. 16 of Resolution No. 14 is suspended until 01.01.2027.'
   notReady: 'Letting a client in before the equipment is set up is not directly banned. Which devices were off and whether an operation took place.'
+  leftDuringService: 'Whether the client was at the desk when the cashier left and whether the operation was finished. If the client had already gone, this type does not apply.'
 acts:
   nbrk231: 'NBK Resolution No. 231'
   nbrk14: 'NBK Resolution No. 14'

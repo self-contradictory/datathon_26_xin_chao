@@ -25,6 +25,7 @@ export function ApiDocsPage() {
   const toast = useToast()
 
   const errors: [code: number, text: string][] = [
+    [400, t.e400],
     [401, t.e401],
     [404, t.e404],
     [422, t.e422],

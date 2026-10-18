@@ -175,6 +175,7 @@ export interface Messages {
     typesTitle: string
     typesText: string
     errorsTitle: string
+    e400: string
     e401: string
     e404: string
     e422: string
@@ -233,6 +234,7 @@ export interface Messages {
     sessionUnlocked: string
     doorOpen: string
     notReady: string
+    leftDuringService: string
   }
   review: {
     confirm: string
@@ -304,6 +306,7 @@ export interface Messages {
     sessionUnlocked: string
     doorOpen: string
     notReady: string
+    leftDuringService: string
   }
   ruleCheck: {
     cashLeftOut: string
@@ -320,6 +323,7 @@ export interface Messages {
     sessionUnlocked: string
     doorOpen: string
     notReady: string
+    leftDuringService: string
   }
   acts: {
     nbrk231: string

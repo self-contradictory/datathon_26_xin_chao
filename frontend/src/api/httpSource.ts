@@ -16,7 +16,7 @@ export interface HttpSourceOptions {
 export function errorForStatus(status: number): JobError {
   if (status === 401 || status === 403) return new JobError('unauthorized')
   if (status === 404) return new JobError('not_found')
-  if (status === 413 || status === 415 || status === 422) {
+  if (status === 400 || status === 413 || status === 415 || status === 422) {
     return new JobError('bad_file')
   }
   if (status === 502 || status === 503 || status === 504) {
