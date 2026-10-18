@@ -2,6 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from backend.rules.models import Source
+
 type JobStatus = Literal["processing", "done", "failed"]
 type Verdict = Literal["no_violation", "violation"]
 
@@ -16,6 +18,8 @@ class Violation(BaseModel):
     timecode_sec: float
     description: str
     evidence_frames: list[EvidenceFrame] = Field(min_length=1, max_length=3)
+    rule_id: str | None = None
+    source: Source | None = None
 
 
 class AnalyzeResponse(BaseModel):

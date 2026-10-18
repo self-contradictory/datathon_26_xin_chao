@@ -1,12 +1,14 @@
 import type { ReactNode } from 'react'
 import type { Violation } from '@/api/types'
 import { RuleNorm } from '@/components/RuleNorm'
+import { SourceCitation } from '@/components/SourceCitation'
 import { TextLink } from '@/components/TextLink'
 import { Button } from '@/components/Button'
 import { CheckIcon, CloseIcon } from '@/components/icons'
 import type { ReviewDecision } from '@/history/types'
 import { format, useStrings } from '@/i18n'
 import { ACT_URLS, findRule, ruleActs, type Rule } from '@/rules'
+import { violationDetails } from '@/ruleSource'
 import { ClipButton } from '@/components/clip/ClipButton'
 import { EvidenceFrames } from './EvidenceFrames'
 import { useViolationText } from './violationText'
@@ -133,7 +135,8 @@ export function ViolationDetails({
   const requires = useStrings('ruleRequires')
   const check = useStrings('ruleCheck')
   const { typeName } = useViolationText()
-  const rule = findRule(violation.type)
+  const rule = findRule(violation.rule_id ?? '') ?? findRule(violation.type)
+  const { description, source } = violationDetails(violation)
 
   return (
     <div className="flex flex-col gap-4">
@@ -154,19 +157,23 @@ export function ViolationDetails({
       </div>
       <dl className="flex flex-col">
         <Row label={t.description}>
-          <span lang="ru">{violation.description}</span>
+          <span lang="ru">{description}</span>
         </Row>
         {rule ? (
           <>
             <Row label={t.requires}>{requires[rule.id]}</Row>
             <Row label={t.check}>{check[rule.id]}</Row>
-            <Row label={t.rule}>
-              <RuleCitation rule={rule} />
-            </Row>
           </>
-        ) : (
-          <Row label={t.rule}>{t.ruleUnknown}</Row>
-        )}
+        ) : null}
+        <Row label={t.rule}>
+          {source ? (
+            <SourceCitation source={source} />
+          ) : rule ? (
+            <RuleCitation rule={rule} />
+          ) : (
+            t.ruleUnknown
+          )}
+        </Row>
       </dl>
       <ReviewControls decision={decision} onDecide={onDecide} />
     </div>

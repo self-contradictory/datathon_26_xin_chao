@@ -6,11 +6,22 @@ export interface EvidenceFrame {
   image_base64: string
 }
 
+export interface RuleSource {
+  document: string
+  clause: string | null
+  url: string | null
+  verified?: boolean
+  note?: string
+  kind?: string
+}
+
 export interface Violation {
   type: string
   timecode_sec: number
   description: string
   evidence_frames: EvidenceFrame[]
+  rule_id?: string
+  source?: RuleSource
 }
 
 export interface AnalyzeResponse {

@@ -4,6 +4,7 @@ import type {
   EvidenceFrame,
   JobResponse,
   JobStatus,
+  RuleSource,
   Verdict,
   Violation,
 } from './types'
@@ -58,6 +59,28 @@ function parseFrame(value: unknown, path: string): EvidenceFrame {
   }
 }
 
+function parseSource(value: unknown, path: string): RuleSource {
+  const source = record(value, path)
+  if (source.verified != null && typeof source.verified !== 'boolean') {
+    throw new ApiParseError(`${path}.verified`, 'expected a boolean')
+  }
+  return {
+    document: nonEmptyString(source.document, `${path}.document`),
+    clause:
+      source.clause == null ? null : string(source.clause, `${path}.clause`),
+    url: source.url == null ? null : string(source.url, `${path}.url`),
+    ...(source.verified == null
+      ? {}
+      : { verified: source.verified as boolean }),
+    ...(source.note == null
+      ? {}
+      : { note: string(source.note, `${path}.note`) }),
+    ...(source.kind == null
+      ? {}
+      : { kind: string(source.kind, `${path}.kind`) }),
+  }
+}
+
 function parseViolation(value: unknown, path: string): Violation {
   const violation = record(value, path)
   const frames = violation.evidence_frames
@@ -71,6 +94,12 @@ function parseViolation(value: unknown, path: string): Violation {
     evidence_frames: frames.map((frame, i) =>
       parseFrame(frame, `${path}.evidence_frames[${i}]`),
     ),
+    ...(violation.rule_id == null
+      ? {}
+      : { rule_id: nonEmptyString(violation.rule_id, `${path}.rule_id`) }),
+    ...(violation.source == null
+      ? {}
+      : { source: parseSource(violation.source, `${path}.source`) }),
   }
 }
 

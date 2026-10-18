@@ -18,6 +18,7 @@ export interface Rule {
   type: string
   norms: readonly Norm[]
   applicability: Applicability
+  aliases?: readonly string[]
 }
 
 export const ACT_URLS: Record<ActId, string> = {
@@ -181,6 +182,10 @@ export const RULES: readonly Rule[] = [
   {
     id: 'mobilePhone',
     type: 'Мобильный телефон в кассовом узле',
+    aliases: [
+      'Cashier uses a mobile phone in the cash room',
+      'CD25-MOBILE-PHONE-IN-CASH-ROOM',
+    ],
     norms: [{ act: 'nbrk231', refs: [{ point: '12' }] }],
     applicability: 'direct',
   },
@@ -194,7 +199,10 @@ export function findRule(type: string): Rule | null {
   const key = normalize(type)
   return (
     RULES.find(
-      (rule) => normalize(rule.type) === key || rule.id.toLowerCase() === key,
+      (rule) =>
+        normalize(rule.type) === key ||
+        rule.id.toLowerCase() === key ||
+        rule.aliases?.some((alias) => normalize(alias) === key),
     ) ?? null
   )
 }

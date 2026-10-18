@@ -49,6 +49,8 @@ def to_violations(
             timecode_sec=finding.timecode_sec,
             description=describe(finding),
             evidence_frames=frames,
+            rule_id=finding.rule_id,
+            source=finding.source,
         ))
     return violations
 

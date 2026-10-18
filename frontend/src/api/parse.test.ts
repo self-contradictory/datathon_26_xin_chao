@@ -39,6 +39,44 @@ describe('parseJobResponse', () => {
     expect(parseJobResponse(CASE_EXAMPLE)).toEqual(CASE_EXAMPLE as never)
   })
 
+  test('keeps the rule ID and source returned by the backend', () => {
+    const source = {
+      document: 'Правила кассовых операций, постановление НБРК № 231',
+      clause: 'п. 12',
+      url: 'https://adilet.zan.kz/rus/docs/V1900019680',
+      verified: false,
+      kind: 'regulatory_candidate',
+      note: 'Проверить тип телефона.',
+    }
+    const result = parseJobResponse({
+      ...CASE_EXAMPLE,
+      violations: [
+        { ...violation, rule_id: 'CD25-MOBILE-PHONE-IN-CASH-ROOM', source },
+      ],
+    })
+    expect(result.violations?.[0]).toMatchObject({
+      rule_id: 'CD25-MOBILE-PHONE-IN-CASH-ROOM',
+      source,
+    })
+  })
+
+  test('accepts absent metadata from older backends and null schema defaults', () => {
+    const result = parseJobResponse({
+      ...CASE_EXAMPLE,
+      violations: [{ ...violation, rule_id: null, source: null }],
+    })
+    expect(result.violations?.[0]).toEqual(violation)
+  })
+
+  test('reports an invalid source document at its field', () => {
+    expect(
+      problemAt({
+        ...CASE_EXAMPLE,
+        violations: [{ ...violation, source: { document: 231 } }],
+      }),
+    ).toBe('job.violations[0].source.document')
+  })
+
   test('accepts a clean result with an empty list', () => {
     const job = parseJobResponse({
       job_id: 'a',

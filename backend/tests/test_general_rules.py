@@ -39,6 +39,10 @@ class GeneralRuleTests(unittest.TestCase):
         violations = to_violations(reportable(report, ReportingPolicy(production_only=False)), lambda _: b"jpeg")
         phone = [v for v in violations if "п. 12" in v.description and "phone" in v.type]
         self.assertEqual(len(phone), 1)
+        self.assertEqual(phone[0].rule_id, PHONE_RULE)
+        self.assertEqual(phone[0].source, findings[0].source)
+        self.assertEqual(phone[0].model_dump()["source"]["url"],
+                         "https://adilet.zan.kz/rus/docs/V1900019680")
 
     def test_no_phone_no_finding(self):
         report = evaluate(load_registry(), graph(), "shadow")

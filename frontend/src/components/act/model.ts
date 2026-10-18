@@ -58,7 +58,7 @@ export function buildReportModel(
       index,
       timecode: item.timecode_sec,
       type: item.type,
-      rule: findRule(item.type),
+      rule: findRule(item.rule_id ?? '') ?? findRule(item.type),
       frames: item.evidence_frames.slice(0, 3),
       decision: record.review[index]?.decision ?? null,
     })),

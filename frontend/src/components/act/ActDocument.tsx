@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Owl } from '@/components/Owl'
 import { RuleNorm } from '@/components/RuleNorm'
+import { SourceCitation } from '@/components/SourceCitation'
 import { useViolationText } from '@/components/report/violationText'
 import { format, localeOf, useLang, useStrings } from '@/i18n'
 import { jpegDataUrl } from '@/utils/frames'
@@ -11,6 +12,7 @@ import {
   formatTime,
 } from '@/utils/time'
 import { ACT_URLS, ruleActs } from '@/rules'
+import { violationDetails } from '@/ruleSource'
 import type { ActModel, ActViolation } from './model'
 
 const CELL = 'border border-border px-2 py-1.5 text-left align-top'
@@ -35,6 +37,8 @@ function Decision({ violation }: { violation: ActViolation }) {
 }
 
 function Rule({ violation }: { violation: ActViolation }) {
+  const { source } = violationDetails(violation.source)
+  if (source) return <SourceCitation source={source} />
   return violation.rule ? <RuleNorm rule={violation.rule} /> : <>—</>
 }
 
@@ -44,6 +48,7 @@ function ViolationBlock({ violation }: { violation: ActViolation }) {
   const requires = useStrings('ruleRequires')
   const check = useStrings('ruleCheck')
   const { typeName, typeLang } = useViolationText()
+  const { description } = violationDetails(violation.source)
 
   return (
     <section className="act-block mt-5 flex flex-col gap-2">
@@ -70,7 +75,7 @@ function ViolationBlock({ violation }: { violation: ActViolation }) {
       </div>
       <p className="text-[12px]">
         <span className="font-semibold">{card.description}: </span>
-        <span lang="ru">{violation.source.description}</span>
+        <span lang="ru">{description}</span>
       </p>
       {violation.rule && (
         <>
