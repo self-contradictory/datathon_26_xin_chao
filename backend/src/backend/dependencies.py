@@ -12,6 +12,8 @@ from backend.db.sqlite import SqliteDatabase
 from backend.models import ApiKey
 from backend.repositories.api_keys import ApiKeyRepository, SqliteApiKeyRepository
 from backend.repositories.jobs import JobRepository, SqliteJobRepository
+from backend.perception.pipeline import PerceptionReconstructor
+from backend.perception.settings import load_config
 from backend.reconstruction.pipeline import Reconstructor
 from backend.reconstruction.vlm import QuestionVLM
 from backend.services.api_keys import ApiKeyService
@@ -30,8 +32,12 @@ def get_analyzer() -> VideoAnalyzer:
     model = QuestionVLM(
         settings.MODEL, settings.MODEL_PATH, settings.MODEL_DEVICE, settings.MODEL_QUANTIZATION,
     )
+    reconstructor = (
+        PerceptionReconstructor(model, load_config(model.name), settings.POSE_DEVICE) if settings.PERCEPTION
+        else Reconstructor(model, settings.SAMPLE_FPS, settings.IMAGE_TOKENS)
+    )
     return QuestionAnalyzer(
-        Reconstructor(model, settings.SAMPLE_FPS, settings.IMAGE_TOKENS), settings.RULE_MODE,
+        reconstructor, settings.RULE_MODE,
         settings.FOLLOWUP_MAX_CALLS, settings.FOLLOWUP_MAX_FRAMES, settings.TIMELINE_DIR,
         settings.TEMPORAL_SCAN,
     )

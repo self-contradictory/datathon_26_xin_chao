@@ -43,6 +43,7 @@ class QuestionVLM:
     def __init__(
         self, model: str = "timelens4b", model_path: Path | None = None, device: str | None = None,
         quantization: Literal["none", "4bit"] = "none",
+        local_files_only: bool = True,
     ) -> None:
         self.name = MODEL_IDS.get(model, model)
         self.device = device or _device()
@@ -55,7 +56,7 @@ class QuestionVLM:
             raise ValueError("4-bit loading requires an available CUDA GPU and CUDA-enabled PyTorch")
         model_id = str(model_path) if model_path else self.name
         dtype = torch.float32 if self.device == "cpu" else torch.bfloat16
-        load_options = {"dtype": dtype, "local_files_only": True}
+        load_options = {"dtype": dtype, "local_files_only": local_files_only}
         if quantization == "4bit":
             load_options.update(
                 device_map={"": self.device},
@@ -74,7 +75,7 @@ class QuestionVLM:
         if quantization == "none":
             self._model = self._model.to(self.device)
         self._model = self._model.eval()
-        self._processor = AutoProcessor.from_pretrained(model_id, local_files_only=True)
+        self._processor = AutoProcessor.from_pretrained(model_id, local_files_only=local_files_only)
         tokenizer = self._processor.tokenizer
         self._tokenizer = tokenizer
         self._pad_id = tokenizer.pad_token_id or 0

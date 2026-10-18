@@ -14,8 +14,8 @@ from backend.schemas import Violation
 
 class QuestionAnalyzer(VideoAnalyzer):
     def __init__(self, reconstructor: Reconstructor, mode: Mode = "shadow",
-                 max_followup_calls: int = 8, followup_frames: int = 8,
-                 timeline_dir: Path | None = None, temporal_scan: bool = True) -> None:
+                 max_followup_calls: int = 0, followup_frames: int = 8,
+                 timeline_dir: Path | None = None, temporal_scan: bool = False) -> None:
         self.reconstructor = reconstructor
         self.registry = load_registry()
         self.mode = mode

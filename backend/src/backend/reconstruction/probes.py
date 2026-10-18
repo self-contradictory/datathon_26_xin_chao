@@ -41,3 +41,8 @@ PROBES: tuple[Probe, ...] = (
     Probe('personal_items', 'Is a handbag, purse or wallet lying on the desk?', 'state', 20.0),
     Probe('cashier_at_station', 'Is the cashier at the workstation, seated or standing?', 'state', 6.0),
 )
+
+# Tracks built by the perception pipeline: the probes above plus states only a zoomed crop answers.
+PERCEPTION_PROBES: tuple[Probe, ...] = PROBES + (
+    Probe('screen_unlocked', 'Does the laptop screen show an open document or program window?', 'state', 30.0),
+)

@@ -5,6 +5,8 @@ from typing import Any
 CASHIER = "person_1"
 EPSILON = 1e-6
 BOUNDED = "bounded_by_observations"
+# A safe or door counts as left open after this long open with nobody at it or passing through.
+LEFT_OPEN_SEC = 3.0
 type _Interval = dict[str, Any]
 type _Decision = tuple[str | None, Iterable[str]]
 
@@ -115,7 +117,44 @@ def _derived_states(
 
         derived.append(_derived_track("st_room_unattended", "room_1", "unattended",
                                       _combine(duration, [room, station], unattended)))
+    for key, attended_key, entity in (("safe_open", "at_safe", "safe_1"), ("door_open", "person_in_doorway", "door_1")):
+        if (opened := state_tracks.get(key)) is None or (attended := state_tracks.get(attended_key)) is None:
+            continue
+
+        def left_open(start: float, end: float, states: list[_Interval | None]) -> _Decision:
+            state, someone = states
+            if _decisive(state, "true") and _decisive(someone, "false"):
+                return "true", [*state["support_observation_ids"], *someone["support_observation_ids"]]
+            if _decisive(state, "false"):
+                return "false", state["support_observation_ids"]
+            if _decisive(someone, "true"):
+                return "false", someone["support_observation_ids"]
+            return None, []
+
+        intervals = _at_least(_combine(duration, [opened, attended], left_open), LEFT_OPEN_SEC)
+        derived.append(_derived_track(f"st_{entity}_left_open", entity, "left_open", intervals))
     return [track for track in derived if track is not None]
+
+
+def _at_least(intervals: list[_Interval], minimum: float, bridge: float = 1.0) -> list[_Interval]:
+    """Keeps a true run only if it lasts `minimum` seconds; gaps shorter than `bridge` join runs."""
+    spans = [interval for interval in intervals if interval["end_sec"] - interval["start_sec"] > EPSILON]
+    runs: list[list[_Interval]] = []
+    for interval in spans:
+        if interval["value"] != "true":
+            continue
+        if runs and interval["start_sec"] - runs[-1][-1]["end_sec"] <= bridge and not any(
+            other["value"] == "false" and runs[-1][-1]["end_sec"] - EPSILON <= other["start_sec"]
+            and other["end_sec"] <= interval["start_sec"] + EPSILON for other in spans
+        ):
+            runs[-1].append(interval)
+        else:
+            runs.append([interval])
+    for run in runs:
+        if run[-1]["end_sec"] - run[0]["start_sec"] < minimum:
+            for interval in run:
+                interval.update(value=None, knowledge="unknown", support_observation_ids=[])
+    return intervals
 
 def _counted_receipts(
     events: list[dict[str, Any]], visits: list[tuple[str, float, float]], duration: float

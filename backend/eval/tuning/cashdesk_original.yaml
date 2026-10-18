@@ -1,0 +1,729 @@
+schema_version: steg-rule-dsl/1.0.0
+required_steg_schema_version: 1.0.0
+registry_id: cashdesk-npa-rk-2026
+rules:
+- rule_id: CD01-CUSTOMER-ABSENT-DURING-COUNT
+  version: 0.1.0
+  status: candidate
+  type: DURING
+  name: Cash counted while the customer is away from the desk
+  category: customer_absent_during_count
+  source:
+    kind: regulatory_candidate
+    document: &npa231 Правила осуществления кассовых операций и операций по инкассации банкнот, монет и ценностей в банках второго уровня, филиалах банков-нерезидентов Республики Казахстан, Национальном операторе почты и юридических лицах, исключительной деятельностью которых является инкассация банкнот, монет и ценностей (постановление Правления НБРК от 29.11.2019 № 231)
+    clause: п. 20; п. 31 пп. 4); п. 35
+    url: &url231 https://adilet.zan.kz/rus/docs/V1900019680
+    verified: false
+    note: Принимаемые наличные пересчитываются в присутствии клиента (п. 20); при выдаче кассир пересчитывает подготовленную сумму в присутствии клиента (п. 31 пп. 4), п. 35). Если кассир остановил пересчёт до возвращения клиента, нарушения нет.
+  scope:
+    kind: episode
+    episode_kind: customer_visit
+    bind: $visit
+    episode_roles:
+      customer: $customer
+  trigger:
+    kind: event
+    action: cash_counted
+    participants:
+      cashier: $cashier
+  logic:
+    type: DURING
+    required:
+      kind: state
+      property: at_cash_counter
+      entity: $customer
+      value: 'true'
+      knowledge: bounded_by_observations
+    interval: entire_trigger_interval
+  evidence_policy: &policy
+    allow_hypotheses: false
+    allow_disputed: false
+    negative_evidence: requires_explicit_bounded_false_or_proven_completeness
+    on_missing_binding: UNKNOWN
+    on_ambiguous_role: UNKNOWN
+    on_incomplete_episode: UNKNOWN
+    max_evidence_frames: 3
+  dataset_examples: [Х-34, Х-38]
+  implementation_note: The customer's at_cash_counter state is false only where the customer side of the desk is seen empty, so a customer hidden behind the cashier stays unknown rather than absent.
+
+- rule_id: CD02-CASH-ON-DESK-AT-CUSTOMER-ARRIVAL
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Banknotes already on the desk when the next customer arrives
+  category: prior_cash_on_desk
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 20
+    url: *url231
+    verified: false
+    note: На рабочем месте кассира находятся деньги только обслуживаемого клиента; суммы, принятые ранее, размещаются в запираемом устройстве хранения (ящик, тележка, сейф). Проверить, были ли деньги приняты от предыдущего клиента.
+  scope:
+    kind: video
+  trigger:
+    kind: event
+    action: customer_arrives
+    participants:
+      customer: $customer
+  logic:
+    type: FORBIDDEN
+    when_all:
+    - kind: state
+      property: banknotes_visible
+      entity:
+        kind: object
+        subtype: cashier_desk
+      value: 'true'
+      knowledge: bounded_by_observations
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [Х-4, Х-18, Х-26, Х-38, Х-47]
+  implementation_note: Banknotes must be seen on the desk over the whole uncertainty window of the arrival. The pipeline starts a new customer entity for every visit, so a customer who returns mid-transaction looks like a new customer.
+
+- rule_id: CD03-CASH-ON-UNATTENDED-DESK
+  version: 0.1.0
+  status: candidate
+  type: MUTUAL_EXCLUSION
+  name: Banknotes left on the desk while the cash room is unattended
+  category: cash_left_unattended
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 20; п. 22
+    url: *url231
+    verified: false
+    note: Ранее принятые деньги размещаются в запираемом устройстве хранения (п. 20); кассир не покидает рабочее место до завершения обслуживания (п. 22).
+  scope:
+    kind: video
+  trigger:
+    kind: state
+    property: banknotes_visible
+    entity:
+      kind: object
+      subtype: cashier_desk
+    value: 'true'
+    knowledge: bounded_by_observations
+  logic:
+    type: MUTUAL_EXCLUSION
+    other:
+      kind: state
+      property: unattended
+      entity:
+        kind: zone
+        subtype: cash_room
+      value: 'true'
+      knowledge: bounded_by_observations
+    relation: overlaps
+  evidence_policy: *policy
+  dataset_examples: [Х-4, Х-26]
+  implementation_note: The room counts as unattended only while it is seen empty.
+
+- rule_id: CD04-BAG-ON-UNATTENDED-DESK
+  version: 0.1.0
+  status: candidate
+  type: MUTUAL_EXCLUSION
+  name: Bag or package left on the desk while the cash room is unattended
+  category: cash_bag_left_unattended
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 20; п. 22
+    url: *url231
+    verified: false
+    note: Пакет или сумка с ранее принятыми наличными на рабочем месте; на столе могут быть только наличные обслуживаемого клиента. Содержимое сумки по видео не устанавливается.
+  scope:
+    kind: video
+  trigger:
+    kind: state
+    property: bag_visible
+    entity:
+      kind: object
+      subtype: cashier_desk
+    value: 'true'
+    knowledge: bounded_by_observations
+  logic:
+    type: MUTUAL_EXCLUSION
+    other:
+      kind: state
+      property: unattended
+      entity:
+        kind: zone
+        subtype: cash_room
+      value: 'true'
+      knowledge: bounded_by_observations
+    relation: overlaps
+  evidence_policy: *policy
+  dataset_examples: [Х-15]
+  implementation_note: The video shows a bag, not what is inside it; the description must say so.
+
+- rule_id: CD05-SAFE-OPEN-UNATTENDED
+  version: 0.1.0
+  status: candidate
+  type: MUTUAL_EXCLUSION
+  name: Safe left open while the cash room is unattended
+  category: safe_open_unattended
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 20; п. 80
+    url: *url231
+    verified: false
+    note: Ранее принятые наличные хранятся в устройствах, закрываемых на ключ (п. 20); порядок обращения с ключами устанавливает банк (п. 80). Выяснить, были ли в открытом сейфе деньги — п. 20 не требует закрывать пустой сейф.
+  scope:
+    kind: video
+  trigger:
+    kind: state
+    property: open
+    entity:
+      kind: object
+      subtype: safe
+    value: 'true'
+    knowledge: bounded_by_observations
+  logic:
+    type: MUTUAL_EXCLUSION
+    other:
+      kind: state
+      property: unattended
+      entity:
+        kind: zone
+        subtype: cash_room
+      value: 'true'
+      knowledge: bounded_by_observations
+    relation: overlaps
+  evidence_policy: *policy
+  dataset_examples: [Х-20]
+  implementation_note: Weaker than R09-MUTUAL_EXCLUSION, which also needs the safe to be seen holding cash; the pipeline cannot see the safe's contents.
+
+- rule_id: CD06-KEY-IN-SAFE-UNATTENDED
+  version: 0.1.0
+  status: candidate
+  type: MUTUAL_EXCLUSION
+  name: Key left in the safe lock while the cash room is unattended
+  category: safe_key_left_unattended
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 80; п. 76
+    url: *url231
+    verified: false
+    note: Порядок использования и хранения ключей рабочего сейфа устанавливается внутренними документами банка во исполнение п. 80; ключи кладовой и сейфовой комнаты находятся у ответственных лиц (п. 76). Уточнить тип сейфа и доступность ключа посторонним.
+  scope:
+    kind: video
+  trigger:
+    kind: state
+    property: key_in_lock
+    entity:
+      kind: object
+      subtype: safe
+    value: 'true'
+    knowledge: bounded_by_observations
+  logic:
+    type: MUTUAL_EXCLUSION
+    other:
+      kind: state
+      property: unattended
+      entity:
+        kind: zone
+        subtype: cash_room
+      value: 'true'
+      knowledge: bounded_by_observations
+    relation: overlaps
+  evidence_policy: *policy
+  dataset_examples: [Х-22]
+  implementation_note: Dataset example Х-46. Evaluate eating and exposed banknotes independently; food alone does not trigger this rule. This is a cash-security candidate, not a general legal ban on eating.
+
+- rule_id: CD07-COMPUTER-ON-UNATTENDED
+  version: 0.1.0
+  status: candidate
+  type: MUTUAL_EXCLUSION
+  name: Computer screen left on while the cash room is unattended
+  category: workstation_left_unlocked
+  source:
+    kind: regulatory_candidate
+    document: Требования к обеспечению информационной безопасности банков, филиалов банков-нерезидентов Республики Казахстан и организаций, осуществляющих отдельные виды банковских операций (постановление Правления АРРФР от 03.04.2026 № 53)
+    clause: п. 71 пп. 9); пп. 53, 106
+    url: https://adilet.zan.kz/rus/docs/V2600038336
+    verified: false
+    note: Система должна завершать сеанс или блокировать рабочую станцию при неактивности более 30 минут; порядок немедленной блокировки при уходе задаёт политика ИБ банка. Включённый экран не доказывает, что сеанс разблокирован.
+  scope:
+    kind: video
+  trigger:
+    kind: state
+    property: screen_on
+    entity:
+      kind: object
+      subtype: computer
+    value: 'true'
+    knowledge: bounded_by_observations
+  logic:
+    type: MUTUAL_EXCLUSION
+    other:
+      kind: state
+      property: unattended
+      entity:
+        kind: zone
+        subtype: cash_room
+      value: 'true'
+      knowledge: bounded_by_observations
+    relation: overlaps
+  evidence_policy: *policy
+  dataset_examples: [Х-11, Х-28]
+  implementation_note: A lit screen is all the video shows; whether the session was unlocked is outside the video.
+
+- rule_id: CD08-STAMPS-ON-UNATTENDED-DESK
+  version: 0.1.0
+  status: candidate
+  type: MUTUAL_EXCLUSION
+  name: Stamps and seals left on the desk while the cash room is unattended
+  category: stamps_left_unattended
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 80
+    url: *url231
+    verified: false
+    note: Порядок хранения печатей, штампов, пломбираторов, ключей и кодов определяется внутренними документами банка с исключением несанкционированного использования (п. 80). Прямой нормы «печати хранятся в сейфе» в п. 80 нет.
+  scope:
+    kind: video
+  trigger:
+    kind: state
+    property: stamps_visible
+    entity:
+      kind: object
+      subtype: cashier_desk
+    value: 'true'
+    knowledge: bounded_by_observations
+  logic:
+    type: MUTUAL_EXCLUSION
+    other:
+      kind: state
+      property: unattended
+      entity:
+        kind: zone
+        subtype: cash_room
+      value: 'true'
+      knowledge: bounded_by_observations
+    relation: overlaps
+  evidence_policy: *policy
+  dataset_examples: [Х-24]
+  implementation_note: ''
+
+- rule_id: CD09-DOOR-OPEN-UNATTENDED
+  version: 0.1.0
+  status: candidate
+  type: MUTUAL_EXCLUSION
+  name: Cash room door open while the room is unattended
+  category: door_open_unattended
+  source:
+    kind: regulatory_candidate
+    document: &npa14 Правила организации охраны и устройства помещений банков второго уровня, филиалов банков-нерезидентов Республики Казахстан, Национального оператора почты, юридических лиц, исключительной деятельностью которых является инкассация банкнот, монет и ценностей, и юридических лиц, осуществляющих деятельность исключительно через обменные пункты на основании лицензии Национального Банка Республики Казахстан на обменные операции с наличной иностранной валютой (постановление Правления НБРК от 24.02.2020 № 14)
+    clause: п. 16 пп. 1); п. 8
+    url: &url14 https://adilet.zan.kz/rus/docs/V2000020075
+    verified: false
+    note: Касса имеет отдельный вход с дверью, закрывающейся на замок; кассовый узел изолирован закрывающимся служебным входом. Открытая дверь на кадре сама по себе нарушение не доказывает — установить, служебная ли дверь и был ли посторонний доступ.
+  scope:
+    kind: video
+  trigger:
+    kind: state
+    property: open
+    entity:
+      kind: object
+      subtype: entrance_door
+    value: 'true'
+    knowledge: bounded_by_observations
+  logic:
+    type: MUTUAL_EXCLUSION
+    other:
+      kind: state
+      property: unattended
+      entity:
+        kind: zone
+        subtype: cash_room
+      value: 'true'
+      knowledge: bounded_by_observations
+    relation: overlaps
+  evidence_policy: *policy
+  dataset_examples: [Х-32, Х-33]
+  implementation_note: ''
+
+- rule_id: CD10-DOOR-OPEN-CASH-EXPOSED
+  version: 0.1.0
+  status: candidate
+  type: MUTUAL_EXCLUSION
+  name: Cash room door open while banknotes lie on the desk
+  category: door_open_cash_exposed
+  source:
+    kind: regulatory_candidate
+    document: *npa14
+    clause: п. 16 пп. 1); п. 8
+    url: *url14
+    verified: false
+    note: Предусмотрены отдельная запираемая дверь кассы и изоляция кассового узла. Проверить место, продолжительность открытия и проход посторонних.
+  scope:
+    kind: video
+  trigger:
+    kind: state
+    property: open
+    entity:
+      kind: object
+      subtype: entrance_door
+    value: 'true'
+    knowledge: bounded_by_observations
+  logic:
+    type: MUTUAL_EXCLUSION
+    other:
+      kind: state
+      property: banknotes_visible
+      entity:
+        kind: object
+        subtype: cashier_desk
+      value: 'true'
+      knowledge: bounded_by_observations
+    relation: overlaps
+  evidence_policy: *policy
+  dataset_examples: [Х-32, Х-33]
+  implementation_note: ''
+
+- rule_id: CD11-SERVICE-BEFORE-EQUIPMENT-READY
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Customer served while the computer is still off
+  category: service_before_equipment_ready
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 9
+    url: *url231
+    verified: false
+    note: Рабочее место кассира обеспечивается средствами и оборудованием для кассовых операций и контроля банкнот (п. 9; см. также Правила № 14, п. 16 пп. 6)). Один лишь допуск клиента до включения техники прямо не запрещён — проверить, проводилась ли операция.
+  scope:
+    kind: video
+  trigger:
+    kind: event
+    action: customer_arrives
+    participants:
+      customer: $customer
+  logic:
+    type: FORBIDDEN
+    when_all:
+    - kind: state
+      property: screen_on
+      entity:
+        kind: object
+        subtype: computer
+      value: 'false'
+      knowledge: bounded_by_observations
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [Х-30]
+  implementation_note: ''
+
+- rule_id: CD12-IDENTIFICATION-BEFORE-CASH-HANDLING
+  version: 0.1.0
+  status: candidate
+  type: PROCEDURE
+  name: Customer identification not seen before the cash is counted
+  category: customer_not_identified
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 7; п. 19 пп. 1); п. 31 пп. 1)
+    url: *url231
+    verified: false
+    note: Кассир идентифицирует клиента по удостоверяющему документу или по сведениям сервиса цифровых документов (п. 19 пп. 1), п. 31 пп. 1); Закон РК № 191-IV, ст. 5). Отсутствие пластикового удостоверения само по себе не нарушение.
+  scope:
+    kind: episode
+    episode_kind: customer_visit
+    bind: $visit
+    episode_roles:
+      cashier: $cashier
+  trigger:
+    kind: episode
+    episode_kind: customer_visit
+  logic:
+    type: PROCEDURE
+    steps:
+    - id: identity
+      required: true
+      any_of:
+      - kind: event
+        action: physical_id_checked
+      - kind: event
+        action: digital_id_checked
+      omission_observability: external_or_positively_verified_coverage
+    - id: count
+      required: false
+      any_of:
+      - kind: event
+        action: cash_counted
+        participants:
+          cashier: $cashier
+    order_constraints:
+    - before: identity
+      after: count
+    end_boundary: observed
+    step_absence_default: UNKNOWN_unless_negation_proven
+  evidence_policy: *policy
+  dataset_examples: [X-2, Х-17, Х-18]
+  implementation_note: A digital ID check happens on the computer and is never visible, so a missing identity step stays UNKNOWN (not_observed); the reporting policy decides whether to surface it.
+
+- rule_id: CD13-COUNT-DURING-VISIT
+  version: 0.1.0
+  status: candidate
+  type: REQUIRED_ACTION
+  name: No cash count seen during a customer visit
+  category: cash_not_counted
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 19 пп. 2), 4); п. 20
+    url: *url231
+    verified: false
+    note: При приёме кассир пересчитывает банкноты и сверяет фактически принятую сумму с приходным кассовым документом. Отражение операции в системе по видео не проверяется.
+  scope:
+    kind: episode
+    episode_kind: customer_visit
+    bind: $visit
+    episode_roles:
+      cashier: $cashier
+  trigger:
+    kind: event
+    action: customer_arrives
+    participants:
+      customer: $customer
+  logic:
+    type: REQUIRED_ACTION
+    must:
+      kind: event
+      action: cash_counted
+      participants:
+        cashier: $cashier
+    deadline:
+      kind: episode_end
+      requires_end_boundary: observed
+    order: after_trigger_before_boundary
+  evidence_policy: *policy
+  dataset_examples: [Х-13]
+  implementation_note: Assumes every visit involves cash. A visit without a cash operation reads as a missing count.
+
+- rule_id: CD14-PERSONAL-ITEMS-IN-CASH-ROOM
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Personal belongings kept at the cashier's workplace
+  category: personal_items_in_cash_room
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 12
+    url: *url231
+    verified: false
+    note: Личные вещи, собственные наличные деньги и ценности работника хранятся вне кассового узла; исключения — лекарства, медизделия и средства связи без фото- и видеосъёмки.
+  scope:
+    kind: video
+  trigger:
+    kind: state
+    property: personal_item_visible
+    entity:
+      kind: object
+      subtype: cashier_desk
+    value: 'true'
+    knowledge: bounded_by_observations
+  logic:
+    type: FORBIDDEN
+    when_all: []
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [Х-40]
+  implementation_note: The VLM is asked about a handbag, purse or wallet, not a phone, because phones without a camera are an allowed exception. The question is new and untuned.
+
+- rule_id: CD15-EATING-WITH-CASH-EXPOSED
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Cashier eats or drinks while banknotes lie on the desk
+  category: cash_exposed_during_break
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 20
+    url: *url231
+    verified: false
+    note: Ранее принятые деньги хранятся в запираемом устройстве. Запрет приёма пищи на рабочем месте нормой не установлен — нарушение касается денег, оставленных при прерывании операции.
+  scope:
+    kind: video
+  trigger:
+    kind: event
+    action: cashier_eats
+    participants:
+      cashier: $cashier
+  logic:
+    type: FORBIDDEN
+    when_all:
+    - kind: state
+      property: banknotes_visible
+      entity:
+        kind: object
+        subtype: cashier_desk
+      value: 'true'
+      knowledge: bounded_by_observations
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [Х-46]
+  implementation_note: ''
+
+- rule_id: CD16-CASHIER-LEAVES-DURING-SERVICE
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Cashier leaves the workplace while a customer is being served
+  category: cashier_left_active_service
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 22
+    url: *url231
+    verified: false
+    note: Кассиру не следует покидать рабочее место до завершения обслуживания клиента. Норма касается ухода кассира, а не клиента.
+  scope:
+    kind: video
+  trigger:
+    kind: event
+    action: cashier_leaves_station
+    participants:
+      cashier: $cashier
+  logic:
+    type: FORBIDDEN
+    when_all:
+    - kind: state
+      property: customer_service_active
+      entity: $cashier
+      value: 'true'
+      knowledge: bounded_by_observations
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [Х-15]
+  implementation_note: Same logic as R01-FORBIDDEN. Service counts as active while someone is at the customer side of the desk; standing up to reach the safe also reads as leaving the station.
+
+- rule_id: CD17-COUNTED-CASH-HANDED-BACK
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Part of the accepted and counted cash handed back to the customer
+  category: counted_cash_returned
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 19 пп. 2), 4); п. 20
+    url: *url231
+    verified: false
+    note: Кассир пересчитывает принимаемые наличные и сверяет фактически принятую сумму с приходным кассовым документом. Требует проверки обстоятельств — возврат может быть сдачей или возвратом неплатёжных банкнот.
+  scope:
+    kind: episode
+    episode_kind: customer_visit
+    bind: $visit
+  trigger:
+    kind: event
+    action: cash_given_to_customer
+    participants:
+      customer: $customer
+  logic:
+    type: FORBIDDEN
+    when_all:
+    - kind: state
+      property: received_cash_counted
+      entity: $customer
+      value: 'true'
+      knowledge: bounded_by_observations
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [X-1]
+  implementation_note: received_cash_counted turns true once the customer has handed banknotes in and the cashier has counted after that. Change and returned unfit banknotes look the same on video.
+
+- rule_id: CD18-REJECTED-BANKNOTES-RECOMBINED
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Machine-rejected banknotes recombined with the accepted stack without a visible check
+  category: rejected_banknotes_recombined
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 19 пп. 2); п. 57; п. 59 при подтверждении сомнительности
+    url: *url231
+    verified: false
+    note: По строке 21 листа «Наблюдения и нормы» предоставленного XLSM. Требует проверки обстоятельств. Отклонение счётной машиной не доказывает подделку; подтвердить проверку подлинности и платёжности и дальнейшее обращение с банкнотами.
+  scope:
+    kind: video
+  trigger:
+    kind: event
+    action: rejected_banknotes_recombined
+    participants:
+      cashier: $cashier
+  logic:
+    type: FORBIDDEN
+    when_all: []
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [Х-44]
+  implementation_note: Temporal VLM evidence must show machine rejection and recombination. A visible inspection makes this trigger inapplicable; ambiguous rejection, provenance, or inspection stays a hypothesis. This video-only candidate does not establish counterfeit currency or a legal conclusion.
+
+- rule_id: CD19-DIFFERENT-CUSTOMER-CASH-MIXED
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Banknotes from different customer operations mixed together
+  category: different_customer_cash_mixed
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 20; п. 19 пп. 2), 4); п. 21 при нескольких приходных документах
+    url: *url231
+    verified: false
+    note: По строке 23 листа «Наблюдения и нормы» предоставленного XLSM. Подтвердить происхождение сумм от разных клиентов или операций и момент смешения; обычное объединение пачек одного клиента не удовлетворяет правилу.
+  scope:
+    kind: video
+  trigger:
+    kind: event
+    action: different_customer_cash_mixed
+    participants:
+      cashier: $cashier
+  logic:
+    type: FORBIDDEN
+    when_all: []
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [Х-47]
+  implementation_note: A temporal check includes earlier cash-receipt evidence when available. Two piles alone do not establish different owners. If origins are occluded or unobserved, the event is a hypothesis rather than a confirmed trigger.
+
+- rule_id: CD20-CASH-OPERATION-NOT-RECORDED
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Accepted cash operation confirmed absent from the required accounting records
+  category: cash_operation_not_recorded
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 26; п. 74 при хранении после учёта
+    url: *url231
+    verified: false
+    note: По строке 6 листа «Наблюдения и нормы» предоставленного XLSM. Проверить чек, операционный журнал и применимый срок. Отсутствие набора текста на ноутбуке не доказывает отсутствие учёта.
+  scope:
+    kind: video
+  trigger:
+    kind: event
+    action: cash_operation_not_recorded
+    participants:
+      cashier: $cashier
+  logic:
+    type: FORBIDDEN
+    when_all: []
+    at: trigger_start
+  evidence_policy:
+    <<: *policy
+    required_verification: human_confirmed
+  dataset_examples: [Х-13]
+  implementation_note: External-evidence-only rule. The video observer must never infer this event from missing laptop use. An accounting-system or human-confirmed record is needed. The separately observable missing-count component remains CD13.

@@ -250,7 +250,7 @@ rules:
     kind: video
   trigger:
     kind: state
-    property: screen_on
+    property: unlocked_session_visible
     entity:
       kind: object
       subtype: computer
@@ -269,7 +269,7 @@ rules:
     relation: overlaps
   evidence_policy: *policy
   dataset_examples: [Х-11, Х-28]
-  implementation_note: A lit screen is all the video shows; whether the session was unlocked is outside the video.
+  implementation_note: Triggers on a screen that shows an open document or program window (zoomed laptop crop), not on any lit screen, so a visible lock screen does not trigger it. Whether the session itself was locked is still outside the video.
 
 - rule_id: CD08-STAMPS-ON-UNATTENDED-DESK
   version: 0.1.0
@@ -387,7 +387,7 @@ rules:
 
 - rule_id: CD11-SERVICE-BEFORE-EQUIPMENT-READY
   version: 0.1.0
-  status: candidate
+  status: disabled
   type: FORBIDDEN
   name: Customer served while the computer is still off
   category: service_before_equipment_ready
@@ -418,7 +418,7 @@ rules:
     at: trigger_start
   evidence_policy: *policy
   dataset_examples: [Х-30]
-  implementation_note: ''
+  implementation_note: Disabled. In the no-violation video Х-19 the laptop screen is dark when the customer arrives and is woken later, so a dark screen at arrival does not separate the labelled cases. CD11B checks whether the cashier is still setting up instead.
 
 - rule_id: CD12-IDENTIFICATION-BEFORE-CASH-HANDLING
   version: 0.1.0
@@ -533,11 +533,18 @@ rules:
     knowledge: bounded_by_observations
   logic:
     type: FORBIDDEN
-    when_all: []
+    when_all:
+    - kind: state
+      property: occupied
+      entity:
+        kind: zone
+        subtype: customer_side_of_desk
+      value: 'false'
+      knowledge: bounded_by_observations
     at: trigger_start
   evidence_policy: *policy
   dataset_examples: [Х-40]
-  implementation_note: The VLM is asked about a handbag, purse or wallet, not a phone, because phones without a camera are an allowed exception. The question is new and untuned.
+  implementation_note: The VLM is asked about a handbag, purse or wallet, not a phone, because phones without a camera are an allowed exception. A bag that appears while a customer is at the desk is treated as the customer's, so the rule needs the customer side of the desk to be seen empty.
 
 - rule_id: CD15-EATING-WITH-CASH-EXPOSED
   version: 0.1.0
@@ -576,7 +583,7 @@ rules:
 
 - rule_id: CD16-CASHIER-LEAVES-DURING-SERVICE
   version: 0.1.0
-  status: candidate
+  status: disabled
   type: FORBIDDEN
   name: Cashier leaves the workplace while a customer is being served
   category: cashier_left_active_service
@@ -605,7 +612,7 @@ rules:
     at: trigger_start
   evidence_policy: *policy
   dataset_examples: [Х-15]
-  implementation_note: Same logic as R01-FORBIDDEN. Service counts as active while someone is at the customer side of the desk; standing up to reach the safe also reads as leaving the station.
+  implementation_note: Disabled. Same logic as R01-FORBIDDEN. Standing up to reach the safe or the counting machine reads as leaving the station, and in the labelled no-violation visits (Х-5, Х-35, Х-37, Х-39, Х-48) the cashier does exactly that during service. The cited example Х-15 has no customer, so the rule never matched a label.
 
 - rule_id: CD17-COUNTED-CASH-HANDED-BACK
   version: 0.1.0
@@ -727,3 +734,99 @@ rules:
     required_verification: human_confirmed
   dataset_examples: [Х-13]
   implementation_note: External-evidence-only rule. The video observer must never infer this event from missing laptop use. An accounting-system or human-confirmed record is needed. The separately observable missing-count component remains CD13.
+
+- rule_id: CD05B-SAFE-LEFT-OPEN
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Safe left open while nobody is at it
+  category: safe_left_open
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 20; п. 80
+    url: *url231
+    verified: false
+    note: Ранее принятые наличные хранятся в устройствах, закрываемых на ключ (п. 20). Сейф открыт, а у сейфа никого нет дольше нескольких секунд — кассир отошёл, не закрыв его. Выяснить, были ли в сейфе деньги.
+  scope:
+    kind: video
+  trigger:
+    kind: state
+    property: left_open
+    entity:
+      kind: object
+      subtype: safe
+    value: 'true'
+    knowledge: bounded_by_observations
+  logic:
+    type: FORBIDDEN
+    when_all: []
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [Х-20]
+  implementation_note: left_open is derived from safe open and nobody at the safe for at least LEFT_OPEN_SEC (derived.py). Unlike CD05 it does not require the whole room to be empty.
+
+- rule_id: CD09B-DOOR-LEFT-OPEN
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Cash room door left open with nobody passing through
+  category: door_left_open
+  source:
+    kind: regulatory_candidate
+    document: *npa14
+    clause: п. 16 пп. 1); п. 8
+    url: *url14
+    verified: false
+    note: Касса имеет отдельный вход с дверью, закрывающейся на замок; кассовый узел изолирован. Дверь остаётся открытой после прохода, хотя через неё никто не проходит. Установить, служебная ли это дверь.
+  scope:
+    kind: video
+  trigger:
+    kind: state
+    property: left_open
+    entity:
+      kind: object
+      subtype: entrance_door
+    value: 'true'
+    knowledge: bounded_by_observations
+  logic:
+    type: FORBIDDEN
+    when_all: []
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [Х-32, Х-33]
+  implementation_note: left_open is derived from door open and nobody in the doorway for at least LEFT_OPEN_SEC (derived.py). CD09 and CD10 additionally need an empty room or exposed cash.
+
+- rule_id: CD11B-CUSTOMER-ADMITTED-BEFORE-STATION-READY
+  version: 0.1.0
+  status: candidate
+  type: FORBIDDEN
+  name: Customer admitted while the cashier is still away from the seated workstation
+  category: service_before_station_ready
+  source:
+    kind: regulatory_candidate
+    document: *npa231
+    clause: п. 9
+    url: *url231
+    verified: false
+    note: Рабочее место кассира обеспечивается оборудованием для кассовых операций (п. 9). Клиент входит, пока кассир ещё стоит и настраивает оборудование. Проверить, готово ли было рабочее место.
+  scope:
+    kind: video
+  trigger:
+    kind: event
+    action: customer_arrives
+    participants:
+      customer: $customer
+      cashier: $cashier
+  logic:
+    type: FORBIDDEN
+    when_all:
+    - kind: state
+      property: seated_at_desk
+      entity: $cashier
+      value: 'false'
+      knowledge: bounded_by_observations
+    at: trigger_start
+  evidence_policy: *policy
+  dataset_examples: [Х-30]
+  implementation_note: Standing at the arrival is a proxy for equipment set-up still in progress; a cashier returning from the safe also reads as not ready.

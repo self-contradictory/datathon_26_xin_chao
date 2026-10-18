@@ -5,6 +5,11 @@ from backend.reconstruction.pipeline import AttributeTrack, Reconstruction
 from backend.steg import SparseTemporalEvidenceGraph
 
 
+# A decoded segment becomes a bounded state only when its mean posterior support reaches this.
+KNOWN_CONFIDENCE = 0.6
+# An action segment is an observed event at this support; below it, rules treat it as a hypothesis.
+EVENT_CONFIDENCE = 0.8
+
 ENTITIES = [{'id': 'person_1',
   'kind': 'person',
   'subtype': 'person',
@@ -40,7 +45,8 @@ CLAIMS = {'cashier_seated': ('person_1', 'seated_at_desk', 'true', 'false'),
  'stamps_on_desk': ('desk_1', 'stamps_visible', 'true', 'false'),
  'key_in_safe': ('safe_1', 'key_in_lock', 'true', 'false'),
  'id_document': ('customer_area_1', 'physical_id_checked', 'true', 'false'),
- 'cashier_at_station': ('person_1', 'at_station', 'true', 'false')}
+ 'cashier_at_station': ('person_1', 'at_station', 'true', 'false'),
+ 'screen_unlocked': ('computer_1', 'unlocked_session_visible', 'true', 'false')}
 
 TRANSITION_ACTIONS = {'cashier_seated': ('seated_observed', 'no_longer_seated'),
  'customer_present': ('customer_arrives', 'customer_leaves'),
@@ -67,6 +73,8 @@ ACTION_EVENTS = {'person_in_doorway': ('person_passes_doorway', 'door_1'),
  'phone': ('cashier_uses_phone', None),
  'id_document': ('physical_id_checked', None)}
 
+CUSTOMER_ACTIONS = {"counting_cash", "handover", "cash_from_customer", "cash_to_customer", "id_document"}
+
 ROLES = {'safe_1': 'safe',
  'computer_1': 'computer',
  'desk_1': 'station',
@@ -84,7 +92,7 @@ def _state_intervals(track: AttributeTrack, identifiers: list[str], duration: fl
                           "knowledge": "unknown", "support_observation_ids": []})
     for index, segment in enumerate(track.segments):
         start, end = observations[segment.first].time, observations[segment.last].time
-        known = segment.confidence >= 0.6
+        known = segment.confidence >= KNOWN_CONFIDENCE
         intervals.append({
             "start_sec": start, "end_sec": end,
             "value": (yes if segment.value else no) if known else None,
@@ -182,35 +190,45 @@ def build_timeline(reconstruction: Reconstruction) -> SparseTemporalEvidenceGrap
     for key, (action, obj) in ACTION_EVENTS.items():
         track = tracks[key]
         identifiers = observation_ids[key]
+        observed = track.observations
         for segment in track.segments:
             if not segment.value:
                 continue
-            first, last = segment.first, segment.last
-            start, end = track.observations[first].time, track.observations[last].time
-            previous = track.observations[first - 1].time if first > 0 else start
-            following = track.observations[last + 1].time if last + 1 < len(track.observations) else end
-            ranked = sorted(range(first, last + 1), key=lambda i: -abs(track.observations[i].probability - 0.5))
-            participants = []
-            if key in {"counting_cash", "handover", "cash_from_customer", "cash_to_customer", "using_computer", "eating", "phone"}:
-                participants.append({"role": "cashier", "entity_id": "person_1"})
-            if key in {"counting_cash", "handover", "cash_from_customer", "cash_to_customer", "id_document"}:
-                customer = customer_at((start + end) / 2)
-                if customer:
-                    participants.append({"role": "customer", "entity_id": customer})
-            if obj:
-                participants.append({"role": ROLES[obj], "entity_id": obj})
-            if not participants:
-                participants.append({"role": "location", "entity_id": "room_1"})
-            events.append({
-                "id": f"e{len(events) + 1}", "action": action,
-                "time": {"start_sec": start, "end_sec": end,
-                         "start_uncertainty_sec": start - previous, "end_uncertainty_sec": following - end},
-                "participants": participants,
-                "support_observation_ids": identifiers[first:last + 1],
-                "evidence_frame_ids": [frame_ids[index] for index in sorted(ranked[:3])],
-                "inference_status": "inferred_from_observations" if segment.confidence >= 0.8 else "hypothesis",
-                "verification_status": "first_pass",
-            })
+            # An action that straddles a customer's arrival or departure is split there, so each
+            # piece is judged in the visit it actually happened in.
+            runs = [[segment.first]]
+            for index in range(segment.first + 1, segment.last + 1):
+                if key in CUSTOMER_ACTIONS and customer_at(observed[index].time) != customer_at(observed[runs[-1][0]].time):
+                    runs.append([index])
+                else:
+                    runs[-1].append(index)
+            for run in runs:
+                first, last = run[0], run[-1]
+                start, end = observed[first].time, observed[last].time
+                previous = observed[first - 1].time if first > 0 else start
+                following = observed[last + 1].time if last + 1 < len(observed) else end
+                ranked = sorted(range(first, last + 1), key=lambda i: -abs(observed[i].probability - 0.5))
+                participants = []
+                if key in {"counting_cash", "handover", "cash_from_customer", "cash_to_customer", "using_computer", "eating", "phone"}:
+                    participants.append({"role": "cashier", "entity_id": "person_1"})
+                if key in CUSTOMER_ACTIONS:
+                    customer = customer_at((start + end) / 2)
+                    if customer:
+                        participants.append({"role": "customer", "entity_id": customer})
+                if obj:
+                    participants.append({"role": ROLES[obj], "entity_id": obj})
+                if not participants:
+                    participants.append({"role": "location", "entity_id": "room_1"})
+                events.append({
+                    "id": f"e{len(events) + 1}", "action": action,
+                    "time": {"start_sec": start, "end_sec": end,
+                             "start_uncertainty_sec": start - previous, "end_uncertainty_sec": following - end},
+                    "participants": participants,
+                    "support_observation_ids": identifiers[first:last + 1],
+                    "evidence_frame_ids": [frame_ids[index] for index in sorted(ranked[:3])],
+                    "inference_status": "inferred_from_observations" if segment.confidence >= EVENT_CONFIDENCE else "hypothesis",
+                    "verification_status": "first_pass",
+                })
 
     state_tracks.extend(_counted_receipts(events, visit_spans, video.duration))
     episodes = []

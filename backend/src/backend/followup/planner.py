@@ -98,13 +98,17 @@ def _targets(rule: Rule, finding: Finding, index: STEGIndex):
         yield rule.trigger, "during", finding.start_sec, finding.end_sec, None
 
 
-def plan_questions(rules: list[Rule], graph: SparseTemporalEvidenceGraph, report: EvaluationReport) -> list[EvidenceQuestion]:
+def plan_questions(rules: list[Rule], graph: SparseTemporalEvidenceGraph, report: EvaluationReport,
+                   include_violations: bool = False) -> list[EvidenceQuestion]:
     index = STEGIndex(graph)
     by_id = {rule.rule_id: rule for rule in rules}
     questions = {}
-    for finding in report.findings("UNKNOWN"):
+    for finding in report.findings(*(("UNKNOWN", "VIOLATION") if include_violations else ("UNKNOWN",))):
         rule = by_id[finding.rule_id]
-        for matcher, relation, start, end, anchors in _targets(rule, finding, index):
+        targets = list(_targets(rule, finding, index))
+        if finding.outcome == "VIOLATION":
+            targets.append((rule.trigger, "during", finding.start_sec, finding.end_sec, None))
+        for matcher, relation, start, end, anchors in targets:
             question = _window(index, finding, rule, matcher, relation, start, end, anchors)
             if question is not None:
                 if matcher.kind in {"state", "relation"}:
@@ -115,7 +119,7 @@ def plan_questions(rules: list[Rule], graph: SparseTemporalEvidenceGraph, report
                         (question.window.start_sec, question.window.end_sec),
                         at_instant if relation == "at" else throughout, pool,
                     )
-                    if check.truth != "UNKNOWN":
+                    if check.truth != "UNKNOWN" and finding.outcome != "VIOLATION":
                         continue
                 questions.setdefault(question.id, question)
     for evaluation in report.rules:

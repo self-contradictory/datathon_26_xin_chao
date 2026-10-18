@@ -28,9 +28,10 @@ class RefinementResult:
 
 def refine(registry: RuleRegistry, graph: SparseTemporalEvidenceGraph, video: DecodedVideo,
            model: StructuredModel, mode: Mode = "shadow", max_calls: int = 8,
-           max_frames: int = 8, observer=None) -> RefinementResult:
+           max_frames: int = 8, observer=None, semantic_matcher=None,
+           verify_positive: bool = False, post_merge=None) -> RefinementResult:
     rules = select_rules(registry.rules, mode)
-    semantics = SemanticMatcher(model, rules)
+    semantics = semantic_matcher if semantic_matcher is not None else SemanticMatcher(model, rules)
     observer = observer or FocusedObserver(model, video, max_frames)
     result = RefinementResult(graph, evaluate(registry, graph, mode), 0)
     logger.info("Video %s: evaluating rules; follow-up budget=%s", video.path.stem, max_calls)
@@ -48,7 +49,7 @@ def refine(registry: RuleRegistry, graph: SparseTemporalEvidenceGraph, video: De
                 logger.warning("Video %s: semantic follow-up failed: %s", video.path.stem, str(error).split("\n", 1)[0])
             logger.info("Video %s: semantic follow-up finished in %.1fs", video.path.stem, perf_counter() - started)
             result.report = evaluate(registry, result.graph, mode)
-        questions = [question for question in plan_questions(rules, result.graph, result.report)
+        questions = [question for question in plan_questions(rules, result.graph, result.report, verify_positive)
                      if question.id not in seen]
         if not questions:
             if candidates:
@@ -66,6 +67,8 @@ def refine(registry: RuleRegistry, graph: SparseTemporalEvidenceGraph, video: De
             record.answer, frames = observer.answer(question, result.graph)
             if record.answer.status != "not_visible":
                 result.graph = merge_answer(result.graph, question, record.answer, frames)
+                if post_merge is not None:
+                    result.graph = post_merge(result.graph)
                 result.frame_images.update({frame.evidence.timestamp_sec: frame.jpeg for frame in frames})
         except (ValueError, KeyError) as error:
             record.error = str(error)
