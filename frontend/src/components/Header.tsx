@@ -49,6 +49,12 @@ function HomeLink({ onHome }: { onHome: () => void }) {
       className={`mr-auto flex min-h-11 items-center gap-3 rounded-md text-brand-deep no-underline ${FOCUS}`}
     >
       <Owl mood="hello" className="w-11 shrink-0" />
+      <span
+        aria-hidden="true"
+        className="text-[21px] leading-none font-bold tracking-[-0.02em] text-brand-deep sm:text-[24px]"
+      >
+        {t.brand}
+      </span>
       {USE_FIXTURES && (
         <span className="rounded-full bg-brand-tint px-3 py-1 text-caption font-semibold text-brand max-sm:hidden">
           {t.demo}

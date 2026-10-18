@@ -1,5 +1,6 @@
 header:
-  home: 'Forte, проверка кассы по видео — на главную'
+  home: 'Lashyn, проверка кассы по видео — на главную'
+  brand: Lashyn
   nav: Основное меню
   rules: Правила
   api: API
@@ -15,7 +16,7 @@ titles:
   clean: Нарушений не обнаружено
   rules: Правила проверки
   api: API
-  suffix: '{title} — Forte'
+  suffix: '{title} — Lashyn'
   batch: Проверка видео
   history: История проверок
 upload:

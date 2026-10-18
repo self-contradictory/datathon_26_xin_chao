@@ -1,6 +1,7 @@
 export interface Messages {
   header: {
     home: string
+    brand: string
     nav: string
     rules: string
     api: string

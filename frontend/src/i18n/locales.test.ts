@@ -14,6 +14,7 @@ const translations = { kk: readLocale('kk'), en: readLocale('en') }
 
 const SAME_IN_EVERY_LANGUAGE = new Set([
   'header.api',
+  'header.brand',
   'titles.api',
   'titles.suffix',
   'report.json',
